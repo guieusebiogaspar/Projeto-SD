@@ -35,10 +35,29 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     public void criarEleição(Eleição eleição) throws RemoteException {
         eleições.add(eleição);
-        System.out.println("----- Pessoas inscritas -----");
+        System.out.println("----- Eleições criadas -----");
         for(int i = 0; i < eleições.size(); i++) {
             System.out.println(eleição.getTitulo());
         }
+    }
+
+    /**
+     * Método que vai receber do cliente o titulo de uma eleição.
+     * Se a eleição existir na BD devolve o objeto da mesma, se não existir devolve null.
+     *
+     * @param titulo
+     *
+     *  @return eleição - objeto eleição com o título dado como input
+     */
+    public Eleição getEleição(String titulo) throws RemoteException {
+        for(int i = 0; i < eleições.size(); i++) {
+            if(eleições.get(i).getTitulo().equals(titulo)) {
+                return eleições.get(i);
+            } else {
+                return null;
+            }
+        }
+        return null;
     }
 
     public void check_results() throws RemoteException {
