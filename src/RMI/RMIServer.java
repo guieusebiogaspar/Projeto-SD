@@ -6,10 +6,15 @@ import java.rmi.registry.Registry;
 import java.rmi.server.*;
 import java.net.*;
 import java.io.*;
+import java.util.ArrayList;
+
+import static java.lang.Thread.sleep;
 
 
 public class RMIServer extends UnicastRemoteObject implements RMIServerInterface{
     static AdminConsoleInterface admin;
+    private static ArrayList<Pessoa> pessoas;
+    private static ArrayList<Eleição> eleições;
 
     public RMIServer() throws RemoteException {
         super();
@@ -20,33 +25,21 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         admin = adm;
     }
 
-
-    public void showMenu() throws RemoteException {
-        System.out.println("--------- MENU ---------");
-        System.out.println("[1] - Registar pessoa");
-        System.out.println("[2] - Criar eleição");
-        System.out.println("[3] - Editar eleição");
-        System.out.println("[4] - Terminar eleição");
+    public void registar(Pessoa pessoa) throws RemoteException {
+        pessoas.add(pessoa);
+        System.out.println("----- Pessoas inscritas -----");
+        for(int i = 0; i < pessoas.size(); i++) {
+            System.out.println(pessoa.getNome());
+        }
     }
 
-    public void readCommand(String command) throws RemoteException {
+    public void criarEleição(Eleição eleição) throws RemoteException {
+        eleições.add(eleição);
+        System.out.println("----- Pessoas inscritas -----");
+        for(int i = 0; i < eleições.size(); i++) {
+            System.out.println(eleição.getTitulo());
+        }
     }
-
-    public void register(String name, String nickname, String password, String phone, String morada, String cc, String ncc) throws RemoteException {
-    }
-
-    public void createElection(String startDate, String endDate, String title, String description) throws RemoteException {
-
-    }
-
-    public void editElection(String startDate, String endDate, String title, String description) throws RemoteException {
-
-    }
-
-    public void endElection(String startDate, String endDate, String title, String description) throws RemoteException {
-
-    }
-
 
     public void check_results() throws RemoteException {
     }
@@ -60,7 +53,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     public static void main(String args[]) {
-        String a;
+        String command;
+        pessoas = new ArrayList<>();
 
         System.getProperties().put("java.security.policy", "policy.all");
         System.setSecurityManager(new RMISecurityManager());
@@ -69,14 +63,16 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         BufferedReader reader = new BufferedReader(input);
 
         try {
-            //User user = new User();
             RMIServer server = new RMIServer();
 
             Registry r = LocateRegistry.createRegistry(7001);
             r.rebind("Server", server);
             System.out.println("RMI Server ready.");
-        } catch (Exception re) {
-            System.out.println("Exception in HelloImpl.main: " + re);
+            while (true) {
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
