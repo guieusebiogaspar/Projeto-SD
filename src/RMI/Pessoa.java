@@ -3,6 +3,7 @@ package RMI;
 import java.io.Serializable;
 
 public class Pessoa implements Serializable {
+    private String tipo;
     private String nome;
     private String nickname;
     private String password;
@@ -20,6 +21,7 @@ public class Pessoa implements Serializable {
     /**
      * Construtor do objeto Pessoa
      *
+     * @param tipo - tipo da pessoa
      * @param nome - nome da pessoa
      * @param nickname - nickname da pessoa
      * @param password - password da pessoa
@@ -28,7 +30,9 @@ public class Pessoa implements Serializable {
      * @param cc - numero do cc
      * @param validade - validade cc
      */
-    public Pessoa(String nome, String nickname, String password, String phone, String morada, String cc, String validade) {
+
+    public Pessoa(String tipo, String nome, String nickname, String password, String phone, String morada, String cc, String validade) {
+        this.tipo = tipo;
         this.nome = nome;
         this.nickname = nickname;
         this.password = password;
@@ -36,6 +40,14 @@ public class Pessoa implements Serializable {
         this.morada = morada;
         this.cc = cc;
         this.validade = validade;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
     }
 
     public String getNome() {
