@@ -60,7 +60,9 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return null;
     }
 
+
     public void check_results() throws RemoteException {
+
     }
 
     public void writeBD() throws RemoteException {
@@ -82,6 +84,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         BufferedReader reader = new BufferedReader(input);
 
         try {
+
             RMIServer server = new RMIServer();
 
             Registry r = LocateRegistry.createRegistry(7001);

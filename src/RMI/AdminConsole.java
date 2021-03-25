@@ -17,6 +17,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("[2] - Criar eleição");
         System.out.println("[3] - Editar eleição");
         System.out.println("[4] - Terminar eleição");
+        System.out.println("[5] - Consultar resultados de eleições passadas");
         System.out.println("[0] - Sair");
     }
 
@@ -34,6 +35,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             case "4":
                 terminaEleiçao(server);
                 break;
+            case "5":
+                //consultaResultados(server);
             default:
                 System.out.println("Opção Inválida");
         }
@@ -127,6 +130,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             if(eleição == null) {
                 System.out.println("Não existe nenhuma eleição com esse título. Tente novamente.");
             }
+
+            if(eleição.getAtiva() == true) {
+                System.out.println("A eleição " + eleição.getTitulo() + " está a decorrer, como tal, não pode ser editada");
+                eleição = null;
+            }
         }
 
         System.out.println("-- Dados da eleição --");
@@ -207,6 +215,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     System.out.println("Opção inválida");
             }
         }
+
+        //server.editarEleição(eleição);
+        System.out.println("Pessoa registada no servidor!");
     }
 
     public void terminaEleiçao(RMIServerInterface server) throws IOException {
