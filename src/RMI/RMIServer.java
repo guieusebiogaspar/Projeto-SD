@@ -1,5 +1,7 @@
 package RMI;
 
+import Multicast.MesaVoto;
+
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -13,6 +15,7 @@ import static java.lang.Thread.sleep;
 
 public class RMIServer extends UnicastRemoteObject implements RMIServerInterface{
     static AdminConsoleInterface admin;
+    static MesaVoto mesaVoto;
     private static ArrayList<Pessoa> pessoas;
     private static ArrayList<Eleição> eleições;
 
@@ -23,6 +26,14 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public void olaAdmin(AdminConsoleInterface adm) throws RemoteException {
         System.out.println("Admin entrou no server");
         admin = adm;
+    }
+
+    public void adeusAdmin() throws RemoteException {
+        System.out.println("Admin saiu do server");
+    }
+
+    public void olaMesaVoto(String mesa) throws RemoteException {
+        System.out.println("Mesa de voto entrou no server");
     }
 
     public void registar(Pessoa pessoa) throws RemoteException {
@@ -76,6 +87,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public static void main(String args[]) {
         String command;
         pessoas = new ArrayList<>();
+        eleições = new ArrayList<>();
 
         System.getProperties().put("java.security.policy", "policy.all");
         System.setSecurityManager(new RMISecurityManager());

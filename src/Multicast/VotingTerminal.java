@@ -23,14 +23,15 @@ public class VotingTerminal extends Thread {
             socket = new MulticastSocket(PORT);  // create socket and bind it
             InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
             socket.joinGroup(group);
+
             while (true) {
                 byte[] buffer = new byte[256];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
 
-                System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
+                //System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
                 String message = new String(packet.getData(), 0, packet.getLength());
-                System.out.println(message);
+                if(message.charAt(0) != '@') System.out.println(message);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -55,7 +56,7 @@ class MulticastUser extends Thread {
             socket = new MulticastSocket();  // create socket without binding it (only for sending)
             Scanner keyboardScanner = new Scanner(System.in);
             while (true) {
-                String readKeyboard = keyboardScanner.nextLine();
+                String readKeyboard = "@ " + keyboardScanner.nextLine();
                 byte[] buffer = readKeyboard.getBytes();
 
                 InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);

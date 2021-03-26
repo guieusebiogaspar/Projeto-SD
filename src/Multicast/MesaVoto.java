@@ -1,9 +1,21 @@
 package Multicast;
 
+import RMI.RMIServerInterface;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.MulticastSocket;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.io.IOException;
+import java.net.StandardSocketOptions;
+import java.rmi.ConnectException;
+import java.rmi.NotBoundException;
+import java.rmi.RMISecurityManager;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+
+import static java.net.SocketOptions.IP_MULTICAST_LOOP;
 
 public class MesaVoto extends Thread {
     private String MULTICAST_ADDRESS = "224.0.224.0";
@@ -11,35 +23,94 @@ public class MesaVoto extends Thread {
     private long SLEEP_TIME = 5000;
 
     public static void main(String[] args) {
-        MesaVoto server = new MesaVoto();
-        server.start();
+        MesaVoto mesa = new MesaVoto();
+        mesa.start();
+        MesaVotoRecebe recebe = new MesaVotoRecebe();
+        recebe.start();
     }
 
     public MesaVoto() {
-        super("Server " + (long) (Math.random() * 1000));
+        super("Mesa de Voto " + (long) (Math.random() * 1000));
+    }
+
+    public Integer tryParse(String text) {
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            System.out.println("Os números de cartão de cidadão só contêm números!");
+            return null;
+        }
     }
 
     public void run() {
+        System.getProperties().put("java.security.policy", "policy.all");
+        System.setSecurityManager(new RMISecurityManager());
+
         MulticastSocket socket = null;
-        long counter = 0;
         System.out.println(this.getName() + " running...");
+        try {
+            RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
+            serverRMI.olaMesaVoto(this.getName());
+            System.out.println("Mesa de voto informou server que está ligado");
+        } catch (RemoteException | NotBoundException ex) {
+            System.out.println("Servidor não está online");
+            System.exit(0);
+        }
+
         try {
             socket = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
             InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
             socket.joinGroup(group); //join the multicast group
+
+            InputStreamReader input = new InputStreamReader(System.in);
+            BufferedReader reader = new BufferedReader(input);
+
             while (true) {
 
-                //new ReceiveServer(socket, this.getName());
-
-                String message = this.getName() + " packet " + counter++;
+                System.out.printf("Introduza o seu número de Cartão de Cidadão: ");
+                Integer cc = null;
+                while(cc == null) cc = tryParse(reader.readLine());
+                String message = "$ " + cc;
                 byte[] buffer = message.getBytes();
 
                 group = InetAddress.getByName(MULTICAST_ADDRESS);
                 //send package to the group
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, PORT);
+
                 socket.send(packet);
 
+
                 try { sleep((long) (Math.random() * SLEEP_TIME)); } catch (InterruptedException e) { }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            socket.close();
+        }
+    }
+}
+
+class MesaVotoRecebe extends Thread {
+    private String MULTICAST_ADDRESS = "224.0.224.0";
+    private int PORT = 4321;
+
+    public void run() {
+        MulticastSocket socket = null;
+        try {
+            socket = new MulticastSocket(PORT);  // create socket and bind it
+            InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
+            socket.joinGroup(group);
+
+            while (true) {
+                byte[] buffer = new byte[256];
+                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                socket.setOption(StandardSocketOptions.IP_MULTICAST_LOOP, true);
+                socket.receive(packet);
+
+                //System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
+                String message = new String(packet.getData(), 0, packet.getLength());
+                if(message.charAt(0) != '$') System.out.println(message);
             }
 
         } catch (IOException e) {
