@@ -17,6 +17,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("[2] - Criar eleição");
         System.out.println("[3] - Editar eleição");
         System.out.println("[4] - Terminar eleição");
+        System.out.println("[5] - Consultar resultados de eleições passadas");
         System.out.println("[0] - Sair");
     }
 
@@ -34,8 +35,23 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             case "4":
                 terminaEleiçao(server);
                 break;
+            case "5":
+                //consultaResultados(server);
+            case "0":
+                System.out.println("Encerrando admin console...");
+                server.adeusAdmin();
+                System.exit(0);
             default:
                 System.out.println("Opção Inválida");
+        }
+    }
+
+    public Integer tryParse(String text) {
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            System.out.println("Introduza um número inteiro!");
+            return null;
         }
     }
 
@@ -44,7 +60,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         BufferedReader reader = new BufferedReader(input);
 
         System.out.println("--------- Registar Pessoa ---------");
-        String tipo, nome, nickname, password, phone, morada, cc, validade;
+        String tipo, nome, nickname, password,morada, validade;
+        Integer phone = null, cc = null;
         System.out.print("Tipo (Estudante, Docente, Funcionário): ");
         tipo = reader.readLine();
         System.out.print("Nome: ");
@@ -54,11 +71,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("Password: ");
         password = reader.readLine();
         System.out.print("Phone: ");
-        phone = reader.readLine();
+        while(phone == null) phone = tryParse(reader.readLine());
         System.out.println("Morada: ");
         morada = reader.readLine();
         System.out.print("Cartão de cidadão: ");
-        cc = reader.readLine();
+        while(cc == null) cc = tryParse(reader.readLine());
         System.out.print("Validade cartão de cidadão: ");
         validade = reader.readLine();
 
@@ -73,28 +90,28 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         BufferedReader reader = new BufferedReader(input);
 
         System.out.println("--------- Criar Eleição ---------");
-        int diaInicio, mesInicio, anoInicio, horaInicio, minutoInicio, diaFim, mesFim, anoFim, horaFim, minutoFim;
+        Integer diaInicio = null, mesInicio = null, anoInicio = null, horaInicio = null, minutoInicio = null, diaFim = null, mesFim = null, anoFim = null, horaFim = null, minutoFim = null;
         String titulo, descrição;
         System.out.print("Dia de início da eleição: ");
-        diaInicio = Integer.parseInt(reader.readLine());
+        while(diaInicio == null) diaInicio = tryParse(reader.readLine());
         System.out.print("Mês de início da eleição: ");
-        mesInicio = Integer.parseInt(reader.readLine());
+        while(mesInicio == null) mesInicio = tryParse(reader.readLine());
         System.out.print("Ano de início da eleição: ");
-        anoInicio = Integer.parseInt(reader.readLine());
+        while(anoInicio == null) anoInicio = tryParse(reader.readLine());
         System.out.print("Hora de início da eleição: ");
-        horaInicio = Integer.parseInt(reader.readLine());
+        while(horaInicio == null) horaInicio = tryParse(reader.readLine());
         System.out.print("Minuto de início da eleição: ");
-        minutoInicio = Integer.parseInt(reader.readLine());
+        while(minutoInicio == null) minutoInicio = tryParse(reader.readLine());
         System.out.print("Dia de fim da eleição: ");
-        diaFim = Integer.parseInt(reader.readLine());
+        while(diaFim == null) diaFim = tryParse(reader.readLine());
         System.out.print("Mês de fim da eleição: ");
-        mesFim = Integer.parseInt(reader.readLine());
+        while(mesFim == null) mesFim = tryParse(reader.readLine());
         System.out.print("Ano de fim da eleição: ");
-        anoFim = Integer.parseInt(reader.readLine());
+        while(anoFim == null) anoFim = tryParse(reader.readLine());
         System.out.print("Hora de fim da eleição: ");
-        horaFim = Integer.parseInt(reader.readLine());
+        while(horaFim == null) horaFim = tryParse(reader.readLine());
         System.out.print("Minuto de fim da eleição: ");
-        minutoFim = Integer.parseInt(reader.readLine());
+        while(minutoFim == null) minutoFim = tryParse(reader.readLine());
         System.out.print("Título da eleição: ");
         titulo = reader.readLine();
         System.out.print("Descrição da eleição: ");
@@ -126,6 +143,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             eleição = server.getEleição(inputzito);
             if(eleição == null) {
                 System.out.println("Não existe nenhuma eleição com esse título. Tente novamente.");
+            }
+
+            if(eleição.getAtiva() == true) {
+                System.out.println("A eleição " + eleição.getTitulo() + " está a decorrer, como tal, não pode ser editada");
+                eleição = null;
             }
         }
 
@@ -167,14 +189,14 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     check = 1;
                     break;
                 case "3":
-                    int dia, mes, ano;
+                    Integer dia = null, mes = null, ano = null;
                     System.out.println("Data início atual: " + eleição.getInicio().toString());
                     System.out.print("Novo dia: ");
-                    dia = Integer.parseInt(reader.readLine());
+                    while(dia == null) dia = tryParse(reader.readLine());
                     System.out.print("Novo mes: ");
-                    mes = Integer.parseInt(reader.readLine());
+                    while(mes == null) mes = tryParse(reader.readLine());
                     System.out.println("Novo ano: ");
-                    ano = Integer.parseInt(reader.readLine());
+                    while(ano == null) ano = tryParse(reader.readLine());
 
                     eleição.getInicio().setDia(dia);
                     eleição.getInicio().setDia(mes);
@@ -184,13 +206,16 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     check = 1;
                     break;
                 case "4":
+                    dia = null;
+                    mes = null;
+                    ano = null;
                     System.out.println("Data final atual: " + eleição.getInicio().toString());
                     System.out.print("Novo dia: ");
-                    dia = Integer.parseInt(reader.readLine());
+                    while(dia == null) dia = tryParse(reader.readLine());
                     System.out.print("Novo mes: ");
-                    mes = Integer.parseInt(reader.readLine());
+                    while(mes == null) mes = tryParse(reader.readLine());
                     System.out.println("Novo ano: ");
-                    ano = Integer.parseInt(reader.readLine());
+                    while(ano == null) ano = tryParse(reader.readLine());
 
                     eleição.getFim().setDia(dia);
                     eleição.getFim().setDia(mes);
@@ -207,6 +232,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     System.out.println("Opção inválida");
             }
         }
+
+        //server.editarEleição(eleição);
+        System.out.println("Pessoa registada no servidor!");
     }
 
     public void terminaEleiçao(RMIServerInterface server) throws IOException {

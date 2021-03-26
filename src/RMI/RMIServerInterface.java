@@ -1,10 +1,16 @@
 package RMI;
 
+import Multicast.MesaVoto;
+
 import java.rmi.*;
 
 public interface RMIServerInterface extends Remote {
 
     public void olaAdmin(AdminConsoleInterface adm) throws RemoteException;
+
+    public void adeusAdmin() throws RemoteException;
+
+    public void olaMesaVoto(String mesa) throws RemoteException;
 
     public void registar(Pessoa pessoa) throws RemoteException;
 

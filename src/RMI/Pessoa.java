@@ -7,9 +7,9 @@ public class Pessoa implements Serializable {
     private String nome;
     private String nickname;
     private String password;
-    private String phone;
+    private int phone;
     private String morada;
-    private String cc;
+    private int cc;
     private String validade;
 
     /**
@@ -31,7 +31,7 @@ public class Pessoa implements Serializable {
      * @param validade - validade cc
      */
 
-    public Pessoa(String tipo, String nome, String nickname, String password, String phone, String morada, String cc, String validade) {
+    public Pessoa(String tipo, String nome, String nickname, String password, int phone, String morada, int cc, String validade) {
         this.tipo = tipo;
         this.nome = nome;
         this.nickname = nickname;
@@ -74,11 +74,11 @@ public class Pessoa implements Serializable {
         this.password = password;
     }
 
-    public String getPhone() {
+    public int getPhone() {
         return phone;
     }
 
-    public void setPhone(String phone) {
+    public void setPhone(int phone) {
         this.phone = phone;
     }
 
@@ -90,11 +90,11 @@ public class Pessoa implements Serializable {
         this.morada = morada;
     }
 
-    public String getCc() {
+    public int getCc() {
         return cc;
     }
 
-    public void setCc(String cc) {
+    public void setCc(int cc) {
         this.cc = cc;
     }
 
