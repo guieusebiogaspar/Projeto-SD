@@ -4,6 +4,7 @@ import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.registry.LocateRegistry;
+import java.util.ArrayList;
 
 public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInterface {
 
@@ -58,9 +59,10 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
     public void registar(RMIServerInterface server) throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
+        boolean check = true;
 
         System.out.println("--------- Registar Pessoa ---------");
-        String tipo, nome, nickname, password,morada, validade;
+        String tipo, nome, nickname, password,morada, validade, grupo;
         Integer phone = null, cc = null;
         System.out.print("Tipo (Estudante, Docente, Funcionário): ");
         tipo = reader.readLine();
@@ -68,18 +70,27 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         nome = reader.readLine();
         System.out.print("Nickname: ");
         nickname = reader.readLine();
-        System.out.println("Password: ");
+        System.out.print("Password: ");
         password = reader.readLine();
         System.out.print("Phone: ");
         while(phone == null) phone = tryParse(reader.readLine());
-        System.out.println("Morada: ");
+        System.out.print("Morada: ");
         morada = reader.readLine();
         System.out.print("Cartão de cidadão: ");
-        while(cc == null) cc = tryParse(reader.readLine());
+        while(check) {
+            while(cc == null) cc = tryParse(reader.readLine());
+            check = server.verificaCC(cc);
+            if(check) {
+                System.out.println("Esse cartão de cidadão pertence a outro cidadão!");
+            }
+        }
+
         System.out.print("Validade cartão de cidadão: ");
         validade = reader.readLine();
+        System.out.print("Departamento a que pertence: ");
+        grupo = reader.readLine();
 
-        Pessoa pessoa = new Pessoa(tipo, nome, nickname, password, phone, morada, cc, validade);
+        Pessoa pessoa = new Pessoa(tipo, nome, nickname, password, phone, morada, cc, validade, grupo);
 
         server.registar(pessoa);
         System.out.println("Pessoa registada no servidor!");
@@ -92,6 +103,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("--------- Criar Eleição ---------");
         Integer diaInicio = null, mesInicio = null, anoInicio = null, horaInicio = null, minutoInicio = null, diaFim = null, mesFim = null, anoFim = null, horaFim = null, minutoFim = null;
         String titulo, descrição;
+        String[] gruposInput;
+        ArrayList<String> grupos = null;
         System.out.print("Dia de início da eleição: ");
         while(diaInicio == null) diaInicio = tryParse(reader.readLine());
         System.out.print("Mês de início da eleição: ");
@@ -116,11 +129,14 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         titulo = reader.readLine();
         System.out.print("Descrição da eleição: ");
         descrição = reader.readLine();
+        System.out.print("Departamentos (sigla) que podem votar nesta eleição (separe por espaços o nome dos departamentos): ");
+        gruposInput = reader.readLine().strip().split(" ");
+        for(int i = 0; i < gruposInput.length; i++) grupos.add(gruposInput[i]);
 
         DataEleição inicio = new DataEleição(diaInicio, mesInicio, anoInicio, horaInicio, minutoInicio);
         DataEleição fim = new DataEleição(diaFim, mesFim, anoFim, horaFim, minutoFim);
 
-        Eleição eleição = new Eleição(inicio, fim, titulo, descrição, true);
+        Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true);
 
         server.criarEleição(eleição);
         System.out.println("Pessoa registada no servidor!");
@@ -156,11 +172,16 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("Descrição: " + eleição.getDescrição());
         System.out.println("Data início: " + eleição.getInicio());
         System.out.println("Data Fim: " + eleição.getFim());
+        System.out.println("Departamentos:");
+        for(int i = 0; i < eleição.getGrupos().size(); i++) {
+            System.out.println("- " + eleição.getGrupos().get(i));
+        }
         System.out.println("Qual o campo da eleição que pretende alterar?");
         System.out.println("[1] - Título");
         System.out.println("[2] - Descrição");
         System.out.println("[3] - Data início");
         System.out.println("[4] - Data fim");
+        System.out.println("[5] - Departamentos");
         System.out.println("[0] - Sair");
         inputzito = reader.readLine();
         if (inputzito.equals("0")) menu();
@@ -222,6 +243,57 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     eleição.getFim().setDia(ano);
 
                     System.out.println("Data de fim atualizada com sucesso!");
+                    check = 1;
+                    break;
+                case "5":
+                    System.out.println("Que operação deseja fazer?");
+                    System.out.println("[1] - Adicionar novo departamento");
+                    System.out.println("[2] - Remover novo departamento");
+                    System.out.println("[0] - Voltar");
+
+                    inputzito = reader.readLine();
+                    int check1 = 0;
+                    while(check1 == 0) {
+                        switch(inputzito){
+                            case "1":
+                                System.out.print("Departamento grupo: ");
+                                inputzito = reader.readLine();
+
+                                ArrayList<String> temp = eleição.getGrupos();
+                                temp.add(inputzito);
+                                eleição.setGrupos(temp);
+
+                                System.out.println("Departamento adicionado com sucesso!");
+                                check1 = 1;
+                                break;
+                            case "2":
+                                System.out.print("Departamento a remover: ");
+                                inputzito = reader.readLine();
+
+                                int removeu = 0;
+                                temp = eleição.getGrupos();
+                                for(int i = 0; i < temp.size(); i++) {
+                                    if(temp.get(i).equals(inputzito)) {
+                                        temp.remove(i);
+                                        eleição.setGrupos(temp);
+                                        System.out.println("Departamento removido com sucesso!");
+                                        removeu = 1;
+                                    }
+                                }
+
+                                if(removeu == 0) {
+                                    System.out.println("O departamento indicado não existe na lista de grupos desta eleição.");
+                                }
+                                check1 = 1;
+                                break;
+                            case "0":
+                                check1 = 1;
+                                break;
+                            default:
+                                System.out.println("Opção inválida");
+                        }
+                    }
+
                     check = 1;
                     break;
                 case "0":

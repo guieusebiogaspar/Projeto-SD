@@ -39,9 +39,11 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public void registar(Pessoa pessoa) throws RemoteException {
         pessoas.add(pessoa);
         System.out.println("----- Pessoas inscritas -----");
+        System.out.println("Nome\t\tCC");
         for(int i = 0; i < pessoas.size(); i++) {
-            System.out.println(pessoa.getNome());
+            System.out.println(pessoa.getNome() + " \t" + pessoa.getCc());
         }
+
     }
 
     public void criarEleição(Eleição eleição) throws RemoteException {
@@ -50,6 +52,31 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         for(int i = 0; i < eleições.size(); i++) {
             System.out.println(eleição.getTitulo());
         }
+    }
+
+    /**
+     * Método que vai verificar se o cc introduzido já existe na base de dados
+     *
+     * @param cc
+     *
+     *  @return true se o cc não existe e false se o cc ja existe
+     */
+    public boolean verificaCC(int cc) throws RemoteException {
+        for(int i = 0; i < pessoas.size(); i++) {
+            if(pessoas.get(i).getCc() == cc) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Pessoa verificaEleitor(int cc) throws RemoteException {
+        for(int i = 0; i < pessoas.size(); i++) {
+            if(pessoas.get(i).getCc() == cc) {
+                return pessoas.get(i);
+            }
+        }
+        return null;
     }
 
     /**
