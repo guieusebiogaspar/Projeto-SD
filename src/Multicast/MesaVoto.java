@@ -48,16 +48,12 @@ public class MesaVoto extends Thread {
 
         MulticastSocket socket = null;
         System.out.println(this.getName() + " running...");
+
         try {
             RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
             serverRMI.olaMesaVoto(this.getName());
             System.out.println("Mesa de voto informou server que está ligado");
-        } catch (RemoteException | NotBoundException ex) {
-            System.out.println("Servidor não está online");
-            System.exit(0);
-        }
 
-        try {
             socket = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
             InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
             socket.joinGroup(group); //join the multicast group
@@ -70,19 +66,28 @@ public class MesaVoto extends Thread {
                 System.out.printf("Introduza o seu número de Cartão de Cidadão: ");
                 Integer cc = null;
                 while(cc == null) cc = tryParse(reader.readLine());
-                String message = "$ " + cc;
-                byte[] buffer = message.getBytes();
 
-                group = InetAddress.getByName(MULTICAST_ADDRESS);
-                //send package to the group
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, PORT);
+                if(serverRMI.verificaEleitor(cc) != null) {
+                    String message = "$ Bem-vindo eleitor com o cc " + cc;
+                    byte[] buffer = message.getBytes();
 
-                socket.send(packet);
+                    group = InetAddress.getByName(MULTICAST_ADDRESS);
+                    //send package to the group
+                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, PORT);
+
+                    System.out.println("Redirecionando-o para uma mesa de voto");
+                    socket.send(packet);
+                } else {
+                    System.out.println("O cc introduzido não se encontra na nossa DB.");
+                }
 
 
                 try { sleep((long) (Math.random() * SLEEP_TIME)); } catch (InterruptedException e) { }
             }
 
+        } catch (RemoteException | NotBoundException ex) {
+            System.out.println("Servidor não está online");
+            System.exit(0);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

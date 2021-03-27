@@ -18,6 +18,10 @@ public interface RMIServerInterface extends Remote {
 
     public Eleição getEleição(String titulo) throws RemoteException;
 
+    public boolean verificaCC(int cc) throws RemoteException;
+
+    public Pessoa verificaEleitor(int cc) throws RemoteException;
+
     public void writeBD() throws RemoteException;
 
     public void readBD() throws RemoteException;

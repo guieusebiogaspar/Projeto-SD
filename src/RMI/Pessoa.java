@@ -11,6 +11,7 @@ public class Pessoa implements Serializable {
     private String morada;
     private int cc;
     private String validade;
+    private String grupo;
 
     /**
      * Construtor vazio do objeto Pessoa
@@ -29,9 +30,10 @@ public class Pessoa implements Serializable {
      * @param morada - moarda da pessoa
      * @param cc - numero do cc
      * @param validade - validade cc
+     * @param grupo - grupo a que pertence
      */
 
-    public Pessoa(String tipo, String nome, String nickname, String password, int phone, String morada, int cc, String validade) {
+    public Pessoa(String tipo, String nome, String nickname, String password, int phone, String morada, int cc, String validade, String grupo) {
         this.tipo = tipo;
         this.nome = nome;
         this.nickname = nickname;
@@ -40,6 +42,7 @@ public class Pessoa implements Serializable {
         this.morada = morada;
         this.cc = cc;
         this.validade = validade;
+        this.grupo = grupo;
     }
 
     public String getTipo() {
@@ -104,5 +107,13 @@ public class Pessoa implements Serializable {
 
     public void setValidade(String validade) {
         this.validade = validade;
+    }
+
+    public String getGrupo() {
+        return grupo;
+    }
+
+    public void setGrupo(String grupo) {
+        this.grupo = grupo;
     }
 }

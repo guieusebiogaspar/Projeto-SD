@@ -32,6 +32,26 @@ public class VotingTerminal extends Thread {
                 //System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
                 String message = new String(packet.getData(), 0, packet.getLength());
                 if(message.charAt(0) != '@') System.out.println(message);
+
+                Scanner keyboardScanner = new Scanner(System.in);
+                int tentativas = 3;
+
+                /*while(tentativas > 0) {
+                    String login = "";
+                    System.out.print("Username: ");
+                    login = login + keyboardScanner.nextLine();
+                    System.out.print("Username: ");
+                    login = login + keyboardScanner.nextLine();
+
+                    if(autenticação(Integer.parseInt(cc[1]))) {
+                        tentativas = 0;
+                        System.out.println("Aqui tens o boletim de voto");
+                    } else {
+                        tentativas -= 1;
+                        System.out.println("A autenticação falhou, tem mais " + tentativas + " tentativas");
+                    }
+                }*/
+
             }
         } catch (IOException e) {
             e.printStackTrace();
