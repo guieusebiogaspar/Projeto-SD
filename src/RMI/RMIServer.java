@@ -79,6 +79,17 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return null;
     }
 
+    public boolean loginUser(String username, String password) throws RemoteException {
+        for(int i = 0; i < pessoas.size(); i++) {
+            if(pessoas.get(i).getNickname().equals(username)) {
+                if(pessoas.get(i).getPassword().equals(password)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Método que vai receber do cliente o titulo de uma eleição.
      * Se a eleição existir na BD devolve o objeto da mesma, se não existir devolve null.

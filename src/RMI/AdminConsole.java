@@ -62,10 +62,31 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         boolean check = true;
 
         System.out.println("--------- Registar Pessoa ---------");
-        String tipo, nome, nickname, password,morada, validade, grupo;
+        String tipo = "", nome, nickname, password,morada, validade, grupo;
         Integer phone = null, cc = null;
-        System.out.print("Tipo (Estudante, Docente, Funcionário): ");
-        tipo = reader.readLine();
+        while(check) {
+            System.out.print("A que grupo pertence?");
+            System.out.println("[1] - Estudante");
+            System.out.println("[2] - Docente");
+            System.out.println("[3] - Funcionário");
+            tipo = reader.readLine();
+            switch(tipo) {
+                case "1":
+                    tipo = "Estudante";
+                    check = false;
+                    break;
+                case "2":
+                    tipo = "Docente";
+                    check = false;
+                    break;
+                case "3":
+                    tipo = "Funcionário";
+                    check = false;
+                    break;
+                default:
+                    System.out.println("Opção inválida");
+            }
+        }
         System.out.print("Nome: ");
         nome = reader.readLine();
         System.out.print("Nickname: ");
@@ -77,6 +98,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.print("Morada: ");
         morada = reader.readLine();
         System.out.print("Cartão de cidadão: ");
+        check = true;
         while(check) {
             while(cc == null) cc = tryParse(reader.readLine());
             check = server.verificaCC(cc);

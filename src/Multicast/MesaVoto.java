@@ -25,8 +25,6 @@ public class MesaVoto extends Thread {
     public static void main(String[] args) {
         MesaVoto mesa = new MesaVoto();
         mesa.start();
-        MesaVotoRecebe recebe = new MesaVotoRecebe();
-        recebe.start();
     }
 
     public MesaVoto() {
@@ -39,6 +37,42 @@ public class MesaVoto extends Thread {
         } catch (NumberFormatException e) {
             System.out.println("Os números de cartão de cidadão só contêm números!");
             return null;
+        }
+    }
+
+    /**
+     * Método que vai enviar um packet por UDP para o voting terminal
+     *
+     * @param socket
+     * @param message - mensagem a enviar no packet
+     * @param group
+     *
+     */
+    public void enviaServer(MulticastSocket socket, String message, InetAddress group) throws IOException {
+        byte[] buffer = message.getBytes();
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, PORT);
+        socket.send(packet);
+    }
+
+    /**
+     * Método que vai receber um packet por UDP de um voting terminal
+     *
+     * @param socket
+     *
+     * @return mensagem recebida
+     */
+    public String recebeServer(MulticastSocket socket) throws IOException {
+        // Corre até receber uma mensagem do servidor, onde dá return
+        while(true){
+            byte[] buffer = new byte[256];
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            socket.receive(packet);
+            String message = new String(packet.getData(), 0, packet.getLength());
+
+            // Se a mensagem não começar por @
+            if(message.charAt(0) != '$') {
+                return message;
+            }
         }
     }
 
@@ -69,14 +103,25 @@ public class MesaVoto extends Thread {
 
                 if(serverRMI.verificaEleitor(cc) != null) {
                     String message = "$ Bem-vindo eleitor com o cc " + cc;
-                    byte[] buffer = message.getBytes();
-
-                    group = InetAddress.getByName(MULTICAST_ADDRESS);
-                    //send package to the group
-                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, PORT);
 
                     System.out.println("Redirecionando-o para uma mesa de voto");
-                    socket.send(packet);
+                    enviaServer(socket, message, group);
+
+                    int entrou = 0;
+                    while(entrou == 0) {
+                        message = recebeServer(socket);
+                        String[] nickPassword = message.strip().split(" ");
+
+                        if(serverRMI.loginUser(nickPassword[1], nickPassword[2])) {
+                            message = "$ Logged in!";
+                            entrou = 1;
+                        } else {
+                            message = "$ Falhou a dar log in! Username ou Password incorretos!";
+                        }
+
+                        enviaServer(socket, message, group);
+                    }
+
                 } else {
                     System.out.println("O cc introduzido não se encontra na nossa DB.");
                 }
@@ -96,9 +141,14 @@ public class MesaVoto extends Thread {
     }
 }
 
-class MesaVotoRecebe extends Thread {
+class HandleTerminal extends Thread {
     private String MULTICAST_ADDRESS = "224.0.224.0";
     private int PORT = 4321;
+    MulticastSocket terminalSocket;
+
+    public HandleTerminal(MulticastSocket socket) {
+        terminalSocket = socket;
+    }
 
     public void run() {
         MulticastSocket socket = null;
@@ -110,7 +160,6 @@ class MesaVotoRecebe extends Thread {
             while (true) {
                 byte[] buffer = new byte[256];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                socket.setOption(StandardSocketOptions.IP_MULTICAST_LOOP, true);
                 socket.receive(packet);
 
                 //System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
