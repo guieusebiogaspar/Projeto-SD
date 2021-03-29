@@ -6,6 +6,7 @@ import java.rmi.*;
 
 public interface RMIServerInterface extends Remote {
 
+
     public void olaAdmin(AdminConsoleInterface adm) throws RemoteException;
 
     public void adeusAdmin() throws RemoteException;
