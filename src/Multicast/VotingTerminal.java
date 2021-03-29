@@ -15,6 +15,10 @@ public class VotingTerminal extends Thread {
         client.start();
     }
 
+    public VotingTerminal() {
+        super("Terminal de voto " + (long) (Math.random() * 1000));
+    }
+
     /**
      * Método que vai enviar um packet por UDP para a mesa de voto
      *
@@ -60,14 +64,33 @@ public class VotingTerminal extends Thread {
             InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
             socket.joinGroup(group);
 
-            while (true) {
-                String message = recebeCliente(socket);
+
+            while(true) {
+
+                boolean disponível = true;
+                String message;
+                while(disponível) {
+                    message = recebeCliente(socket);
+                    //System.out.println("1 - " + message);
+                    if(message.equals("$ Terminal disponível")) {
+                        enviaCliente(socket, "@ " + this.getName(), group);
+                        message = recebeCliente(socket);
+                        //System.out.println("2 - " + message);
+                        if(message.equals("$ " + this.getName())) {
+                            disponível = false;
+                            message = "@ Confirmação: Terminal encontrado";
+                            enviaCliente(socket, message, group);
+                        }
+                    }
+                }
+
+                message = recebeCliente(socket);
                 System.out.println(message);
 
                 Scanner keyboardScanner = new Scanner(System.in);
                 int tentativas = 3;
 
-                while(tentativas > 0) {
+                while (tentativas > 0) {
                     String login = "@ ";
                     System.out.print("Username: ");
                     login = login + keyboardScanner.nextLine() + " ";
@@ -79,26 +102,28 @@ public class VotingTerminal extends Thread {
                     message = recebeCliente(socket);
 
 
-                    if(message.equals("$ Logged in!")) {
+                    if (message.equals("$ Logged in!")) {
                         System.out.println(message);
                         tentativas = 0;
                         System.out.println("Aqui tens o boletim de voto");
                     } else {
                         System.out.println(message);
                         tentativas -= 1;
-                        if(tentativas > 0) {
+                        if (tentativas > 0) {
                             System.out.println("A autenticação falhou, tem mais " + tentativas + " tentativas");
                         } else {
                             System.out.println("Falhou na autenticação 3 vezes... Dirija-se à mesa de voto outra vez se quiser votar");
                         }
                     }
                 }
-
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            System.out.println("A fechar socket voting terminal");
             socket.close();
         }
     }
+
 }

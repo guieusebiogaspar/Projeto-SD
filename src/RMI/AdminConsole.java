@@ -65,7 +65,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         String tipo = "", nome, nickname, password,morada, validade, grupo;
         Integer phone = null, cc = null;
         while(check) {
-            System.out.print("A que grupo pertence?");
+            System.out.println("A que grupo pertence?");
             System.out.println("[1] - Estudante");
             System.out.println("[2] - Docente");
             System.out.println("[3] - Funcionário");
@@ -104,10 +104,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             check = server.verificaCC(cc);
             if(check) {
                 System.out.println("Esse cartão de cidadão pertence a outro cidadão!");
+                cc = null;
             }
         }
 
-        System.out.print("Validade cartão de cidadão: ");
+        System.out.print("Validade cartão de cidadão (MM/AA): ");
         validade = reader.readLine();
         System.out.print("Departamento a que pertence: ");
         grupo = reader.readLine();
