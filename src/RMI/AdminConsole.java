@@ -376,7 +376,10 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 readCommand(server, command);
             }
 
-        } catch (Exception e) {
+        } catch (RemoteException | NotBoundException ex) {
+            System.out.println("Servidor não está online");
+            System.exit(0);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
