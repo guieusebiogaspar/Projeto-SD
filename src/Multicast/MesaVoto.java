@@ -1,5 +1,6 @@
 package Multicast;
 
+import RMI.RMIServer;
 import RMI.RMIServerInterface;
 
 import java.io.BufferedReader;
@@ -40,6 +41,70 @@ public class MesaVoto extends Thread {
         }
     }
 
+    public void run() {
+        System.getProperties().put("java.security.policy", "policy.all");
+        System.setSecurityManager(new RMISecurityManager());
+
+        MulticastSocket socket = null;
+        System.out.println(this.getName() + " running...");
+
+        try {
+            RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
+            serverRMI.olaMesaVoto(this.getName());
+            System.out.println("Mesa de voto informou server que está ligado");
+
+            socket = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
+            InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
+            socket.joinGroup(group); //join the multicast group
+
+            InputStreamReader input = new InputStreamReader(System.in);
+            BufferedReader reader = new BufferedReader(input);
+
+            while (true) {
+
+                System.out.printf("Introduza o seu número de Cartão de Cidadão: ");
+                Integer cc = null;
+                while(cc == null) cc = tryParse(reader.readLine());
+
+                if(serverRMI.verificaEleitor(cc) != null) {
+                    System.out.println("Cartão de cidadão válido!");
+                    new HandleTerminal(socket, serverRMI, group, cc);
+                } else {
+                    System.out.println("O cc introduzido não se encontra na nossa DB.");
+                }
+
+
+                try { sleep((long) (Math.random() * SLEEP_TIME)); } catch (InterruptedException e) { }
+            }
+
+        } catch (RemoteException | NotBoundException ex) {
+            System.out.println("Servidor não está online");
+            System.exit(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println("A fechar socket Mesa de voto");
+            socket.close();
+        }
+    }
+}
+
+class HandleTerminal extends Thread {
+    private String MULTICAST_ADDRESS = "224.0.224.0";
+    private int PORT = 4321;
+    MulticastSocket terminalSocket;
+    RMIServerInterface serverRMI;
+    InetAddress group;
+    int cc;
+
+    public HandleTerminal(MulticastSocket socket, RMIServerInterface server, InetAddress grupo, int cartão) {
+        this.terminalSocket = socket;
+        this.serverRMI = server;
+        this.group = grupo;
+        this.cc = cartão;
+        this.start();
+    }
+
     /**
      * Método que vai enviar um packet por UDP para o voting terminal
      *
@@ -77,100 +142,62 @@ public class MesaVoto extends Thread {
     }
 
     public void run() {
-        System.getProperties().put("java.security.policy", "policy.all");
-        System.setSecurityManager(new RMISecurityManager());
-
-        MulticastSocket socket = null;
-        System.out.println(this.getName() + " running...");
-
         try {
-            RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
-            serverRMI.olaMesaVoto(this.getName());
-            System.out.println("Mesa de voto informou server que está ligado");
 
-            socket = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
-            InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
-            socket.joinGroup(group); //join the multicast group
+            String message = "$ Terminal disponível";
+            String terminal = null;
 
-            InputStreamReader input = new InputStreamReader(System.in);
-            BufferedReader reader = new BufferedReader(input);
+            System.out.println("Redirecionando-o para um terminal de voto");
 
-            while (true) {
+            // Vê que terminais estão à espera da mensagem "Terminal Disponível"
+            enviaServer(terminalSocket, message, group);
+            // Os que estiverem disponíveis enviam mensagem com o seu id. A mesa de voto capta um dos terminais.
+            while(terminal == null) {
+                terminal = recebeServer(terminalSocket);
+            }
+            //System.out.println("1 - " + terminal);
+            terminal = terminal.replaceFirst("@", "\\$");
+            // Avisa os terminais qual dos terminais captou
+            enviaServer(terminalSocket, terminal, group);
+            // O terminal informa que está pronto a ser utilizado
+            message = null;
+            while(message == null) {
+                message = recebeServer(terminalSocket);
+                if(!message.contains("@ Confirmação: ")) {
+                    message = null;
+                }
+            }
+            //System.out.println("2 - " + message);
 
-                System.out.printf("Introduza o seu número de Cartão de Cidadão: ");
-                Integer cc = null;
-                while(cc == null) cc = tryParse(reader.readLine());
+            if(message.equals("@ Confirmação: Terminal encontrado")) {
+                System.out.println("Será dirigido para " + terminal.replaceFirst("\\$", "o"));
 
-                if(serverRMI.verificaEleitor(cc) != null) {
-                    String message = "$ Bem-vindo eleitor com o cc " + cc;
+                message = "$ Bem-vindo eleitor com o cc " + cc;
+                enviaServer(terminalSocket, message, group);
 
-                    System.out.println("Redirecionando-o para uma mesa de voto");
-                    enviaServer(socket, message, group);
+                int entrou = 0;
+                while(entrou == 0) {
+                    message = recebeServer(terminalSocket);
+                    String[] nickPassword = message.strip().split(" ");
 
-                    int entrou = 0;
-                    while(entrou == 0) {
-                        message = recebeServer(socket);
-                        String[] nickPassword = message.strip().split(" ");
-
-                        if(serverRMI.loginUser(nickPassword[1], nickPassword[2])) {
-                            message = "$ Logged in!";
-                            entrou = 1;
-                        } else {
-                            message = "$ Falhou a dar log in! Username ou Password incorretos!";
-                        }
-
-                        enviaServer(socket, message, group);
+                    if(serverRMI.loginUser(nickPassword[1], nickPassword[2])) {
+                        message = "$ Logged in!";
+                        entrou = 1;
+                    } else {
+                        message = "$ Falhou a dar log in! Username ou Password incorretos!";
                     }
 
-                } else {
-                    System.out.println("O cc introduzido não se encontra na nossa DB.");
+                    enviaServer(terminalSocket, message, group);
                 }
-
-
-                try { sleep((long) (Math.random() * SLEEP_TIME)); } catch (InterruptedException e) { }
             }
-
-        } catch (RemoteException | NotBoundException ex) {
-            System.out.println("Servidor não está online");
-            System.exit(0);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            socket.close();
-        }
-    }
-}
-
-class HandleTerminal extends Thread {
-    private String MULTICAST_ADDRESS = "224.0.224.0";
-    private int PORT = 4321;
-    MulticastSocket terminalSocket;
-
-    public HandleTerminal(MulticastSocket socket) {
-        terminalSocket = socket;
-    }
-
-    public void run() {
-        MulticastSocket socket = null;
-        try {
-            socket = new MulticastSocket(PORT);  // create socket and bind it
-            InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
-            socket.joinGroup(group);
-
-            while (true) {
-                byte[] buffer = new byte[256];
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                socket.receive(packet);
-
-                //System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
-                String message = new String(packet.getData(), 0, packet.getLength());
-                if(message.charAt(0) != '$') System.out.println(message);
+            else {
+                System.out.println("Não froam encontrados terminais disponíveis, tente novamente mais tarde");
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            socket.close();
+            System.out.println("A sair de handleTerminal");
         }
     }
 }

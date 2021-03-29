@@ -26,6 +26,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public void olaAdmin(AdminConsoleInterface adm) throws RemoteException {
         System.out.println("Admin entrou no server");
         admin = adm;
+        //admin.olaServidor
     }
 
     public void adeusAdmin() throws RemoteException {
@@ -41,7 +42,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         System.out.println("----- Pessoas inscritas -----");
         System.out.println("Nome\t\tCC");
         for(int i = 0; i < pessoas.size(); i++) {
-            System.out.println(pessoa.getNome() + " \t" + pessoa.getCc());
+            System.out.println(pessoas.get(i).getNome() + " \t" + pessoas.get(i).getCc());
         }
 
     }
@@ -50,7 +51,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         eleições.add(eleição);
         System.out.println("----- Eleições criadas -----");
         for(int i = 0; i < eleições.size(); i++) {
-            System.out.println(eleição.getTitulo());
+            System.out.println(eleições.get(i).getTitulo());
         }
     }
 
