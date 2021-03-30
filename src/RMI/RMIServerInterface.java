@@ -22,7 +22,7 @@ public interface RMIServerInterface extends Remote {
 
     public Pessoa verificaEleitor(int cc) throws RemoteException;
 
-    public boolean loginUser(String username, String password) throws RemoteException;
+    public boolean loginUser(String username, String password, int cc) throws RemoteException;
 
     public void writeBD() throws RemoteException;
 
