@@ -92,10 +92,10 @@ public class MesaVoto extends Thread {
 class HandleTerminal extends Thread {
     private String MULTICAST_ADDRESS = "224.0.224.0";
     private int PORT = 4321;
-    MulticastSocket terminalSocket;
-    RMIServerInterface serverRMI;
-    InetAddress group;
-    int cc;
+    private MulticastSocket terminalSocket;
+    private RMIServerInterface serverRMI;
+    private InetAddress group;
+    private int cc;
 
     public HandleTerminal(MulticastSocket socket, RMIServerInterface server, InetAddress grupo, int cartão) {
         this.terminalSocket = socket;
@@ -141,33 +141,35 @@ class HandleTerminal extends Thread {
         }
     }
 
+    public String filterMessage(MulticastSocket socket, String expression) throws IOException {
+        String message = null;
+        while(message == null) {
+            message = recebeServer(socket);
+            if(!message.contains(expression)) {
+                message = null;
+            }
+        }
+
+        return message;
+    }
+
     public void run() {
         try {
-
             String message = "$ Terminal disponível";
-            String terminal = null;
 
             System.out.println("Redirecionando-o para um terminal de voto");
 
             // Vê que terminais estão à espera da mensagem "Terminal Disponível"
             enviaServer(terminalSocket, message, group);
             // Os que estiverem disponíveis enviam mensagem com o seu id. A mesa de voto capta um dos terminais.
-            while(terminal == null) {
-                terminal = recebeServer(terminalSocket);
-            }
-            //System.out.println("1 - " + terminal);
+            String terminal = filterMessage(terminalSocket, "@ Terminal");
+            System.out.println("1 - " + terminal);
             terminal = terminal.replaceFirst("@", "\\$");
             // Avisa os terminais qual dos terminais captou
             enviaServer(terminalSocket, terminal, group);
             // O terminal informa que está pronto a ser utilizado
-            message = null;
-            while(message == null) {
-                message = recebeServer(terminalSocket);
-                if(!message.contains("@ Confirmação: ")) {
-                    message = null;
-                }
-            }
-            //System.out.println("2 - " + message);
+            message = filterMessage(terminalSocket, "@ Confirmação: ");
+            System.out.println("2 - " + message);
 
             if(message.equals("@ Confirmação: Terminal encontrado")) {
                 System.out.println("Será dirigido para " + terminal.replaceFirst("\\$", "o"));
@@ -177,14 +179,18 @@ class HandleTerminal extends Thread {
 
                 int entrou = 0;
                 while(entrou == 0) {
-                    message = recebeServer(terminalSocket);
-                    String[] nickPassword = message.strip().split(" ");
+                    message = filterMessage(terminalSocket, "@ type | login");
 
-                    if(serverRMI.loginUser(nickPassword[1], nickPassword[2])) {
-                        message = "$ Logged in!";
+                    String[] nickPassword = message.strip().split(";");
+                    String nick = nickPassword[1].substring(nickPassword[1].lastIndexOf(" ") + 1);
+                    String password = nickPassword[2].substring(nickPassword[2].lastIndexOf(" ") + 1);
+
+                    if(serverRMI.loginUser(nick, password, cc)) {
+                        //message = "$ Logged in!";
+                        message = "$ type | status; logged | on; msg | Bem-vindo ao eVoting";
                         entrou = 1;
                     } else {
-                        message = "$ Falhou a dar log in! Username ou Password incorretos!";
+                        message = "$ type | status; logged | off; msg | Username ou Password incorretos!";
                     }
 
                     enviaServer(terminalSocket, message, group);

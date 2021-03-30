@@ -80,12 +80,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return null;
     }
 
-    public boolean loginUser(String username, String password) throws RemoteException {
+    public boolean loginUser(String username, String password, int cc) throws RemoteException {
         for(int i = 0; i < pessoas.size(); i++) {
-            if(pessoas.get(i).getNickname().equals(username)) {
-                if(pessoas.get(i).getPassword().equals(password)) {
-                    return true;
-                }
+            if(pessoas.get(i).getNickname().equals(username) && pessoas.get(i).getPassword().equals(password) && pessoas.get(i).getCc() == cc) {
+                return true;
             }
         }
         return false;
