@@ -180,8 +180,6 @@ class HandleTerminal extends Thread {
                 return;
             }
 
-            //terminal = terminal.replaceFirst("@", "\\$");
-
             // "@ type | search; available | yes; terminal | nr terminal"
             terminal = "$ type | ack; terminal | " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1);
 
