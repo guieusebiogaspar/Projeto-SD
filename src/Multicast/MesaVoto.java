@@ -155,26 +155,45 @@ class HandleTerminal extends Thread {
 
     public void run() {
         try {
-            String message = "$ Terminal disponível";
+            String message = "$ type | search; available | no";
 
             System.out.println("Redirecionando-o para um terminal de voto");
 
             // Vê que terminais estão à espera da mensagem "Terminal Disponível"
             enviaServer(terminalSocket, message, group);
+
             // Os que estiverem disponíveis enviam mensagem com o seu id. A mesa de voto capta um dos terminais.
-            String terminal = filterMessage(terminalSocket, "@ Terminal");
+            long start = System.currentTimeMillis();
+            long end = start + 122000;
+            boolean notFound = true;
+            String terminal = null;
+
+            // espera 5 segundos por alguma resposta de servidores
+            terminal = filterMessage(terminalSocket, "@ type | search;");
+
+            String[] decompose = terminal.strip().split(";");
+            String availability = decompose[1].substring(decompose[1].lastIndexOf(" ") + 1);
             System.out.println("1 - " + terminal);
-            terminal = terminal.replaceFirst("@", "\\$");
+
+            if (availability.equals("no")) {
+                System.out.println("Não existem terminais de voto disponíveis, tente mais tarde");
+                return;
+            }
+
+            // "@ type | search; available | yes; terminal | nr terminal"
+            terminal = "$ type | ack; terminal | " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1);
+
             // Avisa os terminais qual dos terminais captou
             enviaServer(terminalSocket, terminal, group);
+
             // O terminal informa que está pronto a ser utilizado
-            message = filterMessage(terminalSocket, "@ Confirmação: ");
+            message = filterMessage(terminalSocket, "@ type | confirmation; found | yes");
             System.out.println("2 - " + message);
 
-            if(message.equals("@ Confirmação: Terminal encontrado")) {
-                System.out.println("Será dirigido para " + terminal.replaceFirst("\\$", "o"));
+            if(message.equals("@ type | confirmation; found | yes")) {
+                System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
 
-                message = "$ Bem-vindo eleitor com o cc " + cc;
+                message = "$ type | welcome; user | " + cc;
                 enviaServer(terminalSocket, message, group);
 
                 int entrou = 0;
@@ -203,7 +222,7 @@ class HandleTerminal extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            System.out.println("A sair de handleTerminal");
+            //System.out.println("A sair de handleTerminal");
         }
     }
 }
