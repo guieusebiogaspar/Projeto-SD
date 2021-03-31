@@ -40,7 +40,6 @@ public class VotingTerminal extends Thread {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, PORT);
         socket.send(packet);
     }
-
     /**
      * Método que vai receber um packet por UDP da mesa de voto
      *
