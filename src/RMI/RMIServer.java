@@ -10,14 +10,15 @@ import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
 
+import static java.lang.Thread.getDefaultUncaughtExceptionHandler;
 import static java.lang.Thread.sleep;
 
 
-public class RMIServer extends UnicastRemoteObject implements RMIServerInterface{
+public class RMIServer extends UnicastRemoteObject implements RMIServerInterface, Serializable{
     static AdminConsoleInterface admin;
     static MesaVoto mesaVoto;
-    private static ArrayList<Pessoa> pessoas;
-    private static ArrayList<Eleição> eleições;
+    private static ArrayList<Pessoa> pessoas = new ArrayList<>();
+    private static ArrayList<Eleição> eleições = new ArrayList<>();
 
     public RMIServer() throws RemoteException {
         super();
@@ -44,7 +45,27 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         for(int i = 0; i < pessoas.size(); i++) {
             System.out.println(pessoas.get(i).getNome() + " \t" + pessoas.get(i).getCc());
         }
+        File f = new File("pessoas.obj");
+        if(f.exists() && f.isFile())
+        {
+            try{
+                FileInputStream fis = new FileInputStream(f);
+                ObjectInputStream ois = new ObjectInputStream(fis);
 
+                pessoas = (ArrayList<Pessoa>)ois.readObject();
+                ois.close();
+
+            }
+            catch(FileNotFoundException ex){
+                System.out.println("Erro a abrir ficheiro.");
+            }
+            catch(IOException ex){
+                System.out.println("Erro a ler ficheiro.");
+            }
+            catch(ClassNotFoundException ex){
+                System.out.println("Erro a converter objeto.");
+            }
+        }
     }
 
     public void criarEleição(Eleição eleição) throws RemoteException {
@@ -53,8 +74,88 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         for(int i = 0; i < eleições.size(); i++) {
             System.out.println(eleições.get(i).getTitulo());
         }
+
     }
 
+    public void terminarEleição(Eleição eleição) throws RemoteException
+    {
+        for(Eleição el: eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                el.setAtiva(false);
+            }
+        }
+    }
+    public void atualizaTitulo(Eleição eleição, String newTitle) throws RemoteException
+    {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                el.setTitulo(newTitle);
+            }
+        }
+    }
+    public void atualizaDescricao(Eleição eleição, String newDescri) throws RemoteException
+    {
+        for(Eleição el: eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                el.setDescrição(newDescri);
+            }
+        }
+    }
+    public void atualizaDataInicio(Eleição eleição, DataEleição newInicio) throws RemoteException
+    {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                el.setInicio(newInicio);
+            }
+        }
+    }
+    public void atualizaDataFim(Eleição eleição, DataEleição newFim) throws RemoteException
+    {
+        for(Eleição el: eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                el.setFim(newFim);
+            }
+        }
+    }
+    public void addGrupo(Eleição eleição, String grupo) throws RemoteException
+    {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                el.getGrupos().add(grupo);
+            }
+        }
+    }
+    public int rmvGrupo(Eleição eleição, String grupo) throws RemoteException
+    {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                for(String s : el.getGrupos())
+                {
+                    if(s.equals(grupo))
+                    {
+                        int i = el.getGrupos().indexOf(s);
+                        el.getGrupos().remove((i));
+                        return 1;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
     /**
      * Método que vai verificar se o cc introduzido já existe na base de dados
      *
@@ -98,14 +199,16 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      *  @return eleição - objeto eleição com o título dado como input
      */
     public Eleição getEleição(String titulo) throws RemoteException {
-        for(int i = 0; i < eleições.size(); i++) {
-            if(eleições.get(i).getTitulo().equals(titulo)) {
-                return eleições.get(i);
-            } else {
-                return null;
-            }
+        for(Eleição el: eleições)
+        {
+            if(el.getTitulo().equals(titulo))
+                return el;
         }
         return null;
+    }
+    public ArrayList<Eleição> getEleições() throws  RemoteException
+    {
+        return this.eleições;
     }
 
 
@@ -113,18 +216,59 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     }
 
-    public void writeBD() throws RemoteException {
-
+    public void writeBD(String name) throws RemoteException {
+        File f = new File(name);
+        try{
+            FileOutputStream fos = new FileOutputStream(f);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            //oos.writeObject(investigadores);
+            //oos.writeObject(gruposInvestigacao);
+            //oos.writeObject(publicacoes);
+            //oos.writeObject(publicacoesUltimos);
+            if(name.equals("pessoas.obj"))
+                oos.writeObject(pessoas);
+            if(name.equals("eleicoes.obj"))
+                oos.writeObject(eleições);
+            oos.close();
+        }
+        catch (FileNotFoundException ex){
+            System.out.println("Erro a criar ficheiro.");
+        }
+        catch(IOException ex){
+            System.out.println("Erro a escrever para o ficheiro.");
+        }
     }
 
-    public void readBD() throws RemoteException {
+    public void readBD(String name) throws RemoteException {
+        File f = new File(name);
+        if(f.exists() && f.isFile())
+        {
+            try{
+                FileInputStream fis = new FileInputStream(f);
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                if(name.equals("pessoas.obj"))
+                    pessoas = (ArrayList<Pessoa>)ois.readObject();
+                if(name.equals("eleicoes.obj"))
+                    eleições = (ArrayList<Eleição>)ois.readObject();
+                ois.close();
 
+            }
+            catch(FileNotFoundException ex){
+                System.out.println("Erro a abrir ficheiro.");
+            }
+            catch(IOException ex){
+                System.out.println("Erro a ler ficheiro.");
+            }
+            catch(ClassNotFoundException ex){
+                System.out.println("Erro a converter objeto.");
+            }
+        }
     }
 
     public static void main(String args[]) {
         String command;
-        pessoas = new ArrayList<>();
-        eleições = new ArrayList<>();
+        //pessoas = new ArrayList<>();
+        //eleições = new ArrayList<>();
 
         System.getProperties().put("java.security.policy", "policy.all");
         System.setSecurityManager(new RMISecurityManager());

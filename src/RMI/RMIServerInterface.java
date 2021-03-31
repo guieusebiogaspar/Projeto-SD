@@ -3,6 +3,7 @@ package RMI;
 import Multicast.MesaVoto;
 
 import java.rmi.*;
+import java.util.ArrayList;
 
 public interface RMIServerInterface extends Remote {
 
@@ -24,10 +25,15 @@ public interface RMIServerInterface extends Remote {
     public Pessoa verificaEleitor(int cc) throws RemoteException;
 
     public boolean loginUser(String username, String password, int cc) throws RemoteException;
-
-    public void writeBD() throws RemoteException;
-
-    public void readBD() throws RemoteException;
-
+    public void atualizaDescricao(Eleição eleição, String newDescri) throws RemoteException;
+    public void atualizaDataInicio(Eleição eleição, DataEleição newInicio) throws RemoteException;
+    public void atualizaDataFim(Eleição eleição, DataEleição newFim) throws RemoteException;
+    public void addGrupo(Eleição eleição, String grupo) throws RemoteException;
+    public int rmvGrupo(Eleição eleição, String grupo) throws RemoteException;
+    public void writeBD(String name) throws RemoteException;
+    public void atualizaTitulo(Eleição eleição, String newTitle) throws RemoteException;
+    public void readBD(String name) throws RemoteException;
+    public ArrayList<Eleição> getEleições() throws  RemoteException;
+    public void terminarEleição(Eleição eleição) throws RemoteException;
     public void check_results() throws RemoteException;
 }

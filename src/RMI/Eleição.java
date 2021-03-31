@@ -21,7 +21,6 @@ public class Eleição implements Serializable {
      */
     public Eleição() {
     }
-
     /**
      * Construtor do objeto Eleição
      *
@@ -82,7 +81,7 @@ public class Eleição implements Serializable {
     }
 
     public Boolean getAtiva() {
-        return ativa;
+        return this.ativa;
     }
 
     public void setAtiva(Boolean ativa) {
