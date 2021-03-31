@@ -77,6 +77,8 @@ public class VotingTerminal extends Thread {
     public void run() {
         MulticastSocket socket = null;
         System.out.println("Terminal " + this.getName() + " ready...");
+        System.setProperty("java.net.preferIPv4Stack", "true");
+
         try {
             socket = new MulticastSocket(PORT);  // create socket and bind it
             InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);

@@ -42,14 +42,15 @@ public class MesaVoto extends Thread {
     }
 
     public void run() {
-        System.getProperties().put("java.security.policy", "policy.all");
-        System.setSecurityManager(new RMISecurityManager());
+        //System.getProperties().put("java.security.policy", "policy.all");
+        //System.setSecurityManager(new RMISecurityManager());
+        System.setProperty("java.net.preferIPv4Stack", "true");
 
         MulticastSocket socket = null;
         System.out.println(this.getName() + " running...");
 
         try {
-            RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
+            RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171",7001).lookup("Server");
             serverRMI.olaMesaVoto(this.getName());
             System.out.println("Mesa de voto informou server que está ligado");
 
@@ -171,7 +172,7 @@ class HandleTerminal extends Thread {
             // espera 5 segundos por alguma resposta de servidores
             terminal = filterMessage(terminalSocket, "@ type | search;");
 
-            String[] decompose = terminal.strip().split(";");
+            String[] decompose = terminal.split(";");
             String availability = decompose[1].substring(decompose[1].lastIndexOf(" ") + 1);
             System.out.println("1 - " + terminal);
 
@@ -200,7 +201,7 @@ class HandleTerminal extends Thread {
                 while(entrou == 0) {
                     message = filterMessage(terminalSocket, "@ type | login");
 
-                    String[] nickPassword = message.strip().split(";");
+                    String[] nickPassword = message.split(";");
                     String nick = nickPassword[1].substring(nickPassword[1].lastIndexOf(" ") + 1);
                     String password = nickPassword[2].substring(nickPassword[2].lastIndexOf(" ") + 1);
 

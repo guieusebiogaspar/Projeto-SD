@@ -272,6 +272,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
         System.getProperties().put("java.security.policy", "policy.all");
         System.setSecurityManager(new RMISecurityManager());
+        System.setProperty("java.rmi.server.hostname", "192.168.1.171");
+
 
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
