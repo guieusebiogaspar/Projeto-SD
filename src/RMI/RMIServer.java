@@ -27,11 +27,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public void olaAdmin(AdminConsoleInterface adm) throws RemoteException {
         System.out.println("Admin entrou no server");
         admin = adm;
-        //admin.olaServidor
+        admin.olaServidor();
     }
 
     public void adeusAdmin() throws RemoteException {
         System.out.println("Admin saiu do server");
+        admin.adeusServidor();
     }
 
     public void olaMesaVoto(String mesa) throws RemoteException {
@@ -45,27 +46,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         for(int i = 0; i < pessoas.size(); i++) {
             System.out.println(pessoas.get(i).getNome() + " \t" + pessoas.get(i).getCc());
         }
-        File f = new File("pessoas.obj");
-        if(f.exists() && f.isFile())
-        {
-            try{
-                FileInputStream fis = new FileInputStream(f);
-                ObjectInputStream ois = new ObjectInputStream(fis);
-
-                pessoas = (ArrayList<Pessoa>)ois.readObject();
-                ois.close();
-
-            }
-            catch(FileNotFoundException ex){
-                System.out.println("Erro a abrir ficheiro.");
-            }
-            catch(IOException ex){
-                System.out.println("Erro a ler ficheiro.");
-            }
-            catch(ClassNotFoundException ex){
-                System.out.println("Erro a converter objeto.");
-            }
-        }
+        writeBD("pessoas.obj");
     }
 
     public void criarEleição(Eleição eleição) throws RemoteException {
@@ -74,6 +55,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         for(int i = 0; i < eleições.size(); i++) {
             System.out.println(eleições.get(i).getTitulo());
         }
+        writeBD("eleicoes.obj");
 
     }
 
@@ -86,6 +68,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 el.setAtiva(false);
             }
         }
+        writeBD("eleicoes.obj");
     }
     public void atualizaTitulo(Eleição eleição, String newTitle) throws RemoteException
     {
@@ -96,6 +79,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 el.setTitulo(newTitle);
             }
         }
+        writeBD("eleicoes.obj");
     }
     public void atualizaDescricao(Eleição eleição, String newDescri) throws RemoteException
     {
@@ -106,6 +90,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 el.setDescrição(newDescri);
             }
         }
+        writeBD("eleicoes.obj");
     }
     public void atualizaDataInicio(Eleição eleição, DataEleição newInicio) throws RemoteException
     {
@@ -116,6 +101,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 el.setInicio(newInicio);
             }
         }
+        writeBD("eleicoes.obj");
     }
     public void atualizaDataFim(Eleição eleição, DataEleição newFim) throws RemoteException
     {
@@ -126,6 +112,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 el.setFim(newFim);
             }
         }
+        writeBD("eleicoes.obj");
     }
     public void addGrupo(Eleição eleição, String grupo) throws RemoteException
     {
@@ -136,6 +123,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 el.getGrupos().add(grupo);
             }
         }
+        writeBD("eleicoes.obj");
     }
     public int rmvGrupo(Eleição eleição, String grupo) throws RemoteException
     {
@@ -149,6 +137,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                     {
                         int i = el.getGrupos().indexOf(s);
                         el.getGrupos().remove((i));
+                        writeBD("eleicoes.obj");
                         return 1;
                     }
                 }
@@ -206,12 +195,20 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
         return null;
     }
+
     public ArrayList<Eleição> getEleições() throws  RemoteException
     {
-        return this.eleições;
+        return eleições;
     }
-
-
+    public void mostraEleicoesAtivas() throws RemoteException{
+        for(Eleição el : getEleições())
+        {
+            System.out.println(el.getTitulo());
+        }
+    }
+    public ArrayList<Pessoa> getPessoas() throws RemoteException{
+        return pessoas;
+    }
     public void check_results() throws RemoteException {
 
     }
@@ -221,10 +218,6 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         try{
             FileOutputStream fos = new FileOutputStream(f);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            //oos.writeObject(investigadores);
-            //oos.writeObject(gruposInvestigacao);
-            //oos.writeObject(publicacoes);
-            //oos.writeObject(publicacoesUltimos);
             if(name.equals("pessoas.obj"))
                 oos.writeObject(pessoas);
             if(name.equals("eleicoes.obj"))
@@ -267,12 +260,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     public static void main(String args[]) {
         String command;
-        //pessoas = new ArrayList<>();
-        //eleições = new ArrayList<>();
 
         System.getProperties().put("java.security.policy", "policy.all");
         System.setSecurityManager(new RMISecurityManager());
-        System.setProperty("java.rmi.server.hostname", "192.168.1.171");
+        //System.setProperty("java.rmi.server.hostname", "192.168.1.171");
 
 
         InputStreamReader input = new InputStreamReader(System.in);
@@ -284,6 +275,46 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
             Registry r = LocateRegistry.createRegistry(7001);
             r.rebind("Server", server);
+            File f = new File("pessoas.obj");
+            if(f.exists() && f.isFile())
+            {
+                try{
+                    FileInputStream fis = new FileInputStream(f);
+                    ObjectInputStream ois = new ObjectInputStream(fis);
+                    pessoas = (ArrayList<Pessoa>)ois.readObject();
+                    ois.close();
+
+                }
+                catch(FileNotFoundException ex){
+                    System.out.println("Erro a abrir ficheiro.");
+                }
+                catch(IOException ex){
+                    System.out.println("Erro a ler ficheiro.");
+                }
+                catch(ClassNotFoundException ex){
+                    System.out.println("Erro a converter objeto.");
+                }
+            }
+            f = new File("eleicoes.obj");
+            if(f.exists() && f.isFile())
+            {
+                try{
+                    FileInputStream fis = new FileInputStream(f);
+                    ObjectInputStream ois = new ObjectInputStream(fis);
+                    eleições = (ArrayList<Eleição>)ois.readObject();
+                    ois.close();
+
+                }
+                catch(FileNotFoundException ex){
+                    System.out.println("Erro a abrir ficheiro.");
+                }
+                catch(IOException ex){
+                    System.out.println("Erro a ler ficheiro.");
+                }
+                catch(ClassNotFoundException ex){
+                    System.out.println("Erro a converter objeto.");
+                }
+            }
             System.out.println("RMI Server ready.");
             while (true) {
 
@@ -292,5 +323,4 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             e.printStackTrace();
         }
     }
-
 }

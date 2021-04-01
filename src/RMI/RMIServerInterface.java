@@ -17,13 +17,10 @@ public interface RMIServerInterface extends Remote {
     public void registar(Pessoa pessoa) throws RemoteException;
 
     public void criarEleição(Eleição eleição) throws RemoteException;
-
     public Eleição getEleição(String titulo) throws RemoteException;
-
     public boolean verificaCC(int cc) throws RemoteException;
-
+    public ArrayList<Pessoa> getPessoas() throws RemoteException;
     public Pessoa verificaEleitor(int cc) throws RemoteException;
-
     public boolean loginUser(String username, String password, int cc) throws RemoteException;
     public void atualizaDescricao(Eleição eleição, String newDescri) throws RemoteException;
     public void atualizaDataInicio(Eleição eleição, DataEleição newInicio) throws RemoteException;
@@ -33,6 +30,7 @@ public interface RMIServerInterface extends Remote {
     public void writeBD(String name) throws RemoteException;
     public void atualizaTitulo(Eleição eleição, String newTitle) throws RemoteException;
     public void readBD(String name) throws RemoteException;
+    public void mostraEleicoesAtivas() throws RemoteException;
     public ArrayList<Eleição> getEleições() throws  RemoteException;
     public void terminarEleição(Eleição eleição) throws RemoteException;
     public void check_results() throws RemoteException;
