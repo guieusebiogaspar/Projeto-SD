@@ -9,6 +9,7 @@ public class Eleição implements Serializable {
     private String titulo;
     private String descrição;
     private ArrayList<String> grupos;
+    private ArrayList<Lista> listas;
     private Boolean ativa;
 
 
@@ -31,15 +32,15 @@ public class Eleição implements Serializable {
      * @param grupos - grupos que podem votar na eleição
      * @param ativa - se a eleição esta ativa
      */
-    public Eleição(DataEleição inicio, DataEleição fim, String titulo, String descrição, ArrayList<String> grupos, Boolean ativa) {
+    public Eleição(DataEleição inicio, DataEleição fim, String titulo, String descrição, ArrayList<String> grupos, Boolean ativa, ArrayList<Lista> listas) {
         this.inicio = inicio;
         this.fim = fim;
         this.titulo = titulo;
         this.descrição = descrição;
         this.grupos = grupos;
         this.ativa = ativa;
+        this.listas = listas;
     }
-
     public DataEleição getInicio() {
         return inicio;
     }
@@ -86,5 +87,9 @@ public class Eleição implements Serializable {
 
     public void setAtiva(Boolean ativa) {
         this.ativa = ativa;
+    }
+
+    public ArrayList<Lista> getListas() {
+        return this.listas;
     }
 }
