@@ -12,6 +12,8 @@ public class Pessoa implements Serializable {
     private int cc;
     private String validade;
     private String grupo;
+    private String mesa;
+    private Boolean votou;
 
     /**
      * Construtor vazio do objeto Pessoa
@@ -43,6 +45,8 @@ public class Pessoa implements Serializable {
         this.cc = cc;
         this.validade = validade;
         this.grupo = grupo;
+        this.mesa = null;
+        this.votou = false;
     }
 
     public String getTipo() {
@@ -115,5 +119,13 @@ public class Pessoa implements Serializable {
 
     public void setGrupo(String grupo) {
         this.grupo = grupo;
+    }
+
+    public Boolean getVotou() {
+        return votou;
+    }
+
+    public String getMesa() {
+        return mesa;
     }
 }

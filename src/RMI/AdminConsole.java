@@ -13,15 +13,22 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
     }
 
     public void menu() {
-        System.out.println("--------- MENU ---------");
+        System.out.println("--------- MENU --------f-");
         System.out.println("[1] - Registar pessoa");
         System.out.println("[2] - Criar eleição");
         System.out.println("[3] - Editar eleição");
         System.out.println("[4] - Terminar eleição");
         System.out.println("[5] - Consultar resultados de eleições passadas");
+        System.out.println("[6] - Detalhes de eleições");
         System.out.println("[0] - Sair");
     }
-
+    public void olaServidor() throws RemoteException
+    {
+        System.out.println("Servidor diz ola ao admin");
+    }
+    public void adeusServidor() throws RemoteException{
+        System.out.println("Servidor diz adeus ao admin");
+    }
     public void readCommand(RMIServerInterface server, String command) throws IOException {
         switch (command) {
             case "1":
@@ -38,6 +45,10 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 break;
             case "5":
                 //consultaResultados(server);
+                break;
+            case "6":
+                showDetails(server);
+                break;
             case "0":
                 System.out.println("Encerrando admin console...");
                 server.adeusAdmin();
@@ -56,6 +67,108 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
     }
 
+    public void showDetails(RMIServerInterface server) throws IOException
+    {
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+        System.out.println("----- Detalhes de Eleições ------");
+        System.out.println("[1] - Ativas");
+        System.out.println("[2] - Terminadas");
+        System.out.println("[0] - Sair");
+
+        String inputzao = reader.readLine();
+
+        switch(inputzao){
+            case "1":
+                mostrarAtivas(server);
+                break;
+            case "2":
+                mostrarTerminadas(server);
+                break;
+            case "0":
+                return;
+            default:
+                System.out.println("Opção inválida");
+        }
+
+
+
+    }
+    public void mostrarAtivas(RMIServerInterface server) throws IOException{
+
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+
+        ArrayList<Eleição> eleicoes = server.getEleições();
+
+        for(Eleição el: eleicoes)
+        {
+            if(el.getAtiva())
+                System.out.println(el.getTitulo());
+
+        }
+        Eleição el = null;
+        while(el == null || !el.getAtiva())
+        {
+            System.out.println("De qual eleicao deseja ver as informações? (titulo)");
+            String tit = reader.readLine();
+            if(tit.equals("0"))
+                return;
+            el = server.getEleição(tit);
+            if(el == null || !el.getAtiva())
+                System.out.println("Por favor selecione uma eleição ativa");
+        }
+        System.out.println("---- ELEIÇÃO " + el.getTitulo() + "-----");
+        System.out.println("Descrição: " + el.getDescrição());
+        System.out.println("Data inicio: " + el.getInicio().toString());
+        System.out.println("Data fim: " + el.getFim().toString());
+        System.out.println("Grupos: ");
+        for(String s : el.getGrupos())
+            System.out.print(s + "\t");
+        System.out.println();
+        System.out.println("Dados Listas: ");
+        for(Lista l : el.getListas())
+            System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos());
+
+    }
+    public void mostrarTerminadas(RMIServerInterface server) throws IOException
+    {
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+
+        ArrayList<Eleição> eleicoes = server.getEleições();
+
+        for(Eleição el: eleicoes)
+        {
+            if(!el.getAtiva())
+                System.out.println(el.getTitulo());
+
+        }
+
+        Eleição el = null;
+        while(el == null || el.getAtiva())
+        {
+            System.out.println("De qual eleicao deseja ver as informações? (titulo) (0 para sair)");
+            String tit = reader.readLine();
+            if(tit.equals("0"))
+                return;
+            el = server.getEleição(tit);
+            if(el == null || !el.getAtiva())
+                System.out.println("Por favor selecione uma eleição terminada");
+
+        }
+        System.out.println("---- ELEIÇÃO " + el.getTitulo() + "-----");
+        System.out.println("Descrição: " + el.getDescrição());
+        System.out.println("Data inicio: " + el.getInicio().toString());
+        System.out.println("Data fim: " + el.getFim().toString());
+        System.out.println("Grupos: ");
+        for(String s : el.getGrupos())
+            System.out.print(s + "\t");
+        System.out.println();
+        System.out.println("Dados Listas: ");
+        for(Lista l : el.getListas())
+            System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos());
+    }
     public void registar(RMIServerInterface server) throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -128,6 +241,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         String titulo, descrição;
         String[] gruposInput;
         ArrayList<String> grupos = new ArrayList<>();
+        ArrayList<Lista> listas = new ArrayList<>();
         System.out.print("Dia de início da eleição: ");
         while(diaInicio == null) diaInicio = tryParse(reader.readLine());
         System.out.print("Mês de início da eleição: ");
@@ -160,9 +274,47 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         DataEleição inicio = new DataEleição(diaInicio, mesInicio, anoInicio, horaInicio, minutoInicio);
         DataEleição fim = new DataEleição(diaFim, mesFim, anoFim, horaFim, minutoFim);
 
-        Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true);
+        System.out.println("Quantas listas tem a eleição?");
+        Integer nListas = tryParse(reader.readLine());
+        for(int i = 0; i <nListas; i++)
+        {
+            int cond = 0;
+            String nome = null;
+            if(i == 0)
+            {
+                System.out.println("Lista: ");
+                nome = reader.readLine();
+                Lista l = new Lista(nome);
+                listas.add(l);
+            }
+            else{
+                while(cond == 0)
+                {
+                    int n_passou = 0;
+                    System.out.println("Lista: ");
+                    nome = reader.readLine();
+                    for(Lista a : listas)
+                    {
+                        if(a.getNome().equals(nome))
+                        {
+                            System.out.println("Já Há uma lista com esse nome!!");
+                            n_passou = 1;
+                        }
+                    }
+                    if(n_passou == 0)
+                        cond = 1;
+                }
+
+                Lista l = new Lista(nome);
+                listas.add(l);
+            }
+
+        }
+
+        Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true, listas);
 
         server.criarEleição(eleição);
+
         System.out.println("Eleição registada no servidor!");
     }
 
@@ -204,6 +356,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     for(int i = 0; i < eleição.getGrupos().size(); i++) {
                         System.out.println("- " + eleição.getGrupos().get(i));
                     }
+                    System.out.println("Listas:");
+                    for(Lista l : eleição.getListas())
+                        System.out.println(l.getNome());
                     System.out.println("Qual o campo da eleição que pretende alterar?");
                     System.out.println("[1] - Título");
                     System.out.println("[2] - Descrição");
@@ -380,6 +535,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         try {
             //RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
             RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
+
             server.olaAdmin(adminConsole);
             System.out.println("Admin informou server que está ligado");
             while (true) {
