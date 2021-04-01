@@ -27,7 +27,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public void olaAdmin(AdminConsoleInterface adm) throws RemoteException {
         System.out.println("Admin entrou no server");
         admin = adm;
-        //admin.olaServidor
+        //admin.olaServidor()
     }
 
     public void adeusAdmin() throws RemoteException {
@@ -272,7 +272,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
         System.getProperties().put("java.security.policy", "policy.all");
         System.setSecurityManager(new RMISecurityManager());
-        System.setProperty("java.rmi.server.hostname", "192.168.1.171");
+        //System.setProperty("java.rmi.server.hostname", "192.168.1.171");
 
 
         InputStreamReader input = new InputStreamReader(System.in);

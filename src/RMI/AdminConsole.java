@@ -378,7 +378,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         BufferedReader reader = new BufferedReader(input);
 
         try {
-            RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
+            //RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
+            RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
             server.olaAdmin(adminConsole);
             System.out.println("Admin informou server que está ligado");
             while (true) {
