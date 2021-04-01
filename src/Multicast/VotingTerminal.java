@@ -40,6 +40,7 @@ public class VotingTerminal extends Thread {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, PORT);
         socket.send(packet);
     }
+
     /**
      * Método que vai receber um packet por UDP da mesa de voto
      *
@@ -77,8 +78,6 @@ public class VotingTerminal extends Thread {
     public void run() {
         MulticastSocket socket = null;
         System.out.println("Terminal " + this.getName() + " ready...");
-        System.setProperty("java.net.preferIPv4Stack", "true");
-
         try {
             socket = new MulticastSocket(PORT);  // create socket and bind it
             InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
@@ -100,20 +99,19 @@ public class VotingTerminal extends Thread {
                         System.out.println("2 - " + message);
                         if (message.contains("$ type | ack; terminal | " + this.getName())) {
                             disponível = false;
-                            message = "@ type | confirmation; found | yes";
-                            enviaCliente(socket, message, group);
                         }
                     }
                 }
 
                 // Vai iniciar uma sessão para o votante votar
-                Session sessao = new Session(socket, group);
+                Session sessao = new Session();
                 Timer timer = new Timer();
 
                 // Após 120 segundos a thread fecha
                 timer.schedule(new ControlaTempoSessão(sessao, timer), 120000);
-                System.out.println("Tem 120 de segundos de sessão ativa!");
                 sessao.start();
+                System.out.println("Tem 120 de segundos de sessão ativa!");
+
 
                 long start = System.currentTimeMillis();
                 long end = start + 122000;
@@ -135,14 +133,8 @@ public class VotingTerminal extends Thread {
 }
 
 class Session extends Thread {
-    private InetAddress group;
-    private MulticastSocket socket;
+    private String MULTICAST_ADDRESS_SESSIONS = "224.0.224.1";
     private int PORT = 4321;
-
-    public Session(MulticastSocket socket, InetAddress group) {
-        this.socket = socket;
-        this.group = group;
-    }
 
     /**
      * Método que vai enviar um packet por UDP para a mesa de voto
@@ -193,11 +185,17 @@ class Session extends Thread {
     }
 
     public void run() {
+        MulticastSocket socketSession = null;
 
         try {
 
+            socketSession = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
+            InetAddress groupSession = InetAddress.getByName(MULTICAST_ADDRESS_SESSIONS);
+            socketSession.joinGroup(groupSession); //join the multicast group
+
             String message = null;
-            message = filterMessage(socket, "$ type | welcome;");
+            System.out.println("À espera da mensagem");
+            message = filterMessage(socketSession, "$ type | welcome;");
             System.out.println(message);
 
 
@@ -211,9 +209,9 @@ class Session extends Thread {
                 System.out.print("Password: ");
                 login = login + "password | " + keyboardScanner.nextLine();
 
-                enviaCliente(socket, login, group);
+                enviaCliente(socketSession, login, groupSession);
 
-                message = filterMessage(socket, "$ type | status; logged");
+                message = filterMessage(socketSession, "$ type | status; logged");
 
                 System.out.println(message);
 
