@@ -138,7 +138,7 @@ public class MesaVoto extends Thread {
                 }
 
 
-                try { sleep((long) (Math.random() * SLEEP_TIME)); } catch (InterruptedException e) { }
+                try { sleep(2000); } catch (InterruptedException e) { }
             }
 
         } catch (RemoteException | NotBoundException ex) {
@@ -245,8 +245,6 @@ class HandleSession extends Thread {
                 enviaServer(socketSession, message, groupSession);
             }
 
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

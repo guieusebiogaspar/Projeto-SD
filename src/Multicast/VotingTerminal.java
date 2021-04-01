@@ -2,10 +2,15 @@ package Multicast;
 
 import RMI.RMIServerInterface;
 
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Timer;
@@ -104,25 +109,20 @@ public class VotingTerminal extends Thread {
                 }
 
                 // Vai iniciar uma sessão para o votante votar
+                //Scanner keyboardScanner = new Scanner(System.in);
                 Session sessao = new Session();
                 Timer timer = new Timer();
 
                 // Após 120 segundos a thread fecha
-                timer.schedule(new ControlaTempoSessão(sessao, timer), 120000);
+                timer.schedule(new ControlaTempoSessão(sessao, timer), 10000);
                 sessao.start();
                 System.out.println("Tem 120 de segundos de sessão ativa!");
 
-
-                long start = System.currentTimeMillis();
-                long end = start + 122000;
-
-                // espera nesta thread os 120 segundos
-                while (System.currentTimeMillis() < end) {
-                }
-
+                sessao.join();
+                System.out.println("sessão fechou");
             }
 
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         } finally {
             System.out.println("A fechar socket voting terminal");
@@ -197,37 +197,50 @@ class Session extends Thread {
             System.out.println("À espera da mensagem");
             message = filterMessage(socketSession, "$ type | welcome;");
             System.out.println(message);
+            BufferedReader keyboardScanner = new BufferedReader(new InputStreamReader(System.in));
 
+            try {
+                int tentativas = 3;
 
-            Scanner keyboardScanner = new Scanner(System.in);
-            int tentativas = 3;
+                while (tentativas > 0) {
+                    String login = "@ type | login; ";
+                    System.out.print("Username: ");
 
-            while (tentativas > 0) {
-                String login = "@ type | login; ";
-                System.out.print("Username: ");
-                login = login + "username | " + keyboardScanner.nextLine() + "; ";
-                System.out.print("Password: ");
-                login = login + "password | " + keyboardScanner.nextLine();
+                    while(!keyboardScanner.ready()) {
+                        Thread.sleep(200);
+                    }
+                    login = login + "username | " + keyboardScanner.readLine() + "; ";
 
-                enviaCliente(socketSession, login, groupSession);
+                    System.out.print("Password: ");
+                    while(!keyboardScanner.ready()) {
+                        Thread.sleep(200);
+                    }
+                    login = login + "password | " + keyboardScanner.readLine();
 
-                message = filterMessage(socketSession, "$ type | status; logged");
+                    enviaCliente(socketSession, login, groupSession);
 
-                System.out.println(message);
+                    message = filterMessage(socketSession, "$ type | status; logged");
 
-                if (message.contains("logged | on")) {
-                    tentativas = 0;
-                    System.out.println("Aqui tens o boletim de voto");
-                } else {
-                    tentativas -= 1;
-                    if (tentativas > 0) {
-                        System.out.println("A autenticação falhou, tem mais " + tentativas + " tentativas");
+                    System.out.println(message);
+
+                    if (message.contains("logged | on")) {
+                        tentativas = 0;
+                        System.out.println("Aqui tens o boletim de voto");
                     } else {
-                        System.out.println("Falhou na autenticação 3 vezes... Dirija-se à mesa de voto outra vez se quiser votar");
+                        tentativas -= 1;
+                        if (tentativas > 0) {
+                            System.out.println("A autenticação falhou, tem mais " + tentativas + " tentativas");
+                        } else {
+                            System.out.println("Falhou na autenticação 3 vezes... Dirija-se à mesa de voto outra vez se quiser votar");
+                        }
                     }
                 }
+
+            } catch (IOException | InterruptedException e) {
             }
 
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -248,6 +261,19 @@ class ControlaTempoSessão extends TimerTask {
             System.out.println("\nO seu tempo de sesão expirou. Dirija-se de novo à Mesa de Voto.");
             sessao.interrupt();
             timer.cancel();
+
+            /*Scanner sc = new Scanner(System.in);
+            try {
+                Robot r2 = new Robot();
+                r2.keyPress(KeyEvent.VK_ENTER);
+                r2.keyRelease(KeyEvent.VK_ENTER);
+                /*int baza = 0;
+                while(baza == 0) {
+                    String inutil = sc.nextLine();
+                    r2.keyRelease(KeyEvent.VK_ENTER);
+                    baza = 1;
+                }*/
+
         }
     }
 }
