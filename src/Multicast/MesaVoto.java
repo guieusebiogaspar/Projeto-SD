@@ -225,21 +225,21 @@ class HandleSession extends Thread {
 
             String message = "$ type | welcome; user | " + cc;
             enviaServer(socketSession, message, groupSession);
-            System.out.println("Enviei a mensagem");
             int entrou = 0;
             while(entrou == 0) {
-                message = filterMessage(socketSession, "@ type | login");
+                message = filterMessage(socketSession, "@ type | login; cc | " + cc);
 
-                String[] nickPassword = message.split(";");
-                String nick = nickPassword[1].substring(nickPassword[1].lastIndexOf(" ") + 1);
-                String password = nickPassword[2].substring(nickPassword[2].lastIndexOf(" ") + 1);
+                String[] ccNickPassword = message.split(";");
+                int cartao = Integer.parseInt(ccNickPassword[1].substring(ccNickPassword[1].lastIndexOf(" ") + 1));
+                String nick = ccNickPassword[2].substring(ccNickPassword[2].lastIndexOf(" ") + 1);
+                String password = ccNickPassword[3].substring(ccNickPassword[3].lastIndexOf(" ") + 1);
 
-                if(serverRMI.loginUser(nick, password, cc)) {
-                    //message = "$ Logged in!";
-                    message = "$ type | status; logged | on; msg | Bem-vindo ao eVoting";
+                if(serverRMI.loginUser(nick, password, cc) && cc == cartao) {
+                    message = "$ type | status; cc | " + cc + "; logged | on; msg | Bem-vindo ao eVoting";
                     entrou = 1;
                 } else {
-                    message = "$ type | status; logged | off; msg | Username ou Password incorretos!";
+                    System.out.println("ACHOO EUUU");
+                    message = "$ type | status; cc | " + cc + "; logged | off; msg | Username ou Password incorretos!";
                 }
 
                 enviaServer(socketSession, message, groupSession);
