@@ -271,8 +271,6 @@ class ControlaTempoSessão extends TimerTask {
         this.timer = timer;
     }
 
-    public resetTimer()
-
     public void run() {
         if(sessao != null && sessao.isAlive()) {
             System.out.println("\nO seu tempo de sessão expirou. Dirija-se de novo à Mesa de Voto.");
