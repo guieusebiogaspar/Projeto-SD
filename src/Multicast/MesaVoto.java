@@ -141,7 +141,9 @@ public class MesaVoto extends Thread {
 
                 if(serverRMI.verificaEleitor(cc) != null) {
                     System.out.println("Cartão de cidadão válido!");
+
                     Eleição eleição = escolherEleição(serverRMI, departamento, cc);
+
                     System.out.println("Redirecionando-o para um terminal de voto");
                     String message = "$ type | search; available | no";
 
