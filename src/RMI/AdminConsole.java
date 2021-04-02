@@ -547,7 +547,25 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         } catch (RemoteException | NotBoundException ex) {
             System.out.println("Servidor não está online");
-            System.exit(0);
+            try{
+                RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+
+                server.olaAdmin(adminConsole);
+                System.out.println("Admin informou server que está ligado");
+                while (true) {
+                    menu();
+                    System.out.print("> ");
+                    command = reader.readLine();
+                    readCommand(server, command);
+                }
+            }
+            catch (RemoteException | NotBoundException ex1) {
+                System.out.println("Servidor não está online");
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            //System.exit(0);
         } catch (IOException e) {
             e.printStackTrace();
         }
