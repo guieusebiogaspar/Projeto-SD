@@ -12,27 +12,37 @@ import java.rmi.NotBoundException;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.util.ArrayList;
 
 
 public class MesaVoto extends Thread {
-    private String MULTICAST_ADDRESS_TERMINALS = "224.0.224.0";
+    //private String MULTICAST_ADDRESS_TERMINALS = "224.0.224.0";
+    private String MULTICAST_ADDRESS_TERMINALS;
     private int PORT = 4321;
     private long SLEEP_TIME = 5000;
+    private String departamento;
 
     public static void main(String[] args) {
-        MesaVoto mesa = new MesaVoto();
+        if(args.length == 0 || args.length == 1) {
+            System.out.println("java MesaVoto multicastAddress departamento");
+            System.exit(0);
+        }
+
+        MesaVoto mesa = new MesaVoto(args[0], args[1]);
         mesa.start();
     }
 
-    public MesaVoto() {
+    public MesaVoto(String address, String depart) {
         super("Mesa de Voto " + (long) (Math.random() * 1000));
+        this.MULTICAST_ADDRESS_TERMINALS = address;
+        this.departamento = depart;
     }
 
     public Integer tryParse(String text) {
         try {
             return Integer.parseInt(text);
         } catch (NumberFormatException e) {
-            System.out.println("Os números de cartão de cidadão só contêm números!");
+            System.out.println("Este campo só aceita números!");
             return null;
         }
     }
@@ -85,6 +95,22 @@ public class MesaVoto extends Thread {
         return message;
     }
 
+    public String escolherEleição(RMIServerInterface serverRMI, String departamento) throws IOException {
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+
+        ArrayList<String> eleições = new ArrayList<>();
+        System.out.println("-------- Eleições nesta mesa de voto --------");
+        for (int i = 0; i < eleições.size(); i++) {
+            System.out.println("" + (i+1) + " - " + eleições.get(i));
+        }
+        System.out.print("Introduza o número da eleição em que pretende votar: ");
+        Integer escolha = null;
+        while(escolha == null) escolha = tryParse(reader.readLine());
+
+        return eleições.get(escolha-1);
+    }
+
     public void run() {
         System.getProperties().put("java.security.policy", "policy.all");
         System.setSecurityManager(new RMISecurityManager());
@@ -113,6 +139,7 @@ public class MesaVoto extends Thread {
 
                 if(serverRMI.verificaEleitor(cc) != null) {
                     System.out.println("Cartão de cidadão válido!");
+                    String eleição = escolherEleição(serverRMI, departamento);
                     System.out.println("Redirecionando-o para um terminal de voto");
                     String message = "$ type | search; available | no";
 
