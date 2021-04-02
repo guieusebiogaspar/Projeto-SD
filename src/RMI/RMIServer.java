@@ -289,7 +289,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                     System.out.println("Erro a abrir ficheiro.");
                 }
                 catch(IOException ex){
-                    System.out.println("Erro a ler ficheiro.");
+                    System.out.println("Erro a ler ficheiro. Ainda nao existe");
                 }
                 catch(ClassNotFoundException ex){
                     System.out.println("Erro a converter objeto.");
@@ -309,7 +309,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                     System.out.println("Erro a abrir ficheiro.");
                 }
                 catch(IOException ex){
-                    System.out.println("Erro a ler ficheiro.");
+                    System.out.println("Erro a ler ficheiro. Ainda nao existe");
                 }
                 catch(ClassNotFoundException ex){
                     System.out.println("Erro a converter objeto.");
@@ -341,7 +341,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         System.out.println("Erro a abrir ficheiro.");
                     }
                     catch(IOException ex){
-                        System.out.println("Erro a ler ficheiro.");
+                        System.out.println("Erro a ler ficheiro. Ainda não existia");
                     }
                     catch(ClassNotFoundException ex){
                         System.out.println("Erro a converter objeto.");
@@ -361,7 +361,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         System.out.println("Erro a abrir ficheiro.");
                     }
                     catch(IOException ex){
-                        System.out.println("Erro a ler ficheiro.");
+                        System.out.println("Erro a ler ficheiro. Ainda não existia");
                     }
                     catch(ClassNotFoundException ex){
                         System.out.println("Erro a converter objeto.");

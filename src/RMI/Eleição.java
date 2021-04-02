@@ -1,5 +1,7 @@
 package RMI;
 
+import Multicast.MesaVoto;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -10,6 +12,8 @@ public class Eleição implements Serializable {
     private String descrição;
     private ArrayList<String> grupos;
     private ArrayList<Lista> listas;
+    private ArrayList<String> mesasVoto;
+    private ArrayList<String> quemPodeVotar;
     private Boolean ativa;
 
 
@@ -32,7 +36,7 @@ public class Eleição implements Serializable {
      * @param grupos - grupos que podem votar na eleição
      * @param ativa - se a eleição esta ativa
      */
-    public Eleição(DataEleição inicio, DataEleição fim, String titulo, String descrição, ArrayList<String> grupos, Boolean ativa, ArrayList<Lista> listas) {
+    public Eleição(DataEleição inicio, DataEleição fim, String titulo, String descrição, ArrayList<String> grupos, Boolean ativa, ArrayList<Lista> listas, ArrayList<String> mesasVoto, ArrayList<String> quemPodeVotar) {
         this.inicio = inicio;
         this.fim = fim;
         this.titulo = titulo;
@@ -40,6 +44,8 @@ public class Eleição implements Serializable {
         this.grupos = grupos;
         this.ativa = ativa;
         this.listas = listas;
+        this.mesasVoto = mesasVoto;
+        this.quemPodeVotar = quemPodeVotar;
     }
     public DataEleição getInicio() {
         return inicio;
@@ -91,5 +97,13 @@ public class Eleição implements Serializable {
 
     public ArrayList<Lista> getListas() {
         return this.listas;
+    }
+
+    public ArrayList<String> getMesasVoto() {
+        return mesasVoto;
+    }
+
+    public ArrayList<String> getQuemPodeVotar() {
+        return quemPodeVotar;
     }
 }
