@@ -1,5 +1,6 @@
 package Multicast;
 
+import RMI.Eleição;
 import RMI.RMIServer;
 import RMI.RMIServerInterface;
 
@@ -95,15 +96,16 @@ public class MesaVoto extends Thread {
         return message;
     }
 
-    public String escolherEleição(RMIServerInterface serverRMI, String departamento) throws IOException {
+    public Eleição escolherEleição(RMIServerInterface serverRMI, String departamento, int cc) throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
-        ArrayList<String> eleições = new ArrayList<>();
+        ArrayList<Eleição> eleições = serverRMI.filterEleições(departamento, cc);
         System.out.println("-------- Eleições nesta mesa de voto --------");
         for (int i = 0; i < eleições.size(); i++) {
-            System.out.println("" + (i+1) + " - " + eleições.get(i));
+            System.out.println("" + (i+1) + " - " + eleições.get(i).getTitulo());
         }
+
         System.out.print("Introduza o número da eleição em que pretende votar: ");
         Integer escolha = null;
         while(escolha == null) escolha = tryParse(reader.readLine());
@@ -139,7 +141,9 @@ public class MesaVoto extends Thread {
 
                 if(serverRMI.verificaEleitor(cc) != null) {
                     System.out.println("Cartão de cidadão válido!");
-                    String eleição = escolherEleição(serverRMI, departamento);
+
+                    Eleição eleição = escolherEleição(serverRMI, departamento, cc);
+
                     System.out.println("Redirecionando-o para um terminal de voto");
                     String message = "$ type | search; available | no";
 
@@ -160,7 +164,7 @@ public class MesaVoto extends Thread {
                     // Avisa os terminais qual dos terminais captou
                     enviaServer(socketFindTerminal, terminal, groupTerminal);
                     System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
-                    new HandleSession(serverRMI, cc);
+                    new HandleSession(serverRMI, cc, eleição);
 
                 } else {
                     System.out.println("O cc introduzido não se encontra na nossa DB.");
@@ -187,10 +191,12 @@ class HandleSession extends Thread {
     private int PORT = 4321;
     private RMIServerInterface serverRMI;
     private int cc;
+    private Eleição eleição;
 
-    HandleSession(RMIServerInterface server, int cartao) {
+    HandleSession(RMIServerInterface server, int cartao, Eleição eleição) {
         this.serverRMI = server;
         this.cc = cartao;
+        this.eleição = eleição;
         this.start();
     }
 
@@ -273,6 +279,8 @@ class HandleSession extends Thread {
 
                 enviaServer(socketSession, message, groupSession);
             }
+
+
 
         } catch (IOException e) {
             e.printStackTrace();

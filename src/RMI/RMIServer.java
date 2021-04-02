@@ -213,6 +213,43 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     }
 
+    /**
+     * Método que vai enviar a uma mesa de voto as eleições em que o eleitor identificado está autorizado a votar
+     *
+     * @param departamento - departamento onde está localizada a Mesa de Voto
+     * @param cc - Cartão de Cidadão do eleitor
+     *
+     * @return eleições que o eleitor pode votar
+     */
+    public ArrayList<Eleição> filterEleições(String departamento, int cc) throws RemoteException {
+        ArrayList<Eleição> filtradas = new ArrayList<>();
+        String tipo = null; // De que tipo é o Eleitor
+        String dep = null; // Departamento a que pertence o eleitor
+        for (int i = 0; i < pessoas.size(); i++) {
+            if(pessoas.get(i).getCc() == cc) {
+                tipo = pessoas.get(i).getTipo();
+                dep = pessoas.get(i).getGrupo();
+                break;
+            }
+        }
+
+        if(tipo != null && dep != null) {
+            for (int i = 0; i < eleições.size(); i++) {
+                // Se a eleição tiver a mesa de voto em questão
+                // Se a pessoa pertencer ao tipo de pessoas que pode votar (Estudantes, Docentes ou Funcionários)
+                // Se a pessoa pertence a um dos departamentos que podem votar na eleição
+                if(eleições.get(i).getMesasVoto().contains(departamento) &&
+                    eleições.get(i).getQuemPodeVotar().contains(tipo) &&
+                    eleições.get(i).getGrupos().contains(dep))
+                {
+                    filtradas.add(eleições.get(i));
+                }
+            }
+        }
+
+        return filtradas;
+    }
+
     public void writeBD(String name) throws RemoteException {
         File f = new File(name);
         try{
