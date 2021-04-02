@@ -1,6 +1,7 @@
 package RMI;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.registry.LocateRegistry;
@@ -129,6 +130,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("Dados Listas: ");
         for(Lista l : el.getListas())
             System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos());
+        System.out.println("Mesas de Voto: ");
+        for(String s : el.getMesasVoto())
+            System.out.println("Mesa voto " + s);
 
     }
     public void mostrarTerminadas(RMIServerInterface server) throws IOException
@@ -168,6 +172,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("Dados Listas: ");
         for(Lista l : el.getListas())
             System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos());
+        System.out.println("Mesas de Voto: ");
+        for(String s : el.getMesasVoto())
+            System.out.println("Mesa voto " + s);
     }
     public void registar(RMIServerInterface server) throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
@@ -242,6 +249,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         String[] gruposInput;
         ArrayList<String> grupos = new ArrayList<>();
         ArrayList<Lista> listas = new ArrayList<>();
+        ArrayList<String> mesas = new ArrayList<>();
+        ArrayList<String> opcoesVoto = new ArrayList<>();
         System.out.print("Dia de início da eleição: ");
         while(diaInicio == null) diaInicio = tryParse(reader.readLine());
         System.out.print("Mês de início da eleição: ");
@@ -310,8 +319,49 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             }
 
         }
-
-        Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true, listas);
+        System.out.println("Quantas mesas de voto irá ter esta eleição?");
+        nListas = tryParse(reader.readLine());
+        for(int i = 0; i < nListas; i++)
+        {
+            int cond = 0;
+            String nome = null;
+            if(i == 0){
+                System.out.print("Local da mesa de voto (ex. DEI): ");
+                nome = reader.readLine();
+                mesas.add(nome);
+            }
+            else {
+                while (cond == 0) {
+                    int n_passou = 0;
+                    System.out.println("Local da mesa de voto (ex. DEI): ");
+                    nome = reader.readLine();
+                    for (String a : mesas) {
+                        if (a.equals(nome)) {
+                            System.out.println("Já Há uma lista com esse nome!!");
+                            n_passou = 1;
+                        }
+                    }
+                    if (n_passou == 0)
+                        cond = 1;
+                }
+                mesas.add(nome);
+            }
+        }
+        System.out.println("Quais os grupos de pessoas que podem votar? (separe por espaços o número de opções que pretende)");
+        System.out.println("1 - Estudantes");
+        System.out.println("2 - Docentes");
+        System.out.println("3 - Funcionários");
+        String[] opcoes = reader.readLine().split(" ");
+        for(int i = 0; i < opcoes.length; i++)
+        {
+            if(opcoes[i].equals("1"))
+                opcoesVoto.add("Estudantes");
+            if(opcoes[i].equals("2"))
+                opcoesVoto.add("Docentes");
+            if(opcoes[i].equals("3"))
+                opcoesVoto.add("Funcionários");
+        }
+        Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true, listas, mesas, opcoesVoto);
 
         server.criarEleição(eleição);
 
