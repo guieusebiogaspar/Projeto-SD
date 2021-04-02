@@ -93,17 +93,29 @@ public class VotingTerminal extends Thread {
             while(true) {
 
                 boolean disponível = true;
+                int enviou = 0;
                 String message;
                 System.out.println("À espera de um votante...");
                 while (disponível) {
-                    message = recebeCliente(socket);
-                    System.out.println("1 - " + message);
-                    if (message.contains("$ type | search; available | no")) {
-                        enviaCliente(socket, "@ type | search; available | yes; terminal | " + this.getName(), group);
+                    if(enviou == 0) {
+                        message = recebeCliente(socket);
+                        System.out.println("1 - " + message);
+                        if (message.contains("$ type | search; available | no")) {
+                            enviaCliente(socket, "@ type | search; available | yes; terminal | " + this.getName(), group);
+                            enviou = 1;
+                            message = recebeCliente(socket);
+                            System.out.println("2 - " + message);
+                            if (message.contains("$ type | ack; terminal | " + this.getName())) {
+                                disponível = false;
+                                enviou = 0;
+                            }
+                        }
+                    } else {
                         message = recebeCliente(socket);
                         System.out.println("2 - " + message);
                         if (message.contains("$ type | ack; terminal | " + this.getName())) {
                             disponível = false;
+                            enviou = 0;
                         }
                     }
                 }
@@ -119,7 +131,6 @@ public class VotingTerminal extends Thread {
                 System.out.println("Tem 120 de segundos de sessão ativa!");
 
                 sessao.join();
-                System.out.println("sessão fechou");
             }
 
         } catch (IOException | InterruptedException e) {
@@ -135,6 +146,7 @@ public class VotingTerminal extends Thread {
 class Session extends Thread {
     private String MULTICAST_ADDRESS_SESSIONS = "224.0.224.1";
     private int PORT = 4321;
+
 
     /**
      * Método que vai enviar um packet por UDP para a mesa de voto
@@ -194,16 +206,19 @@ class Session extends Thread {
             socketSession.joinGroup(groupSession); //join the multicast group
 
             String message = null;
-            System.out.println("À espera da mensagem");
             message = filterMessage(socketSession, "$ type | welcome;");
             System.out.println(message);
+
+            String[] obterCC = message.split(";");
+            String cc = obterCC[1].substring(obterCC[1].lastIndexOf(" ") + 1);
+
             BufferedReader keyboardScanner = new BufferedReader(new InputStreamReader(System.in));
 
             try {
                 int tentativas = 3;
 
                 while (tentativas > 0) {
-                    String login = "@ type | login; ";
+                    String login = "@ type | login; cc | " + cc + ";";
                     System.out.print("Username: ");
 
                     while(!keyboardScanner.ready()) {
@@ -219,7 +234,7 @@ class Session extends Thread {
 
                     enviaCliente(socketSession, login, groupSession);
 
-                    message = filterMessage(socketSession, "$ type | status; logged");
+                    message = filterMessage(socketSession, "$ type | status; cc | " + cc + "; logged");
 
                     System.out.println(message);
 
@@ -256,24 +271,13 @@ class ControlaTempoSessão extends TimerTask {
         this.timer = timer;
     }
 
+    public resetTimer()
+
     public void run() {
         if(sessao != null && sessao.isAlive()) {
-            System.out.println("\nO seu tempo de sesão expirou. Dirija-se de novo à Mesa de Voto.");
+            System.out.println("\nO seu tempo de sessão expirou. Dirija-se de novo à Mesa de Voto.");
             sessao.interrupt();
             timer.cancel();
-
-            /*Scanner sc = new Scanner(System.in);
-            try {
-                Robot r2 = new Robot();
-                r2.keyPress(KeyEvent.VK_ENTER);
-                r2.keyRelease(KeyEvent.VK_ENTER);
-                /*int baza = 0;
-                while(baza == 0) {
-                    String inutil = sc.nextLine();
-                    r2.keyRelease(KeyEvent.VK_ENTER);
-                    baza = 1;
-                }*/
-
         }
     }
 }
