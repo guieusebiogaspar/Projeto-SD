@@ -640,24 +640,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
-
-        try {
-            //RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
-            RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
-
-            server.olaAdmin(adminConsole);
-            System.out.println("Admin informou server que está ligado");
-            while (true) {
-                menu();
-                System.out.print("> ");
-                command = reader.readLine();
-                readCommand(server, command);
-            }
-
-        } catch (RemoteException | NotBoundException ex) {
-            System.out.println("Servidor não está online");
-            try{
-                RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+        while(true)
+        {
+            try {
+                //RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
+                RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
 
                 server.olaAdmin(adminConsole);
                 System.out.println("Admin informou server que está ligado");
@@ -667,17 +654,33 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     command = reader.readLine();
                     readCommand(server, command);
                 }
-            }
-            catch (RemoteException | NotBoundException ex1) {
+
+            } catch (RemoteException | NotBoundException ex) {
                 System.out.println("Servidor não está online");
-            }
-            catch (IOException e) {
+                try{
+                    RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+
+                    server.olaAdmin(adminConsole);
+                    System.out.println("Admin informou server que está ligado");
+                    while (true) {
+                        menu();
+                        System.out.print("> ");
+                        command = reader.readLine();
+                        readCommand(server, command);
+                    }
+                }
+                catch (RemoteException | NotBoundException ex1) {
+                    System.out.println("Servidor não está online");
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+                //System.exit(0);
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-            //System.exit(0);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
     }
 
     public static void main(String[] args) throws RemoteException {

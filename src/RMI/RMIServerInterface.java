@@ -13,7 +13,6 @@ public interface RMIServerInterface extends Remote {
     public void adeusAdmin() throws RemoteException;
 
     public void olaMesaVoto(String mesa) throws RemoteException;
-
     public void registar(Pessoa pessoa) throws RemoteException;
     public int rmvLista(Eleição eleição, String lista) throws RemoteException;
     public void addLista(Eleição eleição, String lista) throws RemoteException;

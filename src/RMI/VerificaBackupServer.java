@@ -38,8 +38,10 @@ public class VerificaBackupServer extends Thread
                 }
                 catch (SocketTimeoutException t){
                     System.out.println("nao respondes olha vou dormir");
-                    VerificaServer v1 = new VerificaServer();
-                    v1.run();
+                    while(true)
+                    {
+                        Thread.sleep(200);
+                    }
                 }
 
                 //System.out.println("oi");
@@ -48,7 +50,7 @@ public class VerificaBackupServer extends Thread
             }
         }
         catch (SocketException e){System.out.println("Socket: " + e.getMessage());
-        }catch (IOException e) {System.out.println("IO: " + e.getMessage());
+        }catch (IOException | InterruptedException e) {System.out.println("IO: " + e.getMessage());
         }finally {if(aSocket != null) aSocket.close();}
     }
 }

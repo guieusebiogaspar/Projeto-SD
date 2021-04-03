@@ -19,6 +19,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     static MesaVoto mesaVoto;
     private static ArrayList<Pessoa> pessoas = new ArrayList<>();
     private static ArrayList<Eleição> eleições = new ArrayList<>();
+    private static int auxServer;
 
     public RMIServer() throws RemoteException {
         super();
@@ -338,75 +339,76 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
     }
 
+    public static void servidorAtivar() throws RemoteException
+    {
+        RMIServer server = new RMIServer();
+        Registry r = LocateRegistry.createRegistry(7001);
+        r.rebind("Server", server);
+        File f = new File("pessoas.obj");
+        if(f.exists() && f.isFile())
+        {
+            try{
+                FileInputStream fis = new FileInputStream(f);
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                pessoas = (ArrayList<Pessoa>)ois.readObject();
+                ois.close();
+
+            }
+            catch(FileNotFoundException ex){
+                System.out.println("Erro a abrir ficheiro.");
+            }
+            catch(IOException ex){
+                System.out.println("Erro a ler ficheiro. Ainda nao existe");
+            }
+            catch(ClassNotFoundException ex){
+                System.out.println("Erro a converter objeto.");
+            }
+        }
+        f = new File("eleicoes.obj");
+        if(f.exists() && f.isFile())
+        {
+            try{
+                FileInputStream fis = new FileInputStream(f);
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                eleições = (ArrayList<Eleição>)ois.readObject();
+                ois.close();
+
+            }
+            catch(FileNotFoundException ex){
+                System.out.println("Erro a abrir ficheiro.");
+            }
+            catch(IOException ex){
+                System.out.println("Erro a ler ficheiro. Ainda nao existeA");
+            }
+            catch(ClassNotFoundException ex){
+                System.out.println("Erro a converter objeto.");
+            }
+        }
+        System.out.println("RMI Server ready.");
+
+        new VerificaServer();
+        new ContaTempo();
+        System.out.println("Passei");
+        while (true) {
+        }
+    }
+
     public static void main(String args[]) throws RemoteException {
+
         String command;
 
         System.getProperties().put("java.security.policy", "policy.all");
         System.setSecurityManager(new RMISecurityManager());
         //System.setProperty("java.rmi.server.hostname", "192.168.1.171");
 
-
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
         try {
-
-            RMIServer server = new RMIServer();
-
-            Registry r = LocateRegistry.createRegistry(7001);
-            r.rebind("Server", server);
-            File f = new File("pessoas.obj");
-            if(f.exists() && f.isFile())
-            {
-                try{
-                    FileInputStream fis = new FileInputStream(f);
-                    ObjectInputStream ois = new ObjectInputStream(fis);
-                    pessoas = (ArrayList<Pessoa>)ois.readObject();
-                    ois.close();
-
-                }
-                catch(FileNotFoundException ex){
-                    System.out.println("Erro a abrir ficheiro.");
-                }
-                catch(IOException ex){
-                    System.out.println("Erro a ler ficheiro. Ainda nao existe");
-                }
-                catch(ClassNotFoundException ex){
-                    System.out.println("Erro a converter objeto.");
-                }
-            }
-            f = new File("eleicoes.obj");
-            if(f.exists() && f.isFile())
-            {
-                try{
-                    FileInputStream fis = new FileInputStream(f);
-                    ObjectInputStream ois = new ObjectInputStream(fis);
-                    eleições = (ArrayList<Eleição>)ois.readObject();
-                    ois.close();
-
-                }
-                catch(FileNotFoundException ex){
-                    System.out.println("Erro a abrir ficheiro.");
-                }
-                catch(IOException ex){
-                    System.out.println("Erro a ler ficheiro. Ainda nao existeA");
-                }
-                catch(ClassNotFoundException ex){
-                    System.out.println("Erro a converter objeto.");
-                }
-            }
-            System.out.println("RMI Server ready.");
-
-            new VerificaServer();
-            new ContaTempo();
-            System.out.println("Passei");
-
-            while (true) {
-            }
+            servidorAtivar();
         } catch (Exception e) {
 
             try{
                 RMIServer server = new RMIServer();
-
                 Registry r = LocateRegistry.createRegistry(7002);
                 r.rebind("Server", server);
                 File f = new File("pessoas.obj");
@@ -451,6 +453,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 }
                 System.out.println("RMI Backup Server ready.");
                 new VerificaBackupServer();
+                new ContaTempo();
                 while (true) {
                 }
             }
