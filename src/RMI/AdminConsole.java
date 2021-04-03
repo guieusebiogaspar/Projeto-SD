@@ -421,6 +421,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     System.out.println("[3] - Data início");
                     System.out.println("[4] - Data fim");
                     System.out.println("[5] - Departamentos");
+                    System.out.println("[6] - Listas");
                     System.out.println("[0] - Sair");
                     inputzito = reader.readLine();
                     if (inputzito.equals("0")) return;//menu();
@@ -531,6 +532,47 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
                                 check = 1;
                                 break;
+                            case "6":
+                                System.out.println("Que operação deseja fazer?");
+                                System.out.println("[1] - Adicionar nova lista");
+                                System.out.println("[2] - Remover lista");
+                                System.out.println("[0] - Voltar");
+                                inputzito = reader.readLine();
+                                int check2 = 0;
+                                while(check2 == 0)
+                                {
+                                    switch(inputzito)
+                                    {
+                                        case "1":
+                                            System.out.println("Qual a lista: ");
+                                            inputzito = reader.readLine();
+                                            server.addLista(eleição, inputzito);
+                                            System.out.println("Lista adicionada com sucesso!");
+                                            check2 = 1;
+                                            break;
+                                        case "2":
+                                            System.out.println("Que lista deseja remover: ");
+                                            inputzito = reader.readLine();
+                                            if(server.rmvLista(eleição, inputzito) == 1)
+                                            {
+                                                System.out.println("Lista removida com sucesso");
+                                            }
+                                            else{
+                                                System.out.println("A lista nao existe");
+                                            }
+                                            check2=1;
+                                            break;
+                                        case "0":
+                                            check2 = 1;
+                                            break;
+                                        default:
+                                            System.out.println("Opção inválida");
+
+                                    }
+
+                                }
+                                check = 1;
+                                break;
                             case "0":
                                 check = 1;
                                 //menu();
@@ -579,8 +621,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
     }
 
     public void init(AdminConsole adminConsole) {
-        String command;
 
+        String command;
         System.getProperties().put("java.security.policy", "policy.all");
         System.setSecurityManager(new RMISecurityManager());
         //System.setProperty("java.rmi.server.hostname", "192.168.1.171");
