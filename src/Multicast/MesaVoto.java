@@ -132,12 +132,11 @@ public class MesaVoto extends Thread {
         System.setSecurityManager(new RMISecurityManager());
 
         MulticastSocket socketFindTerminal = null;
-        System.out.println(this.getName() + " running...");
+        System.out.println("Mesa de voto " + departamento +  " running...");
 
         try {
             RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
             serverRMI.olaMesaVoto(this.getName());
-            System.out.println("Mesa de voto informou server que está ligado");
 
             socketFindTerminal = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
             InetAddress groupTerminal = InetAddress.getByName(MULTICAST_ADDRESS_TERMINALS);

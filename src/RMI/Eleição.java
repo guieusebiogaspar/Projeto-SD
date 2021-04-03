@@ -16,6 +16,7 @@ public class Eleição implements Serializable {
     private ArrayList<String> quemPodeVotar;
     private ArrayList<Integer> jaVotaram;
     private Boolean ativa;
+    private Boolean terminada;
 
 
     /**

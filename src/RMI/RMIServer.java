@@ -288,10 +288,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 // Se a pessoa pertencer ao tipo de pessoas que pode votar (Estudantes, Docentes ou Funcionários)
                 // Se a pessoa pertence a um dos departamentos que podem votar na eleição
                 // Se a pessoa ainda não votou
+                // Se a eleição estiver ativa
                 if(eleições.get(i).getMesasVoto().contains(departamento) &&
                     eleições.get(i).getQuemPodeVotar().contains(tipo) &&
                     eleições.get(i).getGrupos().contains(dep) &&
-                    !eleições.get(i).getJaVotaram().contains(cc))
+                    !eleições.get(i).getJaVotaram().contains(cc) &&
+                    eleições.get(i).getAtiva())
                 {
                     filtradas.add(eleições.get(i));
                 }
@@ -303,7 +305,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     public void adicionaVoto(Eleição eleição, String lista, int cc) throws RemoteException {
         for(int i = 0; i < eleições.size(); i++) {
-            if(eleições.get(i).getTitulo().equals(eleição.getTitulo())) { // Ao encontrar a eleição com o titulo correspondente
+            if(eleições.get(i).getTitulo().equals(eleição.getTitulo()) && eleições.get(i).getAtiva()) { // Ao encontrar a eleição com o titulo correspondente
                 for(int j = 0; j < eleições.get(i).getListas().size(); j++) { // Vai percorrer as listas da eleição
                     if(eleições.get(i).getListas().get(j).getNome().equals(lista)) {
                         int votos = eleições.get(i).getListas().get(j).getNumVotos();

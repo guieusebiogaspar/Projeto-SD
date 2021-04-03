@@ -295,7 +295,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         System.out.println("Quantas listas tem a eleição?");
         Integer nListas = tryParse(reader.readLine());
-        for(int i = 0; i <nListas; i++)
+        for(int i = 0; i < nListas; i++)
         {
             int cond = 0;
             String nome = null;
@@ -352,7 +352,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     nome = reader.readLine();
                     for (String a : mesas) {
                         if (a.equals(nome)) {
-                            System.out.println("Já Há uma lista com esse nome!!");
+                            System.out.println("Já há uma lista com esse nome!!");
                             n_passou = 1;
                         }
                     }
@@ -396,7 +396,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         while(eleição == null)
         {
-
             System.out.println("Introduza o titulo da eleição que pretende alterar (Prima 0 para sair):");
             inputzito = reader.readLine();
 
