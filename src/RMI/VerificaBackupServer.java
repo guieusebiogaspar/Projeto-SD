@@ -13,12 +13,9 @@ public class VerificaBackupServer extends Thread
    public VerificaBackupServer()
    {
        super();
+       this.start();
    }
-    public static void main(String[] args)
-    {
-        VerificaBackupServer verifica = new VerificaBackupServer();
-        verifica.start();
-    }
+
     public void run()
     {
         System.getProperties().put("java.security.policy", "policy.all");

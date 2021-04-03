@@ -6,6 +6,7 @@ import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.time.*;
 
 public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInterface {
 
@@ -361,10 +362,26 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             if(opcoes[i].equals("3"))
                 opcoesVoto.add("Funcionários");
         }
-        Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true, listas, mesas, opcoesVoto);
-
-        server.criarEleição(eleição);
-
+        LocalDate ld = LocalDate.now();
+        LocalTime lt = LocalTime.now();
+        if(ld.getYear() >= inicio.getAno() && ld.getMonthValue() >= inicio.getMes() && ld.getDayOfMonth() >= inicio.getDia() && lt.getHour() >= inicio.getHora() && lt.getMinute() >= inicio.getMinuto()){
+            if(ld.getYear() <= fim.getAno() && ld.getMonthValue() <= fim.getMes() && ld.getDayOfMonth() <= fim.getDia() && lt.getHour() <= fim.getHora() && lt.getMinute() <= fim.getMinuto())
+            {
+                Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true, listas, mesas, opcoesVoto);
+                server.criarEleição(eleição);
+                System.out.println("1111111");
+            }
+            if(ld.getYear() >= fim.getAno() && ld.getMonthValue() >= fim.getMes() && ld.getDayOfMonth() >= fim.getDia() && lt.getHour() >= fim.getHora() && lt.getMinute() >= fim.getMinuto()){
+                Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, false, listas, mesas, opcoesVoto);
+                server.criarEleição(eleição);
+                System.out.println("222222");
+            }
+        }
+        if(ld.getYear() <= inicio.getAno() && ld.getMonthValue() <= inicio.getMes() && ld.getDayOfMonth() <= inicio.getDia() && lt.getHour() <= inicio.getHora() && lt.getMinute() <= inicio.getMinuto()){
+            Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, false, listas, mesas, opcoesVoto);
+            server.criarEleição(eleição);
+            System.out.println("33333333");
+        }
         System.out.println("Eleição registada no servidor!");
     }
 

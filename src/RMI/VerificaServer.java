@@ -8,13 +8,9 @@ public class VerificaServer extends Thread
     public VerificaServer()
     {
         super();
+        this.start();
     }
 
-    public static void main(String[] args) {
-        VerificaServer verifica = new VerificaServer();
-        verifica.start();
-
-    }
     public void run()
     {
         System.getProperties().put("java.security.policy", "policy.all");

@@ -237,7 +237,6 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     public ArrayList<Eleição> getEleições() throws  RemoteException
     {
-        eleições = null;
         readBD("eleicoes.obj");
         return eleições;
     }
@@ -349,7 +348,6 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
-
         try {
 
             RMIServer server = new RMIServer();
@@ -398,14 +396,11 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             }
             System.out.println("RMI Server ready.");
 
+            new VerificaServer();
+            new ContaTempo();
+            System.out.println("Passei");
 
-            ContaTempo c = new ContaTempo();
-            c.run();
             while (true) {
-                //VerificaServer v =new VerificaServer();
-                //v.run();
-
-
             }
         } catch (Exception e) {
 
@@ -454,10 +449,9 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         System.out.println("Erro a converter objeto.");
                     }
                 }
-                System.out.println("RMI Server ready.");
+                System.out.println("RMI Backup Server ready.");
+                new VerificaBackupServer();
                 while (true) {
-                    VerificaBackupServer v = new VerificaBackupServer();
-                    v.run();
                 }
             }
             catch(java.rmi.server.ExportException e2) {
