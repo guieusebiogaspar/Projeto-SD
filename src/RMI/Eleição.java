@@ -14,13 +14,10 @@ public class Eleição implements Serializable {
     private ArrayList<Lista> listas;
     private ArrayList<String> mesasVoto;
     private ArrayList<String> quemPodeVotar;
+    private ArrayList<Integer> jaVotaram;
     private Boolean ativa;
 
 
-    // type (conselho geral ou nucleo de estudantes)
-    // arrayList com listas candidatas
-
-    // conselho geral tem listas separadas? ou uma candidatura tem as 3 (estudantes, docentes, funcionarios?
     /**
      * Construtor vazio do objeto Eleição
      */
@@ -46,7 +43,9 @@ public class Eleição implements Serializable {
         this.listas = listas;
         this.mesasVoto = mesasVoto;
         this.quemPodeVotar = quemPodeVotar;
+        this.jaVotaram = new ArrayList<>();
     }
+
     public DataEleição getInicio() {
         return inicio;
     }
@@ -109,5 +108,13 @@ public class Eleição implements Serializable {
 
     public ArrayList<String> getQuemPodeVotar() {
         return quemPodeVotar;
+    }
+
+    public ArrayList<Integer> getJaVotaram() {
+        return jaVotaram;
+    }
+
+    public void setJaVotaram(ArrayList<Integer> jaVotaram) {
+        this.jaVotaram = jaVotaram;
     }
 }
