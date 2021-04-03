@@ -15,7 +15,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
     }
 
     public void menu() {
-        System.out.println("--------- MENU --------f-");
+        System.out.println("--------- MENU ----------");
         System.out.println("[1] - Registar pessoa");
         System.out.println("[2] - Criar eleição");
         System.out.println("[3] - Editar eleição");
@@ -96,6 +96,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
 
     }
+
     public void mostrarAtivas(RMIServerInterface server) throws IOException{
 
         InputStreamReader input = new InputStreamReader(System.in);
@@ -112,7 +113,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         Eleição el = null;
         while(el == null || !el.getAtiva())
         {
-            System.out.println("De qual eleicao deseja ver as informações? (titulo)");
+            System.out.println("De qual eleicao deseja ver as informações? (titulo) (0 para sair)");
             String tit = reader.readLine();
             if(tit.equals("0"))
                 return;
@@ -120,7 +121,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             if(el == null || !el.getAtiva())
                 System.out.println("Por favor selecione uma eleição ativa");
         }
-        System.out.println("---- ELEIÇÃO " + el.getTitulo() + "-----");
+        System.out.println("---- ELEIÇÃO " + el.getTitulo() + " -----");
         System.out.println("Descrição: " + el.getDescrição());
         System.out.println("Data inicio: " + el.getInicio().toString());
         System.out.println("Data fim: " + el.getFim().toString());
@@ -136,6 +137,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             System.out.println("Mesa voto " + s);
 
     }
+
     public void mostrarTerminadas(RMIServerInterface server) throws IOException
     {
         InputStreamReader input = new InputStreamReader(System.in);
@@ -162,6 +164,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 System.out.println("Por favor selecione uma eleição terminada");
 
         }
+
         System.out.println("---- ELEIÇÃO " + el.getTitulo() + "-----");
         System.out.println("Descrição: " + el.getDescrição());
         System.out.println("Data inicio: " + el.getInicio().toString());
@@ -177,6 +180,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         for(String s : el.getMesasVoto())
             System.out.println("Mesa voto " + s);
     }
+
     public void registar(RMIServerInterface server) throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -292,7 +296,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             String nome = null;
             if(i == 0)
             {
-                System.out.println("Lista: ");
+                System.out.print("Lista: ");
                 nome = reader.readLine();
                 Lista l = new Lista(nome);
                 listas.add(l);
@@ -301,7 +305,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 while(cond == 0)
                 {
                     int n_passou = 0;
-                    System.out.println("Lista: ");
+                    System.out.print("Lista: ");
                     nome = reader.readLine();
                     for(Lista a : listas)
                     {
@@ -334,7 +338,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             else {
                 while (cond == 0) {
                     int n_passou = 0;
-                    System.out.println("Local da mesa de voto (ex. DEI): ");
+                    System.out.print("Local da mesa de voto (ex. DEI): ");
                     nome = reader.readLine();
                     for (String a : mesas) {
                         if (a.equals(nome)) {
@@ -353,14 +357,15 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("2 - Docentes");
         System.out.println("3 - Funcionários");
         String[] opcoes = reader.readLine().split(" ");
+
         for(int i = 0; i < opcoes.length; i++)
         {
             if(opcoes[i].equals("1"))
-                opcoesVoto.add("Estudantes");
+                opcoesVoto.add("Estudante");
             if(opcoes[i].equals("2"))
-                opcoesVoto.add("Docentes");
+                opcoesVoto.add("Docente");
             if(opcoes[i].equals("3"))
-                opcoesVoto.add("Funcionários");
+                opcoesVoto.add("Funcionário");
         }
         LocalDate ld = LocalDate.now();
         LocalTime lt = LocalTime.now();
