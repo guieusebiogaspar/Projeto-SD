@@ -69,6 +69,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             }
         }
         writeBD("eleicoes.obj");
+
     }
     public void atualizaTitulo(Eleição eleição, String newTitle) throws RemoteException
     {
@@ -125,6 +126,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
         writeBD("eleicoes.obj");
     }
+
     public int rmvGrupo(Eleição eleição, String grupo) throws RemoteException
     {
         for(Eleição el : eleições)
@@ -145,6 +147,40 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
         return 0;
     }
+    public void addLista(Eleição eleição, String lista) throws RemoteException
+    {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                Lista l = new Lista(lista);
+                el.getListas().add(l);
+            }
+        }
+        writeBD("eleicoes.obj");
+    }
+    public int rmvLista(Eleição eleição, String lista) throws RemoteException
+    {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                for(Lista s : el.getListas())
+                {
+                    if(s.getNome().equals(lista))
+                    {
+                        int i = el.getListas().indexOf(s);
+                        el.getListas().remove((i));
+                        writeBD("eleicoes.obj");
+                        eleições = null;
+                        readBD("eleicoes.obj");
+                        return 1;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
     /**
      * Método que vai verificar se o cc introduzido já existe na base de dados
      *
@@ -153,6 +189,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      *  @return true se o cc não existe e false se o cc ja existe
      */
     public boolean verificaCC(int cc) throws RemoteException {
+
         for(int i = 0; i < pessoas.size(); i++) {
             if(pessoas.get(i).getCc() == cc) {
                 return true;
@@ -188,6 +225,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      *  @return eleição - objeto eleição com o título dado como input
      */
     public Eleição getEleição(String titulo) throws RemoteException {
+        eleições = null;
+        readBD("eleicoes.obj");
         for(Eleição el: eleições)
         {
             if(el.getTitulo().equals(titulo))
@@ -198,9 +237,13 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     public ArrayList<Eleição> getEleições() throws  RemoteException
     {
+        eleições = null;
+        readBD("eleicoes.obj");
         return eleições;
     }
     public void mostraEleicoesAtivas() throws RemoteException{
+        eleições = null;
+        readBD("eleicoes.obj");
         for(Eleição el : getEleições())
         {
             System.out.println(el.getTitulo());
@@ -222,6 +265,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      * @return eleições que o eleitor pode votar
      */
     public ArrayList<Eleição> filterEleições(String departamento, int cc) throws RemoteException {
+
         ArrayList<Eleição> filtradas = new ArrayList<>();
         String tipo = null; // De que tipo é o Eleitor
         String dep = null; // Departamento a que pertence o eleitor
@@ -346,16 +390,22 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                     System.out.println("Erro a abrir ficheiro.");
                 }
                 catch(IOException ex){
-                    System.out.println("Erro a ler ficheiro. Ainda nao existe");
+                    System.out.println("Erro a ler ficheiro. Ainda nao existeA");
                 }
                 catch(ClassNotFoundException ex){
                     System.out.println("Erro a converter objeto.");
                 }
             }
             System.out.println("RMI Server ready.");
+
+
+            ContaTempo c = new ContaTempo();
+            c.run();
             while (true) {
-                VerificaServer v = new VerificaServer();
-                v.run();
+                //VerificaServer v =new VerificaServer();
+                //v.run();
+
+
             }
         } catch (Exception e) {
 
