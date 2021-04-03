@@ -1,10 +1,12 @@
 package RMI;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.time.*;
 
 public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInterface {
 
@@ -13,15 +15,22 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
     }
 
     public void menu() {
-        System.out.println("--------- MENU ---------");
+        System.out.println("--------- MENU --------f-");
         System.out.println("[1] - Registar pessoa");
         System.out.println("[2] - Criar eleição");
         System.out.println("[3] - Editar eleição");
         System.out.println("[4] - Terminar eleição");
         System.out.println("[5] - Consultar resultados de eleições passadas");
+        System.out.println("[6] - Detalhes de eleições");
         System.out.println("[0] - Sair");
     }
-
+    public void olaServidor() throws RemoteException
+    {
+        System.out.println("Servidor diz ola ao admin");
+    }
+    public void adeusServidor() throws RemoteException{
+        System.out.println("Servidor diz adeus ao admin");
+    }
     public void readCommand(RMIServerInterface server, String command) throws IOException {
         switch (command) {
             case "1":
@@ -38,6 +47,10 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 break;
             case "5":
                 //consultaResultados(server);
+                break;
+            case "6":
+                showDetails(server);
+                break;
             case "0":
                 System.out.println("Encerrando admin console...");
                 server.adeusAdmin();
@@ -56,6 +69,114 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
     }
 
+    public void showDetails(RMIServerInterface server) throws IOException
+    {
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+        System.out.println("----- Detalhes de Eleições ------");
+        System.out.println("[1] - Ativas");
+        System.out.println("[2] - Terminadas");
+        System.out.println("[0] - Sair");
+
+        String inputzao = reader.readLine();
+
+        switch(inputzao){
+            case "1":
+                mostrarAtivas(server);
+                break;
+            case "2":
+                mostrarTerminadas(server);
+                break;
+            case "0":
+                return;
+            default:
+                System.out.println("Opção inválida");
+        }
+
+
+
+    }
+    public void mostrarAtivas(RMIServerInterface server) throws IOException{
+
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+
+        ArrayList<Eleição> eleicoes = server.getEleições();
+
+        for(Eleição el: eleicoes)
+        {
+            if(el.getAtiva())
+                System.out.println(el.getTitulo());
+
+        }
+        Eleição el = null;
+        while(el == null || !el.getAtiva())
+        {
+            System.out.println("De qual eleicao deseja ver as informações? (titulo)");
+            String tit = reader.readLine();
+            if(tit.equals("0"))
+                return;
+            el = server.getEleição(tit);
+            if(el == null || !el.getAtiva())
+                System.out.println("Por favor selecione uma eleição ativa");
+        }
+        System.out.println("---- ELEIÇÃO " + el.getTitulo() + "-----");
+        System.out.println("Descrição: " + el.getDescrição());
+        System.out.println("Data inicio: " + el.getInicio().toString());
+        System.out.println("Data fim: " + el.getFim().toString());
+        System.out.println("Grupos: ");
+        for(String s : el.getGrupos())
+            System.out.print(s + "\t");
+        System.out.println();
+        System.out.println("Dados Listas: ");
+        for(Lista l : el.getListas())
+            System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos());
+        System.out.println("Mesas de Voto: ");
+        for(String s : el.getMesasVoto())
+            System.out.println("Mesa voto " + s);
+
+    }
+    public void mostrarTerminadas(RMIServerInterface server) throws IOException
+    {
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+
+        ArrayList<Eleição> eleicoes = server.getEleições();
+
+        for(Eleição el: eleicoes)
+        {
+            if(!el.getAtiva())
+                System.out.println(el.getTitulo());
+
+        }
+
+        Eleição el = null;
+        while(el == null || el.getAtiva())
+        {
+            System.out.println("De qual eleicao deseja ver as informações? (titulo) (0 para sair)");
+            String tit = reader.readLine();
+            if(tit.equals("0"))
+                return;
+            el = server.getEleição(tit);
+            if(el == null || !el.getAtiva())
+                System.out.println("Por favor selecione uma eleição terminada");
+
+        }
+        System.out.println("---- ELEIÇÃO " + el.getTitulo() + "-----");
+        System.out.println("Descrição: " + el.getDescrição());
+        System.out.println("Data inicio: " + el.getInicio().toString());
+        System.out.println("Data fim: " + el.getFim().toString());
+        System.out.println("Grupos: ");
+        for(String s : el.getGrupos())
+            System.out.print(s + "\t");
+        System.out.println();
+        System.out.println("Dados Listas: ");
+        for(Lista l : el.getListas())
+            System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos());
+        System.out.println("Mesas de Voto: ");
+        for(String s : el.getMesasVoto())
+            System.out.println("Mesa voto " + s);
+    }
     public void registar(RMIServerInterface server) throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -127,7 +248,10 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         Integer diaInicio = null, mesInicio = null, anoInicio = null, horaInicio = null, minutoInicio = null, diaFim = null, mesFim = null, anoFim = null, horaFim = null, minutoFim = null;
         String titulo, descrição;
         String[] gruposInput;
-        ArrayList<String> grupos = null;
+        ArrayList<String> grupos = new ArrayList<>();
+        ArrayList<Lista> listas = new ArrayList<>();
+        ArrayList<String> mesas = new ArrayList<>();
+        ArrayList<String> opcoesVoto = new ArrayList<>();
         System.out.print("Dia de início da eleição: ");
         while(diaInicio == null) diaInicio = tryParse(reader.readLine());
         System.out.print("Mês de início da eleição: ");
@@ -153,19 +277,116 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.print("Descrição da eleição: ");
         descrição = reader.readLine();
         System.out.print("Departamentos (sigla) que podem votar nesta eleição (separe por espaços o nome dos departamentos): ");
-        gruposInput = reader.readLine().strip().split(" ");
-        for(int i = 0; i < gruposInput.length; i++) grupos.add(gruposInput[i]);
+        gruposInput = reader.readLine().split(" ");
+        for(int i = 0; i < gruposInput.length; i++)
+            grupos.add(gruposInput[i]);
 
         DataEleição inicio = new DataEleição(diaInicio, mesInicio, anoInicio, horaInicio, minutoInicio);
         DataEleição fim = new DataEleição(diaFim, mesFim, anoFim, horaFim, minutoFim);
 
-        Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true);
+        System.out.println("Quantas listas tem a eleição?");
+        Integer nListas = tryParse(reader.readLine());
+        for(int i = 0; i <nListas; i++)
+        {
+            int cond = 0;
+            String nome = null;
+            if(i == 0)
+            {
+                System.out.println("Lista: ");
+                nome = reader.readLine();
+                Lista l = new Lista(nome);
+                listas.add(l);
+            }
+            else{
+                while(cond == 0)
+                {
+                    int n_passou = 0;
+                    System.out.println("Lista: ");
+                    nome = reader.readLine();
+                    for(Lista a : listas)
+                    {
+                        if(a.getNome().equals(nome))
+                        {
+                            System.out.println("Já Há uma lista com esse nome!!");
+                            n_passou = 1;
+                        }
+                    }
+                    if(n_passou == 0)
+                        cond = 1;
+                }
 
-        server.criarEleição(eleição);
-        System.out.println("Pessoa registada no servidor!");
+                Lista l = new Lista(nome);
+                listas.add(l);
+            }
+
+        }
+        System.out.println("Quantas mesas de voto irá ter esta eleição?");
+        nListas = tryParse(reader.readLine());
+        for(int i = 0; i < nListas; i++)
+        {
+            int cond = 0;
+            String nome = null;
+            if(i == 0){
+                System.out.print("Local da mesa de voto (ex. DEI): ");
+                nome = reader.readLine();
+                mesas.add(nome);
+            }
+            else {
+                while (cond == 0) {
+                    int n_passou = 0;
+                    System.out.println("Local da mesa de voto (ex. DEI): ");
+                    nome = reader.readLine();
+                    for (String a : mesas) {
+                        if (a.equals(nome)) {
+                            System.out.println("Já Há uma lista com esse nome!!");
+                            n_passou = 1;
+                        }
+                    }
+                    if (n_passou == 0)
+                        cond = 1;
+                }
+                mesas.add(nome);
+            }
+        }
+        System.out.println("Quais os grupos de pessoas que podem votar? (separe por espaços o número de opções que pretende)");
+        System.out.println("1 - Estudantes");
+        System.out.println("2 - Docentes");
+        System.out.println("3 - Funcionários");
+        String[] opcoes = reader.readLine().split(" ");
+        for(int i = 0; i < opcoes.length; i++)
+        {
+            if(opcoes[i].equals("1"))
+                opcoesVoto.add("Estudantes");
+            if(opcoes[i].equals("2"))
+                opcoesVoto.add("Docentes");
+            if(opcoes[i].equals("3"))
+                opcoesVoto.add("Funcionários");
+        }
+        LocalDate ld = LocalDate.now();
+        LocalTime lt = LocalTime.now();
+        if(ld.getYear() >= inicio.getAno() && ld.getMonthValue() >= inicio.getMes() && ld.getDayOfMonth() >= inicio.getDia() && lt.getHour() >= inicio.getHora() && lt.getMinute() >= inicio.getMinuto()){
+            if(ld.getYear() <= fim.getAno() && ld.getMonthValue() <= fim.getMes() && ld.getDayOfMonth() <= fim.getDia() && lt.getHour() <= fim.getHora() && lt.getMinute() <= fim.getMinuto())
+            {
+                Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true, listas, mesas, opcoesVoto);
+                server.criarEleição(eleição);
+                System.out.println("1111111");
+            }
+            if(ld.getYear() >= fim.getAno() && ld.getMonthValue() >= fim.getMes() && ld.getDayOfMonth() >= fim.getDia() && lt.getHour() >= fim.getHora() && lt.getMinute() >= fim.getMinuto()){
+                Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, false, listas, mesas, opcoesVoto);
+                server.criarEleição(eleição);
+                System.out.println("222222");
+            }
+        }
+        if(ld.getYear() <= inicio.getAno() && ld.getMonthValue() <= inicio.getMes() && ld.getDayOfMonth() <= inicio.getDia() && lt.getHour() <= inicio.getHora() && lt.getMinute() <= inicio.getMinuto()){
+            Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, false, listas, mesas, opcoesVoto);
+            server.criarEleição(eleição);
+            System.out.println("33333333");
+        }
+        System.out.println("Eleição registada no servidor!");
     }
 
     public void editarEleiçao(RMIServerInterface server) throws IOException {
+
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
@@ -173,163 +394,213 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         Eleição eleição = null;
         System.out.println("--------- Editar Eleição ---------");
 
-        while(eleição == null) {
+        while(eleição == null)
+        {
+
             System.out.println("Introduza o titulo da eleição que pretende alterar (Prima 0 para sair):");
             inputzito = reader.readLine();
 
-            if (inputzito.equals("0")) menu();
-
-            eleição = server.getEleição(inputzito);
-            if(eleição == null) {
-                System.out.println("Não existe nenhuma eleição com esse título. Tente novamente.");
+            if (inputzito.equals("0")){
+                return;
             }
+            else{
+                eleição = server.getEleição(inputzito);
+                if(eleição == null) {
+                    System.out.println("Não existe nenhuma eleição com esse título. Tente novamente.");
+                }
 
-            if(eleição.getAtiva() == true) {
-                System.out.println("A eleição " + eleição.getTitulo() + " está a decorrer, como tal, não pode ser editada");
-                eleição = null;
-            }
-        }
-
-        System.out.println("-- Dados da eleição --");
-        System.out.println("Titulo: " + eleição.getTitulo());
-        System.out.println("Descrição: " + eleição.getDescrição());
-        System.out.println("Data início: " + eleição.getInicio());
-        System.out.println("Data Fim: " + eleição.getFim());
-        System.out.println("Departamentos:");
-        for(int i = 0; i < eleição.getGrupos().size(); i++) {
-            System.out.println("- " + eleição.getGrupos().get(i));
-        }
-        System.out.println("Qual o campo da eleição que pretende alterar?");
-        System.out.println("[1] - Título");
-        System.out.println("[2] - Descrição");
-        System.out.println("[3] - Data início");
-        System.out.println("[4] - Data fim");
-        System.out.println("[5] - Departamentos");
-        System.out.println("[0] - Sair");
-        inputzito = reader.readLine();
-        if (inputzito.equals("0")) menu();
-
-        int check = 0;
-        while(check == 0) {
-            switch (inputzito) {
-                case "1":
-                    System.out.println("Titulo atual: " + eleição.getTitulo());
-                    System.out.print("Novo título: ");
+                else if(eleição.getAtiva() == true) {
+                    System.out.println("A eleição " + eleição.getTitulo() + " está a decorrer, como tal, não pode ser editada");
+                    eleição = null;
+                }
+                else{
+                    System.out.println("-- Dados da eleição --");
+                    System.out.println("Titulo: " + eleição.getTitulo());
+                    System.out.println("Descrição: " + eleição.getDescrição());
+                    System.out.println("Data início: " + eleição.getInicio());
+                    System.out.println("Data Fim: " + eleição.getFim());
+                    System.out.println("Departamentos:");
+                    for(int i = 0; i < eleição.getGrupos().size(); i++) {
+                        System.out.println("- " + eleição.getGrupos().get(i));
+                    }
+                    System.out.println("Listas:");
+                    for(Lista l : eleição.getListas())
+                        System.out.println(l.getNome());
+                    System.out.println("Qual o campo da eleição que pretende alterar?");
+                    System.out.println("[1] - Título");
+                    System.out.println("[2] - Descrição");
+                    System.out.println("[3] - Data início");
+                    System.out.println("[4] - Data fim");
+                    System.out.println("[5] - Departamentos");
+                    System.out.println("[6] - Listas");
+                    System.out.println("[0] - Sair");
                     inputzito = reader.readLine();
+                    if (inputzito.equals("0")) return;//menu();
 
-                    eleição.setTitulo(inputzito);
-
-                    System.out.println("Titulo atualizado com sucesso!");
-                    check = 1;
-                    break;
-                case "2":
-                    System.out.println("Descrição atual: " + eleição.getDescrição());
-                    System.out.print("Nova descrição: ");
-                    inputzito = reader.readLine();
-
-                    eleição.setDescrição(inputzito);
-
-                    System.out.println("Descrição atualizada com sucesso!");
-                    check = 1;
-                    break;
-                case "3":
-                    Integer dia = null, mes = null, ano = null;
-                    System.out.println("Data início atual: " + eleição.getInicio().toString());
-                    System.out.print("Novo dia: ");
-                    while(dia == null) dia = tryParse(reader.readLine());
-                    System.out.print("Novo mes: ");
-                    while(mes == null) mes = tryParse(reader.readLine());
-                    System.out.println("Novo ano: ");
-                    while(ano == null) ano = tryParse(reader.readLine());
-
-                    eleição.getInicio().setDia(dia);
-                    eleição.getInicio().setDia(mes);
-                    eleição.getInicio().setDia(ano);
-
-                    System.out.println("Data de início atualizada com sucesso!");
-                    check = 1;
-                    break;
-                case "4":
-                    dia = null;
-                    mes = null;
-                    ano = null;
-                    System.out.println("Data final atual: " + eleição.getInicio().toString());
-                    System.out.print("Novo dia: ");
-                    while(dia == null) dia = tryParse(reader.readLine());
-                    System.out.print("Novo mes: ");
-                    while(mes == null) mes = tryParse(reader.readLine());
-                    System.out.println("Novo ano: ");
-                    while(ano == null) ano = tryParse(reader.readLine());
-
-                    eleição.getFim().setDia(dia);
-                    eleição.getFim().setDia(mes);
-                    eleição.getFim().setDia(ano);
-
-                    System.out.println("Data de fim atualizada com sucesso!");
-                    check = 1;
-                    break;
-                case "5":
-                    System.out.println("Que operação deseja fazer?");
-                    System.out.println("[1] - Adicionar novo departamento");
-                    System.out.println("[2] - Remover novo departamento");
-                    System.out.println("[0] - Voltar");
-
-                    inputzito = reader.readLine();
-                    int check1 = 0;
-                    while(check1 == 0) {
-                        switch(inputzito){
+                    int check = 0;
+                    while(check == 0) {
+                        switch (inputzito) {
                             case "1":
-                                System.out.print("Departamento grupo: ");
+                                System.out.println("Titulo atual: " + eleição.getTitulo());
+                                System.out.print("Novo título: ");
                                 inputzito = reader.readLine();
 
-                                ArrayList<String> temp = eleição.getGrupos();
-                                temp.add(inputzito);
-                                eleição.setGrupos(temp);
+                                server.atualizaTitulo(eleição, inputzito);
 
-                                System.out.println("Departamento adicionado com sucesso!");
-                                check1 = 1;
+                                System.out.println("Titulo atualizado com sucesso!");
+                                check = 1;
                                 break;
                             case "2":
-                                System.out.print("Departamento a remover: ");
+                                System.out.println("Descrição atual: " + eleição.getDescrição());
+                                System.out.print("Nova descrição: ");
                                 inputzito = reader.readLine();
 
-                                int removeu = 0;
-                                temp = eleição.getGrupos();
-                                for(int i = 0; i < temp.size(); i++) {
-                                    if(temp.get(i).equals(inputzito)) {
-                                        temp.remove(i);
-                                        eleição.setGrupos(temp);
-                                        System.out.println("Departamento removido com sucesso!");
-                                        removeu = 1;
+                                //eleição.setDescrição(inputzito);
+                                server.atualizaDescricao(eleição, inputzito);
+                                System.out.println("Descrição atualizada com sucesso!");
+                                check = 1;
+                                break;
+                            case "3":
+                                Integer dia = null, mes = null, ano = null;
+                                System.out.println("Data início atual: " + eleição.getInicio().toString());
+                                System.out.print("Novo dia: ");
+                                while(dia == null) dia = tryParse(reader.readLine());
+                                System.out.print("Novo mes: ");
+                                while(mes == null) mes = tryParse(reader.readLine());
+                                System.out.println("Novo ano: ");
+                                while(ano == null) ano = tryParse(reader.readLine());
+
+                                //eleição.getInicio().setDia(dia);
+                                //eleição.getInicio().setDia(mes);
+                                //eleição.getInicio().setDia(ano);
+                                DataEleição d = new DataEleição(dia, mes, ano, eleição.getInicio().getHora(), eleição.getInicio().getMinuto());
+                                server.atualizaDataInicio(eleição, d);
+
+                                System.out.println("Data de início atualizada com sucesso!");
+                                check = 1;
+                                break;
+                            case "4":
+                                dia = null;
+                                mes = null;
+                                ano = null;
+                                System.out.println("Data final atual: " + eleição.getInicio().toString());
+                                System.out.print("Novo dia: ");
+                                while(dia == null) dia = tryParse(reader.readLine());
+                                System.out.print("Novo mes: ");
+                                while(mes == null) mes = tryParse(reader.readLine());
+                                System.out.println("Novo ano: ");
+                                while(ano == null) ano = tryParse(reader.readLine());
+
+                                DataEleição df = new DataEleição(dia, mes, ano, eleição.getInicio().getHora(), eleição.getInicio().getMinuto());
+                                server.atualizaDataFim(eleição, df);
+
+                                System.out.println("Data de fim atualizada com sucesso!");
+                                check = 1;
+                                break;
+                            case "5":
+                                System.out.println("Que operação deseja fazer?");
+                                System.out.println("[1] - Adicionar novo departamento");
+                                System.out.println("[2] - Remover departamento");
+                                System.out.println("[0] - Voltar");
+
+                                inputzito = reader.readLine();
+                                int check1 = 0;
+                                while(check1 == 0) {
+                                    switch(inputzito){
+                                        case "1":
+                                            System.out.print("Departamento grupo: ");
+                                            inputzito = reader.readLine();
+
+                                            //ArrayList<String> temp = eleição.getGrupos();
+                                            //temp.add(inputzito);
+                                            //eleição.setGrupos(temp);
+                                            server.addGrupo(eleição, inputzito);
+                                            System.out.println("Departamento adicionado com sucesso!");
+                                            check1 = 1;
+                                            break;
+                                        case "2":
+                                            System.out.print("Departamento a remover: ");
+                                            inputzito = reader.readLine();
+
+                                            if(server.rmvGrupo(eleição, inputzito)==1){
+
+                                            System.out.println("Departamento removido com sucesso!");
+
+                                            }
+
+                                            else {
+                                                System.out.println("O departamento indicado não existe na lista de grupos desta eleição.");
+                                            }
+                                            check1 = 1;
+                                            break;
+                                        case "0":
+                                            check1 = 1;
+                                            break;
+                                        default:
+                                            System.out.println("Opção inválida");
                                     }
                                 }
 
-                                if(removeu == 0) {
-                                    System.out.println("O departamento indicado não existe na lista de grupos desta eleição.");
+                                check = 1;
+                                break;
+                            case "6":
+                                System.out.println("Que operação deseja fazer?");
+                                System.out.println("[1] - Adicionar nova lista");
+                                System.out.println("[2] - Remover lista");
+                                System.out.println("[0] - Voltar");
+                                inputzito = reader.readLine();
+                                int check2 = 0;
+                                while(check2 == 0)
+                                {
+                                    switch(inputzito)
+                                    {
+                                        case "1":
+                                            System.out.println("Qual a lista: ");
+                                            inputzito = reader.readLine();
+                                            server.addLista(eleição, inputzito);
+                                            System.out.println("Lista adicionada com sucesso!");
+                                            check2 = 1;
+                                            break;
+                                        case "2":
+                                            System.out.println("Que lista deseja remover: ");
+                                            inputzito = reader.readLine();
+                                            if(server.rmvLista(eleição, inputzito) == 1)
+                                            {
+                                                System.out.println("Lista removida com sucesso");
+                                            }
+                                            else{
+                                                System.out.println("A lista nao existe");
+                                            }
+                                            check2=1;
+                                            break;
+                                        case "0":
+                                            check2 = 1;
+                                            break;
+                                        default:
+                                            System.out.println("Opção inválida");
+
+                                    }
+
                                 }
-                                check1 = 1;
+                                check = 1;
                                 break;
                             case "0":
-                                check1 = 1;
+                                check = 1;
+                                //menu();
                                 break;
                             default:
                                 System.out.println("Opção inválida");
                         }
                     }
-
-                    check = 1;
-                    break;
-                case "0":
-                    check = 1;
-                    menu();
-                    break;
-                default:
-                    System.out.println("Opção inválida");
+                }
             }
+
+            System.out.println("Pessoa registada no servidor!");
         }
 
+
         //server.editarEleição(eleição);
-        System.out.println("Pessoa registada no servidor!");
+
     }
 
     public void terminaEleiçao(RMIServerInterface server) throws IOException {
@@ -341,44 +612,75 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("--------- Terminar Eleição ---------");
 
         while(eleição == null) {
+
             System.out.println("Introduza o titulo da eleição que pretende terminar (Prima 0 para sair):");
             inputzito = reader.readLine();
 
-            if (inputzito.equals("0")) menu();
-
-            eleição = server.getEleição(inputzito);
-            if(eleição == null) {
-                System.out.println("Não existe nenhuma eleição com esse título. Tente novamente.");
+            if (inputzito.equals("0")) return;
+            else{
+                eleição = server.getEleição(inputzito);
+                if(eleição == null) {
+                    System.out.println("Não existe nenhuma eleição com esse título. Tente novamente.");
+                }
+                else{
+                    server.terminarEleição(eleição);
+                    System.out.println("Eleição " + eleição.getTitulo() + " terminada!");
+                }
             }
 
-            eleição.setAtiva(false);
-            System.out.println("Eleição " + eleição.getTitulo() + " terminada!");
         }
     }
 
     public void init(AdminConsole adminConsole) {
-        String command;
 
+        String command;
         System.getProperties().put("java.security.policy", "policy.all");
         System.setSecurityManager(new RMISecurityManager());
+        //System.setProperty("java.rmi.server.hostname", "192.168.1.171");
 
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
+        while(true)
+        {
+            try {
+                //RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
+                RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
 
-        try {
-            RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
-            server.olaAdmin(adminConsole);
-            System.out.println("Admin informou server que está ligado");
-            while (true) {
-                menu();
-                System.out.print("> ");
-                command = reader.readLine();
-                readCommand(server, command);
+                server.olaAdmin(adminConsole);
+                System.out.println("Admin informou server que está ligado");
+                while (true) {
+                    menu();
+                    System.out.print("> ");
+                    command = reader.readLine();
+                    readCommand(server, command);
+                }
+
+            } catch (RemoteException | NotBoundException ex) {
+                System.out.println("Servidor não está online");
+                try{
+                    RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+
+                    server.olaAdmin(adminConsole);
+                    System.out.println("Admin informou server que está ligado");
+                    while (true) {
+                        menu();
+                        System.out.print("> ");
+                        command = reader.readLine();
+                        readCommand(server, command);
+                    }
+                }
+                catch (RemoteException | NotBoundException ex1) {
+                    System.out.println("Servidor não está online");
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+                //System.exit(0);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
     }
 
     public static void main(String[] args) throws RemoteException {

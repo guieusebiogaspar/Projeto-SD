@@ -1,1 +1,6 @@
 Nao permitir "|" "\n" ";" nas passwords nem nos nomes nem nos nicks
+
+
+
+Links auxiliares:
+https://coderanch.com/t/644107/java/Java-RMI-application-machines-ConnectException
