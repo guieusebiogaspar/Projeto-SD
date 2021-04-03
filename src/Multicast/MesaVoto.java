@@ -101,6 +101,10 @@ public class MesaVoto extends Thread {
         BufferedReader reader = new BufferedReader(input);
 
         ArrayList<Eleição> eleições = serverRMI.filterEleições(departamento, cc);
+        if (eleições.size() == 0) {
+            System.out.println("Não existem eleições disponíveis em que esteja autorizado a votar");
+            return null;
+        }
         System.out.println("-------- Eleições nesta mesa de voto --------");
         for (int i = 0; i < eleições.size(); i++) {
             System.out.println("" + (i+1) + " - " + eleições.get(i).getTitulo());
@@ -128,12 +132,11 @@ public class MesaVoto extends Thread {
         System.setSecurityManager(new RMISecurityManager());
 
         MulticastSocket socketFindTerminal = null;
-        System.out.println(this.getName() + " running...");
+        System.out.println("Mesa de voto " + departamento +  " running...");
 
         try {
             RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
             serverRMI.olaMesaVoto(this.getName());
-            System.out.println("Mesa de voto informou server que está ligado");
 
             socketFindTerminal = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
             InetAddress groupTerminal = InetAddress.getByName(MULTICAST_ADDRESS_TERMINALS);
@@ -164,6 +167,8 @@ public class MesaVoto extends Thread {
 
                     Eleição eleição = escolherEleição(serverRMI, departamento, cc);
 
+                    if(eleição == null) continue;
+
                     System.out.println("Redirecionando-o para um terminal de voto");
                     String message = "$ type | search; available | no";
 
@@ -173,8 +178,8 @@ public class MesaVoto extends Thread {
                     // Os que estiverem disponíveis enviam mensagem com o seu id. A mesa de voto capta um dos terminais.
                     String terminal = filterMessage(socketFindTerminal, "type | search;");
 
-                    String[] decompose = terminal.split(";");
-                    System.out.println("1 - " + terminal);
+                    String[] decompose = terminal.trim().split(";");
+                    //System.out.println("1 - " + terminal);
 
 
 
@@ -286,7 +291,7 @@ class HandleSession extends Thread {
             while(entrou == 0) {
                 message = filterMessage(socketSession, "type | login; cc | " + cc);
 
-                info = message.split(";");
+                info = message.trim().split(";");
                 int cartao = Integer.parseInt(info[1].substring(info[1].lastIndexOf(" ") + 1));
                 String nick = info[2].substring(info[2].lastIndexOf(" ") + 1);
                 String password = info[3].substring(info[3].lastIndexOf(" ") + 1);
@@ -314,7 +319,7 @@ class HandleSession extends Thread {
             // recebe a lista que o eleitor votou
             message = filterMessage(socketSession, "type | vote");
 
-            info = message.split(";");
+            info = message.trim().split(";");
             String lista = null;
             for(int i = 0; i < info.length; i++) {
                 if(info[i].contains("list")) {
@@ -323,8 +328,8 @@ class HandleSession extends Thread {
                 }
             }
 
-            serverRMI.adicionaVoto(eleição, lista);
-            System.out.println("\nVoto enviado na eleição " + eleição.getTitulo() + " na lista " + lista);
+            serverRMI.adicionaVoto(eleição, lista, cc);
+            //System.out.println("\nVoto enviado na eleição " + eleição.getTitulo() + " na lista " + lista);
 
         } catch (IOException e) {
             e.printStackTrace();

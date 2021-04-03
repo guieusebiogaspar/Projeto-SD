@@ -130,8 +130,14 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             System.out.print(s + "\t");
         System.out.println();
         System.out.println("Dados Listas: ");
-        for(Lista l : el.getListas())
-            System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos());
+        for(int i = 0; i < el.getListas().size(); i++) {
+            if(i == (el.getListas().size() - 1) || i == (el.getListas().size() - 1)) {
+                System.out.println("\tVotos " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
+            } else {
+                System.out.println("\tVotos Lista " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
+            }
+        }
+
         System.out.println("Mesas de Voto: ");
         for(String s : el.getMesasVoto())
             System.out.println("Mesa voto " + s);
@@ -281,7 +287,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.print("Descrição da eleição: ");
         descrição = reader.readLine();
         System.out.print("Departamentos (sigla) que podem votar nesta eleição (separe por espaços o nome dos departamentos): ");
-        gruposInput = reader.readLine().split(" ");
+        gruposInput = reader.readLine().trim().split(" ");
         for(int i = 0; i < gruposInput.length; i++)
             grupos.add(gruposInput[i]);
 
@@ -290,7 +296,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         System.out.println("Quantas listas tem a eleição?");
         Integer nListas = tryParse(reader.readLine());
-        for(int i = 0; i <nListas; i++)
+        for(int i = 0; i < nListas; i++)
         {
             int cond = 0;
             String nome = null;
@@ -322,8 +328,13 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 Lista l = new Lista(nome);
                 listas.add(l);
             }
-
         }
+
+        Lista branco = new Lista("Branco");
+        Lista nulo = new Lista("Nulo");
+        listas.add(branco);
+        listas.add(nulo);
+
         System.out.println("Quantas mesas de voto irá ter esta eleição?");
         nListas = tryParse(reader.readLine());
         for(int i = 0; i < nListas; i++)
@@ -342,7 +353,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     nome = reader.readLine();
                     for (String a : mesas) {
                         if (a.equals(nome)) {
-                            System.out.println("Já Há uma lista com esse nome!!");
+                            System.out.println("Já há uma lista com esse nome!!");
                             n_passou = 1;
                         }
                     }
@@ -356,7 +367,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("1 - Estudantes");
         System.out.println("2 - Docentes");
         System.out.println("3 - Funcionários");
-        String[] opcoes = reader.readLine().split(" ");
+        String[] opcoes = reader.readLine().trim().split(" ");
 
         for(int i = 0; i < opcoes.length; i++)
         {
@@ -401,7 +412,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         while(eleição == null)
         {
-
             System.out.println("Introduza o titulo da eleição que pretende alterar (Prima 0 para sair):");
             inputzito = reader.readLine();
 
