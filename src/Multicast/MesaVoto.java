@@ -1,6 +1,7 @@
 package Multicast;
 
 import RMI.Eleição;
+import RMI.Lista;
 import RMI.RMIServer;
 import RMI.RMIServerInterface;
 
@@ -20,7 +21,6 @@ public class MesaVoto extends Thread {
     //private String MULTICAST_ADDRESS_TERMINALS = "224.0.224.0";
     private String MULTICAST_ADDRESS_TERMINALS;
     private int PORT = 4321;
-    private long SLEEP_TIME = 5000;
     private String departamento;
 
     public static void main(String[] args) {
@@ -108,7 +108,17 @@ public class MesaVoto extends Thread {
 
         System.out.print("Introduza o número da eleição em que pretende votar: ");
         Integer escolha = null;
-        while(escolha == null) escolha = tryParse(reader.readLine());
+
+        int check = 0;
+        while(check == 0) {
+            while(escolha == null) escolha = tryParse(reader.readLine());
+            if(escolha > 0 && escolha <= eleições.size()) {
+                check = 1;
+            } else {
+                System.out.println("Número não corresponde a nenhuma lista");
+                escolha = null;
+            }
+        }
 
         return eleições.get(escolha-1);
     }
@@ -129,6 +139,16 @@ public class MesaVoto extends Thread {
             InetAddress groupTerminal = InetAddress.getByName(MULTICAST_ADDRESS_TERMINALS);
             socketFindTerminal.joinGroup(groupTerminal); //join the multicast group
 
+            // Prepara o address para tratar das sessões dos eleitores
+            int last = Integer.parseInt(MULTICAST_ADDRESS_TERMINALS.substring(MULTICAST_ADDRESS_TERMINALS.length() -1));
+            if(last < 255) {
+                last = last + 1;
+            } else {
+                last = last - 1;
+            }
+
+            String newAddress = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length()-1);
+            newAddress = newAddress + last;
 
             InputStreamReader input = new InputStreamReader(System.in);
             BufferedReader reader = new BufferedReader(input);
@@ -151,7 +171,7 @@ public class MesaVoto extends Thread {
                     enviaServer(socketFindTerminal, message, groupTerminal);
 
                     // Os que estiverem disponíveis enviam mensagem com o seu id. A mesa de voto capta um dos terminais.
-                    String terminal = filterMessage(socketFindTerminal, "@ type | search;");
+                    String terminal = filterMessage(socketFindTerminal, "type | search;");
 
                     String[] decompose = terminal.split(";");
                     System.out.println("1 - " + terminal);
@@ -164,7 +184,7 @@ public class MesaVoto extends Thread {
                     // Avisa os terminais qual dos terminais captou
                     enviaServer(socketFindTerminal, terminal, groupTerminal);
                     System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
-                    new HandleSession(serverRMI, cc, eleição);
+                    new HandleSession(serverRMI, newAddress, cc, eleição);
 
                 } else {
                     System.out.println("O cc introduzido não se encontra na nossa DB.");
@@ -187,14 +207,15 @@ public class MesaVoto extends Thread {
 }
 
 class HandleSession extends Thread {
-    private String MULTICAST_ADDRESS_SESSIONS = "224.0.224.1";
+    private String MULTICAST_ADDRESS_SESSIONS;
     private int PORT = 4321;
     private RMIServerInterface serverRMI;
     private int cc;
     private Eleição eleição;
 
-    HandleSession(RMIServerInterface server, int cartao, Eleição eleição) {
+    HandleSession(RMIServerInterface server, String address, int cartao, Eleição eleição) {
         this.serverRMI = server;
+        this.MULTICAST_ADDRESS_SESSIONS = address;
         this.cc = cartao;
         this.eleição = eleição;
         this.start();
@@ -260,27 +281,50 @@ class HandleSession extends Thread {
 
             String message = "$ type | welcome; user | " + cc;
             enviaServer(socketSession, message, groupSession);
+            String[] info = null;
             int entrou = 0;
             while(entrou == 0) {
-                message = filterMessage(socketSession, "@ type | login; cc | " + cc);
+                message = filterMessage(socketSession, "type | login; cc | " + cc);
 
-                String[] ccNickPassword = message.split(";");
-                int cartao = Integer.parseInt(ccNickPassword[1].substring(ccNickPassword[1].lastIndexOf(" ") + 1));
-                String nick = ccNickPassword[2].substring(ccNickPassword[2].lastIndexOf(" ") + 1);
-                String password = ccNickPassword[3].substring(ccNickPassword[3].lastIndexOf(" ") + 1);
+                info = message.split(";");
+                int cartao = Integer.parseInt(info[1].substring(info[1].lastIndexOf(" ") + 1));
+                String nick = info[2].substring(info[2].lastIndexOf(" ") + 1);
+                String password = info[3].substring(info[3].lastIndexOf(" ") + 1);
 
                 if(serverRMI.loginUser(nick, password, cc) && cc == cartao) {
                     message = "$ type | status; cc | " + cc + "; logged | on; msg | Bem-vindo ao eVoting";
                     entrou = 1;
                 } else {
-                    System.out.println("ACHOO EUUU");
                     message = "$ type | status; cc | " + cc + "; logged | off; msg | Username ou Password incorretos!";
                 }
 
                 enviaServer(socketSession, message, groupSession);
             }
 
+            Thread.sleep(500);
+            ArrayList<Lista> listas = eleição.getListas();
+            message = "$ type | item_list; item_count | " + listas.size();
+            for(int i = 0; i < listas.size(); i++) {
+                message = message + "; item_" + i + "_name | " + listas.get(i).getNome();
+            }
 
+            // envia as listas
+            enviaServer(socketSession, message, groupSession);
+
+            // recebe a lista que o eleitor votou
+            message = filterMessage(socketSession, "type | vote");
+
+            info = message.split(";");
+            String lista = null;
+            for(int i = 0; i < info.length; i++) {
+                if(info[i].contains("list")) {
+                    lista = info[i].substring(info[i].lastIndexOf(" ") + 1);
+                    break;
+                }
+            }
+
+            serverRMI.adicionaVoto(eleição, lista);
+            System.out.println("\nVoto enviado na eleição " + eleição.getTitulo() + " na lista " + lista);
 
         } catch (IOException e) {
             e.printStackTrace();

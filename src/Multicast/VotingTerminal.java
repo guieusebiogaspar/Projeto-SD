@@ -11,25 +11,29 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class VotingTerminal extends Thread {
-    private String MULTICAST_ADDRESS = "224.0.224.0";
+    //private String MULTICAST_ADDRESS = "224.0.224.0";
+    private String MULTICAST_ADDRESS;
     private int PORT = 4321;
 
     public static void main(String[] args) {
-        VotingTerminal client = new VotingTerminal();
+        if(args.length == 0) {
+            System.out.println("java VotingTerminal multicastAddress");
+            System.exit(0);
+        }
+
+        VotingTerminal client = new VotingTerminal(args[0]);
         client.start();
     }
 
-    public VotingTerminal() {
+    public VotingTerminal(String address) {
         super("" + (long) (Math.random() * 1000));
+        this.MULTICAST_ADDRESS = address;
     }
 
     /**
@@ -88,7 +92,16 @@ public class VotingTerminal extends Thread {
             InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
             socket.joinGroup(group);
 
+            // Prepara o address para tratar das sessões dos eleitores
+            int last = Integer.parseInt(MULTICAST_ADDRESS.substring(MULTICAST_ADDRESS.length() -1));
+            if(last < 255) {
+                last = last + 1;
+            } else {
+                last = last - 1;
+            }
 
+            String newAddress = MULTICAST_ADDRESS.substring(0, MULTICAST_ADDRESS.length()-1);
+            newAddress = newAddress + last;
 
             while(true) {
 
@@ -100,12 +113,12 @@ public class VotingTerminal extends Thread {
                     if(enviou == 0) {
                         message = recebeCliente(socket);
                         System.out.println("1 - " + message);
-                        if (message.contains("$ type | search; available | no")) {
+                        if (message.contains("type | search; available | no")) {
                             enviaCliente(socket, "@ type | search; available | yes; terminal | " + this.getName(), group);
                             enviou = 1;
                             message = recebeCliente(socket);
                             System.out.println("2 - " + message);
-                            if (message.contains("$ type | ack; terminal | " + this.getName())) {
+                            if (message.contains("type | ack; terminal | " + this.getName())) {
                                 disponível = false;
                                 enviou = 0;
                             }
@@ -113,7 +126,7 @@ public class VotingTerminal extends Thread {
                     } else {
                         message = recebeCliente(socket);
                         System.out.println("2 - " + message);
-                        if (message.contains("$ type | ack; terminal | " + this.getName())) {
+                        if (message.contains("type | ack; terminal | " + this.getName())) {
                             disponível = false;
                             enviou = 0;
                         }
@@ -122,11 +135,11 @@ public class VotingTerminal extends Thread {
 
                 // Vai iniciar uma sessão para o votante votar
                 //Scanner keyboardScanner = new Scanner(System.in);
-                Session sessao = new Session();
+                Session sessao = new Session(newAddress);
                 Timer timer = new Timer();
 
                 // Após 120 segundos a thread fecha
-                timer.schedule(new ControlaTempoSessão(sessao, timer), 10000);
+                timer.schedule(new ControlaTempoSessão(sessao, timer), 120000);
                 sessao.start();
                 System.out.println("Tem 120 de segundos de sessão ativa!");
 
@@ -144,9 +157,21 @@ public class VotingTerminal extends Thread {
 }
 
 class Session extends Thread {
-    private String MULTICAST_ADDRESS_SESSIONS = "224.0.224.1";
+    private String MULTICAST_ADDRESS_SESSIONS;
     private int PORT = 4321;
 
+    Session(String address){
+        this.MULTICAST_ADDRESS_SESSIONS = address;
+    }
+
+    public Integer tryParse(String text) {
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            System.out.println("Este campo só aceita números!");
+            return null;
+        }
+    }
 
     /**
      * Método que vai enviar um packet por UDP para a mesa de voto
@@ -206,7 +231,7 @@ class Session extends Thread {
             socketSession.joinGroup(groupSession); //join the multicast group
 
             String message = null;
-            message = filterMessage(socketSession, "$ type | welcome;");
+            message = filterMessage(socketSession, "type | welcome;");
             System.out.println(message);
 
             String[] obterCC = message.split(";");
@@ -234,13 +259,51 @@ class Session extends Thread {
 
                     enviaCliente(socketSession, login, groupSession);
 
-                    message = filterMessage(socketSession, "$ type | status; cc | " + cc + "; logged");
+                    message = filterMessage(socketSession, "type | status; cc | " + cc + "; logged");
 
                     System.out.println(message);
 
                     if (message.contains("logged | on")) {
                         tentativas = 0;
-                        System.out.println("Aqui tens o boletim de voto");
+                        message = filterMessage(socketSession, "type | item_list;");
+
+                        System.out.println(message);
+
+                        String[] info = message.split(";");
+                        ArrayList<String> listas = new ArrayList<>();
+                        for(int i = 0; i < info.length; i++) {
+                            if(info[i].contains("name")) {
+                                listas.add(info[i].substring(info[i].lastIndexOf(" ") + 1));
+                            }
+                        }
+
+                        System.out.println("------- Listas --------");
+                        for(int i = 0; i < listas.size(); i++) {
+                            System.out.println("" + (i+1) + " - " + listas.get(i));
+                        }
+
+                        System.out.println("" + (listas.size() + 1) + " - Voto em branco");
+                        System.out.println("" + (listas.size() + 2) + " - Voto nulo");
+
+                        System.out.print("Introduza o número da lista em que pretende votar: ");
+                        Integer escolha = null;
+                        int check = 0;
+                        while(check == 0) {
+                            while(escolha == null) escolha = tryParse(keyboardScanner.readLine());
+                            if(escolha > 0 && escolha <= (listas.size() + 1)) {
+                                check = 1;
+                            } else {
+                                System.out.println("Número não corresponde a nenhuma lista");
+                                escolha = null;
+                            }
+                        }
+
+                        message = "@ type | vote; list | " + listas.get(escolha-1);
+
+                        // ver se foi branco ou nulo
+                        System.out.println("Votou na lista " + listas.get(escolha-1) + "\nObrigado.\n");
+                        enviaCliente(socketSession, message, groupSession);
+
                     } else {
                         tentativas -= 1;
                         if (tentativas > 0) {

@@ -1,5 +1,8 @@
 Nao permitir "|" "\n" ";" nas passwords nem nos nomes nem nos nicks
 
+Nao permitir que se editem eleições terminadas
+Fazer verificação para nao adicionar listas, mesas de voto e departamentos com o Mesmo nome a editar
+
 
 
 Links auxiliares:
