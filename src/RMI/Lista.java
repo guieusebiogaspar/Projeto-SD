@@ -10,8 +10,8 @@ public class Lista implements Serializable {
 
     public Lista()
     {
-
     }
+
     public Lista(String nome)
     {
         this.nome = nome;
@@ -34,12 +34,4 @@ public class Lista implements Serializable {
         this.numVotos = numVotos;
     }
 
-
-    @Override
-    public String toString() {
-        return "Lista{" +
-                "nome='" + nome + '\'' +
-                ", numVotos=" + numVotos +
-                '}';
-    }
 }

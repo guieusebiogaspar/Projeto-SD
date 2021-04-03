@@ -99,6 +99,10 @@ public class Eleição implements Serializable {
         return this.listas;
     }
 
+    public void setListas(ArrayList<Lista> listas) {
+        this.listas = listas;
+    }
+
     public ArrayList<String> getMesasVoto() {
         return mesasVoto;
     }

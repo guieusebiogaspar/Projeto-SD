@@ -235,9 +235,15 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
         if(tipo != null && dep != null) {
             for (int i = 0; i < eleições.size(); i++) {
+                /*System.out.println("Eleição - " + eleições.get(i).getTitulo());
+                System.out.println("Mesas de voto - " + eleições.get(i).getMesasVoto());
+                System.out.println("Quem pode votar - " + eleições.get(i).getQuemPodeVotar());
+                System.out.println("Grupo - " + eleições.get(i).getGrupos());*/
+
                 // Se a eleição tiver a mesa de voto em questão
                 // Se a pessoa pertencer ao tipo de pessoas que pode votar (Estudantes, Docentes ou Funcionários)
                 // Se a pessoa pertence a um dos departamentos que podem votar na eleição
+
                 if(eleições.get(i).getMesasVoto().contains(departamento) &&
                     eleições.get(i).getQuemPodeVotar().contains(tipo) &&
                     eleições.get(i).getGrupos().contains(dep))
@@ -248,6 +254,23 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
 
         return filtradas;
+    }
+
+    public void adicionaVoto(Eleição eleição, String lista) throws RemoteException {
+        for(int i = 0; i < eleições.size(); i++) {
+            if(eleições.get(i).getTitulo().equals(eleição.getTitulo())) {
+                for(int j = 0; j < eleições.get(i).getListas().size(); j++) {
+                    if(eleições.get(i).getListas().get(j).getNome().equals(lista)) {
+                        int votos = eleições.get(i).getListas().get(j).getNumVotos();
+                        eleições.get(i).getListas().get(j).setNumVotos(votos+1);
+                        System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(i).getNome());
+                        writeBD("eleicoes.obj");
+                    }
+                }
+
+            }
+        }
+
     }
 
     public void writeBD(String name) throws RemoteException {
