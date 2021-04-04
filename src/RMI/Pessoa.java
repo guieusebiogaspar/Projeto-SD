@@ -102,3 +102,4 @@ public class Pessoa implements Serializable {
         this.aVotar = aVotar;
     }
 }
+

@@ -673,7 +673,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
                                             if(server.rmvGrupo(eleição, inputzito)==1){
 
-                                            System.out.println("Departamento removido com sucesso!");
+                                                System.out.println("Departamento removido com sucesso!");
 
                                             }
 

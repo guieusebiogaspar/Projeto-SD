@@ -311,10 +311,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 // Se a pessoa ainda não votou
                 // Se a eleição estiver ativa
                 if(eleicoes.get(i).getMesasVoto().contains(departamento) &&
-                    eleicoes.get(i).getQuemPodeVotar().contains(tipo) &&
-                    eleicoes.get(i).getGrupos().contains(dep) &&
-                    !eleicoes.get(i).getJaVotaram().contains(cc) &&
-                    eleicoes.get(i).getAtiva())
+                        eleicoes.get(i).getQuemPodeVotar().contains(tipo) &&
+                        eleicoes.get(i).getGrupos().contains(dep) &&
+                        !eleicoes.get(i).getJaVotaram().contains(cc) &&
+                        eleicoes.get(i).getAtiva())
                 {
                     //System.out.println("Adicionou as filtradas");
                     filtradas.add(eleicoes.get(i));
