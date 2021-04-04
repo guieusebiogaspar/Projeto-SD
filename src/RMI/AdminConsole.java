@@ -5,6 +5,7 @@ import java.lang.reflect.Array;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.registry.LocateRegistry;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.time.*;
 
@@ -84,9 +85,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             default:
                 System.out.println("Opção inválida");
         }
-
-
-
     }
 
     public void mostrarAtivas(RMIServerInterface server) throws IOException{
@@ -183,13 +181,15 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             totalVotos += el.getListas().get(i).getNumVotos();
         }
 
-        System.out.println("Total de votos: " + totalVotos);
+        DecimalFormat df2 = new DecimalFormat("#.##");
+
+        System.out.println("Total de votos: " + (int) totalVotos);
         System.out.println("Dados Listas: ");
         for(Lista l : el.getListas())
             if(totalVotos > 0) {
-                System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos() + "->" + (((double) l.getNumVotos()) * 100.0) / totalVotos + "%");
+                System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos() + " -> " + df2.format((((double) l.getNumVotos()) * 100.0) / totalVotos) + "%");
             } else {
-                System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos() + "->" + "0%");
+                System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos() + " -> " + "0%");
             }
 
         System.out.println("Mesas de Voto: ");
@@ -209,13 +209,14 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             }
         }
 
+        System.out.println();
         if(vencedora.size() > 1) {
             System.out.print("Houve um empate nas listas: ");
             for(int i = 0; i < vencedora.size(); i++) {
                 if(i != (vencedora.size() - 1)) {
                     System.out.print(vencedora.get(i) + ", ");
                 } else {
-                    System.out.print(vencedora.get(i) + ".");
+                    System.out.println(vencedora.get(i) + ".");
                 }
             }
         } else {

@@ -102,7 +102,7 @@ public class MesaVoto extends Thread {
 
         ArrayList<Eleição> eleições = serverRMI.filterEleições(departamento, cc);
         if (eleições.size() == 0) {
-            System.out.println("Não existem eleições disponíveis em que esteja autorizado a votar");
+            System.out.println("Não existem eleições disponíveis em que esteja autorizado a votar nesta mesa de voto");
             return null;
         }
         System.out.println("-------- Eleições nesta mesa de voto --------");
@@ -181,10 +181,16 @@ public class MesaVoto extends Thread {
                     String[] decompose = terminal.trim().split(";");
                     //System.out.println("1 - " + terminal);
 
-
+                    String nr = null;
+                    for(int i = 0; i < decompose.length; i++) {
+                        if(decompose[i].contains("terminal")) {
+                            nr = decompose[i].substring(decompose[i].lastIndexOf(" ") + 1);
+                            break;
+                        }
+                    }
 
                     // "@ type | search; available | yes; terminal | nr terminal"
-                    terminal = "$ type | ack; terminal | " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1);
+                    terminal = "$ type | ack; terminal | " + nr;
 
                     // Avisa os terminais qual dos terminais captou
                     enviaServer(socketFindTerminal, terminal, groupTerminal);
@@ -262,15 +268,14 @@ class HandleSession extends Thread {
         }
     }
 
-    public String filterMessage(MulticastSocket socket, String expression) throws IOException {
+    public String filterMessage(MulticastSocket socket, String expression, String id) throws IOException {
         String message = null;
         while(message == null) {
             message = recebeServer(socket);
-            if(!message.contains(expression)) {
+            if(!message.contains(expression) || !message.contains(id)) {
                 message = null;
             }
         }
-
         return message;
     }
 
@@ -289,13 +294,11 @@ class HandleSession extends Thread {
             String[] info = null;
             int entrou = 0;
             while(entrou == 0) {
-                message = filterMessage(socketSession, "type | login; cc | " + cc);
-
+                message = filterMessage(socketSession, "type | login", "cc | " + cc);
                 info = message.trim().split(";");
                 int cartao = Integer.parseInt(info[1].substring(info[1].lastIndexOf(" ") + 1));
                 String nick = info[2].substring(info[2].lastIndexOf(" ") + 1);
                 String password = info[3].substring(info[3].lastIndexOf(" ") + 1);
-
                 if(serverRMI.loginUser(nick, password, cc) && cc == cartao) {
                     message = "$ type | status; cc | " + cc + "; logged | on; msg | Bem-vindo ao eVoting";
                     entrou = 1;
@@ -308,7 +311,7 @@ class HandleSession extends Thread {
 
             Thread.sleep(500);
             ArrayList<Lista> listas = eleição.getListas();
-            message = "$ type | item_list; item_count | " + listas.size();
+            message = "$ type | item_list; cc | " + cc + "; item_count | " + listas.size();
             for(int i = 0; i < listas.size(); i++) {
                 message = message + "; item_" + i + "_name | " + listas.get(i).getNome();
             }
@@ -317,7 +320,7 @@ class HandleSession extends Thread {
             enviaServer(socketSession, message, groupSession);
 
             // recebe a lista que o eleitor votou
-            message = filterMessage(socketSession, "type | vote");
+            message = filterMessage(socketSession, "type | vote", "cc | " + cc);
 
             info = message.trim().split(";");
             String lista = null;

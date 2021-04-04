@@ -33,7 +33,6 @@ public interface RMIServerInterface extends Remote {
     public void readBD(String name) throws RemoteException;
     public void mostraEleicoesAtivas() throws RemoteException;
     public ArrayList<Eleição> getEleições() throws  RemoteException;
-    public void terminarEleição(Eleição eleição) throws RemoteException;
     public void check_results() throws RemoteException;
     public ArrayList<Eleição> filterEleições(String departamento, int cc) throws RemoteException;
     public void adicionaVoto(Eleição eleição, String lista, int cc) throws RemoteException;
