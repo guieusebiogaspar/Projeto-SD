@@ -21,10 +21,18 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     private static ArrayList<Eleição> eleições = new ArrayList<>();
     private static int auxServer;
 
+
     public RMIServer() throws RemoteException {
         super();
     }
-
+    public static int getAuxServer(){
+        return auxServer;
+    }
+    public int obterValor() throws RemoteException
+    {
+        int valor = getAuxServer();
+        return valor;
+    }
     public void olaAdmin(AdminConsoleInterface adm) throws RemoteException {
         System.out.println("Admin entrou no server");
         admin = adm;
@@ -409,13 +417,15 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
         System.out.println("RMI Server ready.");
 
-        new VerificaServer();
+        VerificaServer v =new VerificaServer();
         new ContaTempo();
         System.out.println("Passei");
         while (true) {
+            if(v.getSouB() == 1)
+                auxServer++;
+
         }
     }
-
     public static void main(String args[]) throws RemoteException {
 
         String command;
@@ -475,9 +485,11 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                     }
                 }
                 System.out.println("RMI Backup Server ready.");
-                new VerificaBackupServer();
+                VerificaBackupServer v1 = new VerificaBackupServer();
                 new ContaTempo();
                 while (true) {
+                    if(v1.getSouP() == 1)
+                        auxServer--;
                 }
             }
             catch(java.rmi.server.ExportException e2) {

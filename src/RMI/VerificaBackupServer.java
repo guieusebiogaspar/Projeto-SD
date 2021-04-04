@@ -10,11 +10,16 @@ import java.rmi.RMISecurityManager;
 
 public class VerificaBackupServer extends Thread
 {
-   public VerificaBackupServer()
-   {
-       super();
-       this.start();
-   }
+    private int souP;
+    public VerificaBackupServer()
+    {
+        super();
+        this.start();
+    }
+
+    public int getSouP() {
+        return souP;
+    }
 
     public void run()
     {
@@ -29,28 +34,37 @@ public class VerificaBackupServer extends Thread
             System.out.println("Estou a espera no porto 7069");
             while(true)
             {
+                this.souP = 0;
                 System.out.println("entrei");
                 byte[] buffer = new byte[1000];
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 aSocket.setSoTimeout(5000);
                 try{
                     aSocket.receive(request);
+                    received = new String(request.getData(), 0, request.getLength());
+                    System.out.println("RECEBIDO\t" + received);
                 }
                 catch (SocketTimeoutException t){
-                    System.out.println("nao respondes olha vou dormir");
-                    while(true)
-                    {
-                        Thread.sleep(200);
+                    System.out.println("Server de Backup agora como Server Principal");
+                    this.souP = 1;
+                    try {
+
+                        DatagramSocket bSocket = new DatagramSocket();
+                        String message = "Enviei";
+                        while (true) {
+                            byte[] m = message.getBytes();
+                            InetAddress aHost = InetAddress.getLocalHost();
+                            DatagramPacket requestB = new DatagramPacket(m, m.length, aHost, 7070);
+                            bSocket.send(requestB);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
-
-                //System.out.println("oi");
-                received = new String(request.getData(), 0, request.getLength());
-                System.out.println("RECEBIDO\t" + received);
             }
         }
         catch (SocketException e){System.out.println("Socket: " + e.getMessage());
-        }catch (IOException | InterruptedException e) {System.out.println("IO: " + e.getMessage());
+        }catch (IOException e) {System.out.println("IO: " + e.getMessage());
         }finally {if(aSocket != null) aSocket.close();}
     }
 }
