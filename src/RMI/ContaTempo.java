@@ -16,6 +16,23 @@ public class ContaTempo extends Thread{
         this.start();
     }
 
+    public int writeBD(String status, ArrayList<Eleição> eleicoes, Eleição el)
+    {
+        File f = new File("eleicoes.obj");
+        try {
+            FileOutputStream fos = new FileOutputStream(f);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(eleicoes);
+            oos.close();
+            System.out.println("Eleicao " + el.getTitulo() + status);
+            return 1;
+        } catch (FileNotFoundException ex) {
+            System.out.println("Erro a criar ficheiro.");
+        } catch (IOException ex) {
+            System.out.println("Erro a escrever para o ficheiro.");
+        }
+        return 0;
+    }
     public void run() {
         System.getProperties().put("java.security.policy", "policy.all");
         System.setSecurityManager(new RMISecurityManager());
@@ -37,7 +54,7 @@ public class ContaTempo extends Thread{
                     System.out.println("Erro a abrir ficheiro.");
                 }
                 catch(IOException ex){
-                    //System.out.println("Erro a ler ficheiro.A");
+                    System.out.println("Erro a ler ficheiro.A");
                 }
                 catch(ClassNotFoundException ex){
                     System.out.println("Erro a converter objeto.");
@@ -55,18 +72,8 @@ public class ContaTempo extends Thread{
                         {
                             el.setAtiva(false);
                             el.setTerminada(true);
-                            try {
-                                FileOutputStream fos = new FileOutputStream(f);
-                                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                                oos.writeObject(eleicoes);
-                                oos.close();
-                                System.out.println("Eleicao " + el.getTitulo() + " terminada1");
+                            if(writeBD("terminada", eleicoes, el) == 1)
                                 break;
-                            } catch (FileNotFoundException ex) {
-                                System.out.println("Erro a criar ficheiro.");
-                            } catch (IOException ex) {
-                                System.out.println("Erro a escrever para o ficheiro.");
-                            }
                         }
                     }
                     if(ld.getYear() == el.getFim().getAno())
@@ -77,18 +84,8 @@ public class ContaTempo extends Thread{
                             {
                                 el.setAtiva(false);
                                 el.setTerminada(true);
-                                try {
-                                    FileOutputStream fos = new FileOutputStream(f);
-                                    ObjectOutputStream oos = new ObjectOutputStream(fos);
-                                    oos.writeObject(eleicoes);
-                                    oos.close();
-                                    System.out.println("Eleicao " + el.getTitulo() + " terminada2");
+                                if(writeBD("terminada", eleicoes, el) == 1)
                                     break;
-                                } catch (FileNotFoundException ex) {
-                                    System.out.println("Erro a criar ficheiro.");
-                                } catch (IOException ex) {
-                                    System.out.println("Erro a escrever para o ficheiro.");
-                                }
                             }
                         }
                         if(ld.getMonthValue() == el.getFim().getMes())
@@ -99,18 +96,9 @@ public class ContaTempo extends Thread{
                                 {
                                     el.setAtiva(false);
                                     el.setTerminada(true);
-                                    try {
-                                        FileOutputStream fos = new FileOutputStream(f);
-                                        ObjectOutputStream oos = new ObjectOutputStream(fos);
-                                        oos.writeObject(eleicoes);
-                                        oos.close();
-                                        System.out.println("Eleicao " + el.getTitulo() + " terminada3");
+
+                                    if(writeBD("terminada", eleicoes, el) == 1)
                                         break;
-                                    } catch (FileNotFoundException ex) {
-                                        System.out.println("Erro a criar ficheiro.");
-                                    } catch (IOException ex) {
-                                        System.out.println("Erro a escrever para o ficheiro.");
-                                    }
                                 }
                             }
                             if(ld.getDayOfMonth() == el.getFim().getDia())
@@ -121,18 +109,9 @@ public class ContaTempo extends Thread{
                                     {
                                         el.setAtiva(false);
                                         el.setTerminada(true);
-                                        try {
-                                            FileOutputStream fos = new FileOutputStream(f);
-                                            ObjectOutputStream oos = new ObjectOutputStream(fos);
-                                            oos.writeObject(eleicoes);
-                                            oos.close();
-                                            System.out.println("Eleicao " + el.getTitulo() + " terminada4");
+
+                                        if(writeBD("terminada1", eleicoes, el) == 1)
                                             break;
-                                        } catch (FileNotFoundException ex) {
-                                            System.out.println("Erro a criar ficheiro.");
-                                        } catch (IOException ex) {
-                                            System.out.println("Erro a escrever para o ficheiro.");
-                                        }
                                     }
                                 }
                                 if(lt.getHour() == el.getFim().getHora())
@@ -143,18 +122,9 @@ public class ContaTempo extends Thread{
                                         {
                                             el.setAtiva(false);
                                             el.setTerminada(true);
-                                            try {
-                                                FileOutputStream fos = new FileOutputStream(f);
-                                                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                                                oos.writeObject(eleicoes);
-                                                oos.close();
-                                                System.out.println("Eleicao " + el.getTitulo() + " terminada5");
+
+                                            if(writeBD("terminada", eleicoes, el) == 1)
                                                 break;
-                                            } catch (FileNotFoundException ex) {
-                                                System.out.println("Erro a criar ficheiro.");
-                                            } catch (IOException ex) {
-                                                System.out.println("Erro a escrever para o ficheiro.");
-                                            }
                                         }
                                     }
                                 }
@@ -175,18 +145,8 @@ public class ContaTempo extends Thread{
                                     if(!el.getAtiva())
                                     {
                                         el.setAtiva(true);
-                                        try {
-                                            FileOutputStream fos = new FileOutputStream(f);
-                                            ObjectOutputStream oos = new ObjectOutputStream(fos);
-                                            oos.writeObject(eleicoes);
-                                            oos.close();
-                                            System.out.println("Eleicao " + el.getTitulo() + " iniciada5");
+                                        if(writeBD("iniciada1", eleicoes, el) == 1)
                                             break;
-                                        } catch (FileNotFoundException ex) {
-                                            System.out.println("Erro a criar ficheiro.");
-                                        } catch (IOException ex) {
-                                            System.out.println("Erro a escrever para o ficheiro.");
-                                        }
                                     }
                                 }
                             }
@@ -198,18 +158,9 @@ public class ContaTempo extends Thread{
                                 if(!el.getAtiva())
                                 {
                                     el.setAtiva(true);
-                                    try {
-                                        FileOutputStream fos = new FileOutputStream(f);
-                                        ObjectOutputStream oos = new ObjectOutputStream(fos);
-                                        oos.writeObject(eleicoes);
-                                        oos.close();
-                                        System.out.println("Eleicao " + el.getTitulo() + " iniciada4");
+                                    el.setTerminada(false);
+                                    if(writeBD("iniciada", eleicoes, el) == 1)
                                         break;
-                                    } catch (FileNotFoundException ex) {
-                                        System.out.println("Erro a criar ficheiro.");
-                                    } catch (IOException ex) {
-                                        System.out.println("Erro a escrever para o ficheiro.");
-                                    }
                                 }
                             }
                         }
@@ -222,18 +173,10 @@ public class ContaTempo extends Thread{
                                 if(!el.getAtiva())
                                 {
                                     el.setAtiva(true);
-                                    try {
-                                        FileOutputStream fos = new FileOutputStream(f);
-                                        ObjectOutputStream oos = new ObjectOutputStream(fos);
-                                        oos.writeObject(eleicoes);
-                                        oos.close();
-                                        System.out.println("Eleicao " + el.getTitulo() + " iniciada3");
+                                    el.setTerminada(false);
+
+                                    if(writeBD("iniciada", eleicoes, el) == 1)
                                         break;
-                                    } catch (FileNotFoundException ex) {
-                                        System.out.println("Erro a criar ficheiro.");
-                                    } catch (IOException ex) {
-                                        System.out.println("Erro a escrever para o ficheiro.");
-                                    }
                                 }
                             }
                         }
@@ -247,18 +190,10 @@ public class ContaTempo extends Thread{
                                         if(!el.getAtiva())
                                         {
                                             el.setAtiva(true);
-                                            try {
-                                                FileOutputStream fos = new FileOutputStream(f);
-                                                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                                                oos.writeObject(eleicoes);
-                                                oos.close();
-                                                System.out.println("Eleicao " + el.getTitulo() + " iniciada2");
+                                            el.setTerminada(false);
+
+                                            if(writeBD("iniciada", eleicoes, el) == 1)
                                                 break;
-                                            } catch (FileNotFoundException ex) {
-                                                System.out.println("Erro a criar ficheiro.");
-                                            } catch (IOException ex) {
-                                                System.out.println("Erro a escrever para o ficheiro.");
-                                            }
                                         }
                                     }
                                 }
@@ -271,23 +206,14 @@ public class ContaTempo extends Thread{
                                         if(!el.getAtiva())
                                         {
                                             el.setAtiva(true);
-                                            try {
-                                                FileOutputStream fos = new FileOutputStream(f);
-                                                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                                                oos.writeObject(eleicoes);
-                                                oos.close();
-                                                System.out.println("Eleicao " + el.getTitulo() + " iniciada1");
+                                            el.setTerminada(false);
+
+                                            if(writeBD("iniciada", eleicoes, el) == 1)
                                                 break;
-                                            } catch (FileNotFoundException ex) {
-                                                System.out.println("Erro a criar ficheiro.");
-                                            } catch (IOException ex) {
-                                                System.out.println("Erro a escrever para o ficheiro.");
-                                            }
                                         }
                                     }
                                 }
                             }
-
                         }
                     }
                 }
