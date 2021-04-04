@@ -112,12 +112,12 @@ public class VotingTerminal extends Thread {
                 while (disponível) {
                     if(enviou == 0) {
                         message = recebeCliente(socket);
-                        System.out.println("1 - " + message);
+                        //System.out.println("1 - " + message);
                         if (message.contains("type | search; available | no")) {
                             enviaCliente(socket, "@ type | search; available | yes; terminal | " + this.getName(), group);
                             enviou = 1;
                             message = recebeCliente(socket);
-                            System.out.println("2 - " + message);
+                            //System.out.println("2 - " + message);
                             if (message.contains("type | ack; terminal | " + this.getName())) {
                                 disponível = false;
                                 enviou = 0;
@@ -125,7 +125,7 @@ public class VotingTerminal extends Thread {
                         }
                     } else {
                         message = recebeCliente(socket);
-                        System.out.println("2 - " + message);
+                        //System.out.println("2 - " + message);
                         if (message.contains("type | ack; terminal | " + this.getName())) {
                             disponível = false;
                             enviou = 0;
@@ -134,7 +134,6 @@ public class VotingTerminal extends Thread {
                 }
 
                 // Vai iniciar uma sessão para o votante votar
-                //Scanner keyboardScanner = new Scanner(System.in);
                 Session sessao = new Session(newAddress);
                 Timer timer = new Timer();
 
@@ -232,9 +231,14 @@ class Session extends Thread {
 
             String message = null;
             message = filterMessage(socketSession, "type | welcome;");
-            System.out.println(message);
+            String[] info = message.trim().split(";");
+            for(int i = 0; i < info.length; i++) {
+                if(info[i].contains("user")) {
+                    System.out.println("Bem-vindo user com o cartão de cidadão " + info[i].substring(info[i].lastIndexOf(" ") + 1));
+                }
+            }
 
-            String[] obterCC = message.split(";");
+            String[] obterCC = message.trim().split(";");
             String cc = obterCC[1].substring(obterCC[1].lastIndexOf(" ") + 1);
 
             BufferedReader keyboardScanner = new BufferedReader(new InputStreamReader(System.in));
@@ -261,15 +265,21 @@ class Session extends Thread {
 
                     message = filterMessage(socketSession, "type | status; cc | " + cc + "; logged");
 
-                    System.out.println(message);
-
                     if (message.contains("logged | on")) {
+                        info = message.trim().split(";");
+                        for(int i = 0; i < info.length; i++) {
+                            if(info[i].contains("msg")) {
+                                info = message.trim().trim().split("|");
+                                System.out.println(info[1]);
+                            }
+                        }
+
                         tentativas = 0;
                         message = filterMessage(socketSession, "type | item_list;");
 
-                        System.out.println(message);
+                        //System.out.println(message);
 
-                        String[] info = message.split(";");
+                        info = message.trim().split(";");
                         ArrayList<String> listas = new ArrayList<>();
                         for(int i = 0; i < info.length; i++) {
                             if(info[i].contains("name")) {
@@ -281,9 +291,6 @@ class Session extends Thread {
                         for(int i = 0; i < listas.size(); i++) {
                             System.out.println("" + (i+1) + " - " + listas.get(i));
                         }
-
-                        System.out.println("" + (listas.size() + 1) + " - Voto em branco");
-                        System.out.println("" + (listas.size() + 2) + " - Voto nulo");
 
                         System.out.print("Introduza o número da lista em que pretende votar: ");
                         Integer escolha = null;
@@ -301,7 +308,7 @@ class Session extends Thread {
                         message = "@ type | vote; list | " + listas.get(escolha-1);
 
                         // ver se foi branco ou nulo
-                        System.out.println("Votou na lista " + listas.get(escolha-1) + "\nObrigado.\n");
+                        System.out.println("Votou " + listas.get(escolha-1) + "\nObrigado.\n");
                         enviaCliente(socketSession, message, groupSession);
 
                     } else {

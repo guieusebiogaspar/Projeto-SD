@@ -19,9 +19,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("[1] - Registar pessoa");
         System.out.println("[2] - Criar eleição");
         System.out.println("[3] - Editar eleição");
-        System.out.println("[4] - Terminar eleição");
-        System.out.println("[5] - Consultar resultados de eleições passadas");
-        System.out.println("[6] - Detalhes de eleições");
+        System.out.println("[4] - Detalhes de eleições");
         System.out.println("[0] - Sair");
     }
     public void olaServidor() throws RemoteException
@@ -43,12 +41,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 editarEleiçao(server);
                 break;
             case "4":
-                terminaEleiçao(server);
-                break;
-            case "5":
-                //consultaResultados(server);
-                break;
-            case "6":
                 showDetails(server);
                 break;
             case "0":
@@ -104,12 +96,18 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         ArrayList<Eleição> eleicoes = server.getEleições();
 
-        for(Eleição el: eleicoes)
-        {
-            if(el.getAtiva())
-                System.out.println(el.getTitulo());
+        if(eleicoes.size() > 0) {
+            for(Eleição el: eleicoes)
+            {
+                if(el.getAtiva())
+                    System.out.println(el.getTitulo());
 
+            }
+        } else {
+            System.out.println("Não existem eleições");
+            return;
         }
+
         Eleição el = null;
         while(el == null || !el.getAtiva())
         {
@@ -130,8 +128,14 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             System.out.print(s + "\t");
         System.out.println();
         System.out.println("Dados Listas: ");
-        for(Lista l : el.getListas())
-            System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos());
+        for(int i = 0; i < el.getListas().size(); i++) {
+            if(i == (el.getListas().size() - 1) || i == (el.getListas().size() - 1)) {
+                System.out.println("\tVotos " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
+            } else {
+                System.out.println("\tVotos Lista " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
+            }
+        }
+
         System.out.println("Mesas de Voto: ");
         for(String s : el.getMesasVoto())
             System.out.println("Mesa voto " + s);
@@ -173,12 +177,51 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         for(String s : el.getGrupos())
             System.out.print(s + "\t");
         System.out.println();
+
+        double totalVotos = 0;
+        for(int i = 0; i < el.getListas().size(); i++) {
+            totalVotos += el.getListas().get(i).getNumVotos();
+        }
+
+        System.out.println("Total de votos: " + totalVotos);
         System.out.println("Dados Listas: ");
         for(Lista l : el.getListas())
-            System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos());
+            if(totalVotos > 0) {
+                System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos() + "->" + (((double) l.getNumVotos()) * 100.0) / totalVotos + "%");
+            } else {
+                System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos() + "->" + "0%");
+            }
+
         System.out.println("Mesas de Voto: ");
         for(String s : el.getMesasVoto())
             System.out.println("Mesa voto " + s);
+
+        int max = 0;
+        ArrayList<String> vencedora = new ArrayList<>();
+        for(int i = 0; i < (el.getListas().size() - 2); i++) {
+            if(el.getListas().get(i).getNumVotos() > max) { // se os votos for maior que o max limpa o arraylist e adiciona a lista
+                max = el.getListas().get(i).getNumVotos();
+                vencedora.clear();
+                vencedora.add(el.getListas().get(i).getNome());
+            }
+            else if (el.getListas().get(i).getNumVotos() == max) {
+                vencedora.add(el.getListas().get(i).getNome());
+            }
+        }
+
+        if(vencedora.size() > 1) {
+            System.out.print("Houve um empate nas listas: ");
+            for(int i = 0; i < vencedora.size(); i++) {
+                if(i != (vencedora.size() - 1)) {
+                    System.out.print(vencedora.get(i) + ", ");
+                } else {
+                    System.out.print(vencedora.get(i) + ".");
+                }
+            }
+        } else {
+            System.out.println("A lista vencedora foi a lista " + vencedora.get(0));
+        }
+
     }
 
     public void registar(RMIServerInterface server) throws IOException {
@@ -281,7 +324,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.print("Descrição da eleição: ");
         descrição = reader.readLine();
         System.out.print("Departamentos (sigla) que podem votar nesta eleição (separe por espaços o nome dos departamentos): ");
-        gruposInput = reader.readLine().split(" ");
+        gruposInput = reader.readLine().trim().split(" ");
         for(int i = 0; i < gruposInput.length; i++)
             grupos.add(gruposInput[i]);
 
@@ -290,7 +333,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         System.out.println("Quantas listas tem a eleição?");
         Integer nListas = tryParse(reader.readLine());
-        for(int i = 0; i <nListas; i++)
+        for(int i = 0; i < nListas; i++)
         {
             int cond = 0;
             String nome = null;
@@ -322,8 +365,13 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 Lista l = new Lista(nome);
                 listas.add(l);
             }
-
         }
+
+        Lista branco = new Lista("Branco");
+        Lista nulo = new Lista("Nulo");
+        listas.add(branco);
+        listas.add(nulo);
+
         System.out.println("Quantas mesas de voto irá ter esta eleição?");
         nListas = tryParse(reader.readLine());
         for(int i = 0; i < nListas; i++)
@@ -342,7 +390,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     nome = reader.readLine();
                     for (String a : mesas) {
                         if (a.equals(nome)) {
-                            System.out.println("Já Há uma lista com esse nome!!");
+                            System.out.println("Já há uma lista com esse nome!!");
                             n_passou = 1;
                         }
                     }
@@ -356,7 +404,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("1 - Estudantes");
         System.out.println("2 - Docentes");
         System.out.println("3 - Funcionários");
-        String[] opcoes = reader.readLine().split(" ");
+        String[] opcoes = reader.readLine().trim().split(" ");
 
         for(int i = 0; i < opcoes.length; i++)
         {
@@ -369,24 +417,26 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
         LocalDate ld = LocalDate.now();
         LocalTime lt = LocalTime.now();
-        if(ld.getYear() >= inicio.getAno() && ld.getMonthValue() >= inicio.getMes() && ld.getDayOfMonth() >= inicio.getDia() && lt.getHour() >= inicio.getHora() && lt.getMinute() >= inicio.getMinuto()){
+        /*if(ld.getYear() >= inicio.getAno() && ld.getMonthValue() >= inicio.getMes() && ld.getDayOfMonth() >= inicio.getDia() && lt.getHour() >= inicio.getHora() && lt.getMinute() >= inicio.getMinuto()){
             if(ld.getYear() <= fim.getAno() && ld.getMonthValue() <= fim.getMes() && ld.getDayOfMonth() <= fim.getDia() && lt.getHour() <= fim.getHora() && lt.getMinute() <= fim.getMinuto())
             {
-                Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true, listas, mesas, opcoesVoto);
+                Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true, listas, mesas, opcoesVoto, false);
                 server.criarEleição(eleição);
                 System.out.println("1111111");
             }
             if(ld.getYear() >= fim.getAno() && ld.getMonthValue() >= fim.getMes() && ld.getDayOfMonth() >= fim.getDia() && lt.getHour() >= fim.getHora() && lt.getMinute() >= fim.getMinuto()){
-                Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, false, listas, mesas, opcoesVoto);
+                Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, false, listas, mesas, opcoesVoto, true);
                 server.criarEleição(eleição);
                 System.out.println("222222");
             }
         }
         if(ld.getYear() <= inicio.getAno() && ld.getMonthValue() <= inicio.getMes() && ld.getDayOfMonth() <= inicio.getDia() && lt.getHour() <= inicio.getHora() && lt.getMinute() <= inicio.getMinuto()){
-            Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, false, listas, mesas, opcoesVoto);
+            Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, false, listas, mesas, opcoesVoto, false);
             server.criarEleição(eleição);
             System.out.println("33333333");
-        }
+        }*/
+        Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, listas, mesas, opcoesVoto);
+        server.criarEleição(eleição);
         System.out.println("Eleição registada no servidor!");
     }
 
@@ -395,13 +445,20 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
+        ArrayList<Eleição> eleicoes = server.getEleições();
+
         String inputzito;
         Eleição eleição = null;
         System.out.println("--------- Editar Eleição ---------");
+        for(Eleição el: eleicoes)
+        {
+            if(!el.getAtiva() && !el.getTerminada())
+                System.out.println(el.getTitulo());
+
+        }
 
         while(eleição == null)
         {
-
             System.out.println("Introduza o titulo da eleição que pretende alterar (Prima 0 para sair):");
             inputzito = reader.readLine();
 
@@ -416,6 +473,10 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
                 else if(eleição.getAtiva() == true) {
                     System.out.println("A eleição " + eleição.getTitulo() + " está a decorrer, como tal, não pode ser editada");
+                    eleição = null;
+                }
+                else if(eleição.getTerminada() == true) {
+                    System.out.println("A eleição " + eleição.getTitulo() + " já terminou, como tal, não pode ser editada");
                     eleição = null;
                 }
                 else{
@@ -608,33 +669,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
     }
 
-    public void terminaEleiçao(RMIServerInterface server) throws IOException {
-        InputStreamReader input = new InputStreamReader(System.in);
-        BufferedReader reader = new BufferedReader(input);
-
-        String inputzito;
-        Eleição eleição = null;
-        System.out.println("--------- Terminar Eleição ---------");
-
-        while(eleição == null) {
-
-            System.out.println("Introduza o titulo da eleição que pretende terminar (Prima 0 para sair):");
-            inputzito = reader.readLine();
-
-            if (inputzito.equals("0")) return;
-            else{
-                eleição = server.getEleição(inputzito);
-                if(eleição == null) {
-                    System.out.println("Não existe nenhuma eleição com esse título. Tente novamente.");
-                }
-                else{
-                    server.terminarEleição(eleição);
-                    System.out.println("Eleição " + eleição.getTitulo() + " terminada!");
-                }
-            }
-
-        }
-    }
 
     public void init(AdminConsole adminConsole) {
 

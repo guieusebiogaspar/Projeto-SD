@@ -14,13 +14,11 @@ public class Eleição implements Serializable {
     private ArrayList<Lista> listas;
     private ArrayList<String> mesasVoto;
     private ArrayList<String> quemPodeVotar;
+    private ArrayList<Integer> jaVotaram;
     private Boolean ativa;
+    private Boolean terminada;
 
 
-    // type (conselho geral ou nucleo de estudantes)
-    // arrayList com listas candidatas
-
-    // conselho geral tem listas separadas? ou uma candidatura tem as 3 (estudantes, docentes, funcionarios?
     /**
      * Construtor vazio do objeto Eleição
      */
@@ -34,19 +32,21 @@ public class Eleição implements Serializable {
      * @param titulo - titulo eleicao
      * @param descrição - descrição da eleição
      * @param grupos - grupos que podem votar na eleição
-     * @param ativa - se a eleição esta ativa
      */
-    public Eleição(DataEleição inicio, DataEleição fim, String titulo, String descrição, ArrayList<String> grupos, Boolean ativa, ArrayList<Lista> listas, ArrayList<String> mesasVoto, ArrayList<String> quemPodeVotar) {
+    public Eleição(DataEleição inicio, DataEleição fim, String titulo, String descrição, ArrayList<String> grupos, ArrayList<Lista> listas, ArrayList<String> mesasVoto, ArrayList<String> quemPodeVotar) {
         this.inicio = inicio;
         this.fim = fim;
         this.titulo = titulo;
         this.descrição = descrição;
         this.grupos = grupos;
-        this.ativa = ativa;
         this.listas = listas;
         this.mesasVoto = mesasVoto;
         this.quemPodeVotar = quemPodeVotar;
+        this.ativa = false;
+        this.terminada = false;
+        this.jaVotaram = new ArrayList<>();
     }
+
     public DataEleição getInicio() {
         return inicio;
     }
@@ -83,10 +83,6 @@ public class Eleição implements Serializable {
         return grupos;
     }
 
-    public void setGrupos(ArrayList<String> grupos) {
-        this.grupos = grupos;
-    }
-
     public Boolean getAtiva() {
         return this.ativa;
     }
@@ -99,15 +95,27 @@ public class Eleição implements Serializable {
         return this.listas;
     }
 
-    public void setListas(ArrayList<Lista> listas) {
-        this.listas = listas;
-    }
-
     public ArrayList<String> getMesasVoto() {
         return mesasVoto;
     }
 
     public ArrayList<String> getQuemPodeVotar() {
         return quemPodeVotar;
+    }
+
+    public ArrayList<Integer> getJaVotaram() {
+        return jaVotaram;
+    }
+
+    public void setJaVotaram(ArrayList<Integer> jaVotaram) {
+        this.jaVotaram = jaVotaram;
+    }
+
+    public Boolean getTerminada() {
+        return terminada;
+    }
+
+    public void setTerminada(Boolean terminada) {
+        this.terminada = terminada;
     }
 }
