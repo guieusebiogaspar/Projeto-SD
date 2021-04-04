@@ -428,13 +428,6 @@ class HandleSession extends Thread {
             }
         }
 
-            // recebe a lista que o eleitor votou
-            message = filterMessage(socketSession, "type | vote", "cc | " + cc);
-            if(message.equals("Interrupt")) {
-                System.out.println("Thread foi terminada");
-                return;
-            }
-
         //System.out.println("\nVoto enviado na eleição " + eleição.getTitulo() + " na lista " + lista);
 
     }

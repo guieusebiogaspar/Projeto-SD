@@ -344,9 +344,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         }
 
                         ArrayList<Integer> jaVotaram = eleições.get(i).getJaVotaram();
-                        synchronized (jaVotaram) {
-                            jaVotaram.add(cc);
-                        }
+                        jaVotaram.add(cc);
                         eleições.get(i).setJaVotaram(jaVotaram);
                         System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome());
                         writeBD("eleicoes.obj");
