@@ -11,7 +11,7 @@ public interface RMIServerInterface extends Remote {
     void olaAdmin(AdminConsoleInterface adm) throws RemoteException;
 
     void adeusAdmin() throws RemoteException;
-
+    int obterValor() throws RemoteException;
     void olaMesaVoto(String mesa) throws RemoteException;
     void registar(Pessoa pessoa) throws RemoteException;
     int rmvLista(Eleição eleição, String lista) throws RemoteException;
