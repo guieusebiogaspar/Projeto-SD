@@ -133,87 +133,419 @@ public class MesaVoto extends Thread {
 
         MulticastSocket socketFindTerminal = null;
         System.out.println("Mesa de voto " + departamento +  " running...");
+        while(true)
+        {
+            try {
+                RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
 
-        try {
-            RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
-            serverRMI.olaMesaVoto(this.getName());
+                if(serverRMI.obterValor() == 0)
+                {
+                    try{
+                        serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+                        serverRMI.olaMesaVoto(this.getName());
 
-            socketFindTerminal = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
-            InetAddress groupTerminal = InetAddress.getByName(MULTICAST_ADDRESS_TERMINALS);
-            socketFindTerminal.joinGroup(groupTerminal); //join the multicast group
+                        socketFindTerminal = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
+                        InetAddress groupTerminal = InetAddress.getByName(MULTICAST_ADDRESS_TERMINALS);
+                        socketFindTerminal.joinGroup(groupTerminal); //join the multicast group
 
-            // Prepara o address para tratar das sessões dos eleitores
-            int last = Integer.parseInt(MULTICAST_ADDRESS_TERMINALS.substring(MULTICAST_ADDRESS_TERMINALS.length() -1));
-            if(last < 255) {
-                last = last + 1;
-            } else {
-                last = last - 1;
-            }
+                        // Prepara o address para tratar das sessões dos eleitores
+                        int last = Integer.parseInt(MULTICAST_ADDRESS_TERMINALS.substring(MULTICAST_ADDRESS_TERMINALS.length() -1));
+                        if(last < 255) {
+                            last = last + 1;
+                        } else {
+                            last = last - 1;
+                        }
 
-            String newAddress = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length()-1);
-            newAddress = newAddress + last;
+                        String newAddress = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length()-1);
+                        newAddress = newAddress + last;
 
-            InputStreamReader input = new InputStreamReader(System.in);
-            BufferedReader reader = new BufferedReader(input);
+                        InputStreamReader input = new InputStreamReader(System.in);
+                        BufferedReader reader = new BufferedReader(input);
 
-            while (true) {
+                        while (true) {
 
-                System.out.printf("Introduza o seu número de Cartão de Cidadão: ");
-                Integer cc = null;
-                while(cc == null) cc = tryParse(reader.readLine());
+                            System.out.printf("Introduza o seu número de Cartão de Cidadão: ");
+                            Integer cc = null;
+                            while(cc == null) cc = tryParse(reader.readLine());
 
-                if(serverRMI.verificaEleitor(cc) != null) {
-                    System.out.println("Cartão de cidadão válido!");
+                            if(serverRMI.verificaEleitor(cc) != null) {
+                                System.out.println("Cartão de cidadão válido!");
 
-                    Eleição eleição = escolherEleição(serverRMI, departamento, cc);
+                                Eleição eleição = escolherEleição(serverRMI, departamento, cc);
 
-                    if(eleição == null) continue;
+                                if(eleição == null) continue;
 
-                    System.out.println("Redirecionando-o para um terminal de voto");
-                    String message = "$ type | search; available | no";
+                                System.out.println("Redirecionando-o para um terminal de voto");
+                                String message = "$ type | search; available | no";
 
-                    // Vê que terminais estão à espera da mensagem "Terminal Disponível"
-                    enviaServer(socketFindTerminal, message, groupTerminal);
+                                // Vê que terminais estão à espera da mensagem "Terminal Disponível"
+                                enviaServer(socketFindTerminal, message, groupTerminal);
 
-                    // Os que estiverem disponíveis enviam mensagem com o seu id. A mesa de voto capta um dos terminais.
-                    String terminal = filterMessage(socketFindTerminal, "type | search;");
+                                // Os que estiverem disponíveis enviam mensagem com o seu id. A mesa de voto capta um dos terminais.
+                                String terminal = filterMessage(socketFindTerminal, "type | search;");
 
-                    String[] decompose = terminal.trim().split(";");
-                    //System.out.println("1 - " + terminal);
+                                String[] decompose = terminal.trim().split(";");
+                                //System.out.println("1 - " + terminal);
 
-                    String nr = null;
-                    for(int i = 0; i < decompose.length; i++) {
-                        if(decompose[i].contains("terminal")) {
-                            nr = decompose[i].substring(decompose[i].lastIndexOf(" ") + 1);
-                            break;
+                                String nr = null;
+                                for(int i = 0; i < decompose.length; i++) {
+                                    if(decompose[i].contains("terminal")) {
+                                        nr = decompose[i].substring(decompose[i].lastIndexOf(" ") + 1);
+                                        break;
+                                    }
+                                }
+
+                                // "@ type | search; available | yes; terminal | nr terminal"
+                                terminal = "$ type | ack; terminal | " + nr;
+
+                                // Avisa os terminais qual dos terminais captou
+                                enviaServer(socketFindTerminal, terminal, groupTerminal);
+                                System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
+                                new HandleSession(serverRMI, newAddress, cc, eleição);
+
+                            } else {
+                                System.out.println("O cc introduzido não se encontra na nossa DB.");
+                            }
+
+
+                            try { sleep(2000); } catch (InterruptedException e) { }
                         }
                     }
+                    catch(RemoteException | NotBoundException ex)
+                    {
+                        try{
+                            RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
 
-                    // "@ type | search; available | yes; terminal | nr terminal"
-                    terminal = "$ type | ack; terminal | " + nr;
+                            serverRMI1.olaMesaVoto(this.getName());
 
-                    // Avisa os terminais qual dos terminais captou
-                    enviaServer(socketFindTerminal, terminal, groupTerminal);
-                    System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
-                    new HandleSession(serverRMI, newAddress, cc, eleição);
+                            socketFindTerminal = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
+                            InetAddress groupTerminal = InetAddress.getByName(MULTICAST_ADDRESS_TERMINALS);
+                            socketFindTerminal.joinGroup(groupTerminal); //join the multicast group
 
-                } else {
-                    System.out.println("O cc introduzido não se encontra na nossa DB.");
+                            // Prepara o address para tratar das sessões dos eleitores
+                            int last = Integer.parseInt(MULTICAST_ADDRESS_TERMINALS.substring(MULTICAST_ADDRESS_TERMINALS.length() -1));
+                            if(last < 255) {
+                                last = last + 1;
+                            } else {
+                                last = last - 1;
+                            }
+
+                            String newAddress = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length()-1);
+                            newAddress = newAddress + last;
+
+                            InputStreamReader input = new InputStreamReader(System.in);
+                            BufferedReader reader = new BufferedReader(input);
+
+                            while (true) {
+
+                                System.out.printf("Introduza o seu número de Cartão de Cidadão: ");
+                                Integer cc = null;
+                                while(cc == null) cc = tryParse(reader.readLine());
+
+                                if(serverRMI1.verificaEleitor(cc) != null) {
+                                    System.out.println("Cartão de cidadão válido!");
+
+                                    Eleição eleição = escolherEleição(serverRMI1, departamento, cc);
+
+                                    if(eleição == null) continue;
+
+                                    System.out.println("Redirecionando-o para um terminal de voto");
+                                    String message = "$ type | search; available | no";
+
+                                    // Vê que terminais estão à espera da mensagem "Terminal Disponível"
+                                    enviaServer(socketFindTerminal, message, groupTerminal);
+
+                                    // Os que estiverem disponíveis enviam mensagem com o seu id. A mesa de voto capta um dos terminais.
+                                    String terminal = filterMessage(socketFindTerminal, "type | search;");
+
+                                    String[] decompose = terminal.trim().split(";");
+                                    //System.out.println("1 - " + terminal);
+
+                                    String nr = null;
+                                    for(int i = 0; i < decompose.length; i++) {
+                                        if(decompose[i].contains("terminal")) {
+                                            nr = decompose[i].substring(decompose[i].lastIndexOf(" ") + 1);
+                                            break;
+                                        }
+                                    }
+
+                                    // "@ type | search; available | yes; terminal | nr terminal"
+                                    terminal = "$ type | ack; terminal | " + nr;
+
+                                    // Avisa os terminais qual dos terminais captou
+                                    enviaServer(socketFindTerminal, terminal, groupTerminal);
+                                    System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
+                                    new HandleSession(serverRMI1, newAddress, cc, eleição);
+
+                                } else {
+                                    System.out.println("O cc introduzido não se encontra na nossa DB.");
+                                }
+
+
+                                try { sleep(2000); } catch (InterruptedException e) { }
+                            }
+                        }
+                        catch(RemoteException | NotBoundException ex1)
+                        {
+                            System.out.println("Servidor não está online");
+                        }
+                        catch(IOException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                    catch(IOException e){
+                        e.printStackTrace();
+                    }
                 }
+                if(serverRMI.obterValor() == 1)
+                {
+                    try{
+                        serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
+                        serverRMI.olaMesaVoto(this.getName());
+
+                        socketFindTerminal = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
+                        InetAddress groupTerminal = InetAddress.getByName(MULTICAST_ADDRESS_TERMINALS);
+                        socketFindTerminal.joinGroup(groupTerminal); //join the multicast group
+
+                        // Prepara o address para tratar das sessões dos eleitores
+                        int last = Integer.parseInt(MULTICAST_ADDRESS_TERMINALS.substring(MULTICAST_ADDRESS_TERMINALS.length() -1));
+                        if(last < 255) {
+                            last = last + 1;
+                        } else {
+                            last = last - 1;
+                        }
+
+                        String newAddress = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length()-1);
+                        newAddress = newAddress + last;
+
+                        InputStreamReader input = new InputStreamReader(System.in);
+                        BufferedReader reader = new BufferedReader(input);
+
+                        while (true) {
+
+                            System.out.printf("Introduza o seu número de Cartão de Cidadão: ");
+                            Integer cc = null;
+                            while(cc == null) cc = tryParse(reader.readLine());
+
+                            if(serverRMI.verificaEleitor(cc) != null) {
+                                System.out.println("Cartão de cidadão válido!");
+
+                                Eleição eleição = escolherEleição(serverRMI, departamento, cc);
+
+                                if(eleição == null) continue;
+
+                                System.out.println("Redirecionando-o para um terminal de voto");
+                                String message = "$ type | search; available | no";
+
+                                // Vê que terminais estão à espera da mensagem "Terminal Disponível"
+                                enviaServer(socketFindTerminal, message, groupTerminal);
+
+                                // Os que estiverem disponíveis enviam mensagem com o seu id. A mesa de voto capta um dos terminais.
+                                String terminal = filterMessage(socketFindTerminal, "type | search;");
+
+                                String[] decompose = terminal.trim().split(";");
+                                //System.out.println("1 - " + terminal);
+
+                                String nr = null;
+                                for(int i = 0; i < decompose.length; i++) {
+                                    if(decompose[i].contains("terminal")) {
+                                        nr = decompose[i].substring(decompose[i].lastIndexOf(" ") + 1);
+                                        break;
+                                    }
+                                }
+
+                                // "@ type | search; available | yes; terminal | nr terminal"
+                                terminal = "$ type | ack; terminal | " + nr;
+
+                                // Avisa os terminais qual dos terminais captou
+                                enviaServer(socketFindTerminal, terminal, groupTerminal);
+                                System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
+                                new HandleSession(serverRMI, newAddress, cc, eleição);
+
+                            } else {
+                                System.out.println("O cc introduzido não se encontra na nossa DB.");
+                            }
 
 
-                try { sleep(2000); } catch (InterruptedException e) { }
+                            try { sleep(2000); } catch (InterruptedException e) { }
+                        }
+                    }
+                    catch(RemoteException ex)
+                    {
+                        System.out.println("Servidor não está online");
+                        try{
+                            RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+
+                            serverRMI1.olaMesaVoto(this.getName());
+
+                            socketFindTerminal = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
+                            InetAddress groupTerminal = InetAddress.getByName(MULTICAST_ADDRESS_TERMINALS);
+                            socketFindTerminal.joinGroup(groupTerminal); //join the multicast group
+
+                            // Prepara o address para tratar das sessões dos eleitores
+                            int last = Integer.parseInt(MULTICAST_ADDRESS_TERMINALS.substring(MULTICAST_ADDRESS_TERMINALS.length() -1));
+                            if(last < 255) {
+                                last = last + 1;
+                            } else {
+                                last = last - 1;
+                            }
+
+                            String newAddress = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length()-1);
+                            newAddress = newAddress + last;
+
+                            InputStreamReader input = new InputStreamReader(System.in);
+                            BufferedReader reader = new BufferedReader(input);
+
+                            while (true) {
+
+                                System.out.printf("Introduza o seu número de Cartão de Cidadão: ");
+                                Integer cc = null;
+                                while(cc == null) cc = tryParse(reader.readLine());
+
+                                if(serverRMI1.verificaEleitor(cc) != null) {
+                                    System.out.println("Cartão de cidadão válido!");
+
+                                    Eleição eleição = escolherEleição(serverRMI1, departamento, cc);
+
+                                    if(eleição == null) continue;
+
+                                    System.out.println("Redirecionando-o para um terminal de voto");
+                                    String message = "$ type | search; available | no";
+
+                                    // Vê que terminais estão à espera da mensagem "Terminal Disponível"
+                                    enviaServer(socketFindTerminal, message, groupTerminal);
+
+                                    // Os que estiverem disponíveis enviam mensagem com o seu id. A mesa de voto capta um dos terminais.
+                                    String terminal = filterMessage(socketFindTerminal, "type | search;");
+
+                                    String[] decompose = terminal.trim().split(";");
+                                    //System.out.println("1 - " + terminal);
+
+                                    String nr = null;
+                                    for(int i = 0; i < decompose.length; i++) {
+                                        if(decompose[i].contains("terminal")) {
+                                            nr = decompose[i].substring(decompose[i].lastIndexOf(" ") + 1);
+                                            break;
+                                        }
+                                    }
+
+                                    // "@ type | search; available | yes; terminal | nr terminal"
+                                    terminal = "$ type | ack; terminal | " + nr;
+
+                                    // Avisa os terminais qual dos terminais captou
+                                    enviaServer(socketFindTerminal, terminal, groupTerminal);
+                                    System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
+                                    new HandleSession(serverRMI1, newAddress, cc, eleição);
+
+                                } else {
+                                    System.out.println("O cc introduzido não se encontra na nossa DB.");
+                                }
+
+
+                                try { sleep(2000); } catch (InterruptedException e) { }
+                            }
+                        }
+                        catch(RemoteException | NotBoundException ex1)
+                        {
+                            System.out.println("Servidor não está online");
+                        }
+                        catch(IOException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                    catch(IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (RemoteException | NotBoundException ex) {
+                System.out.println("Servidor não está online");
+                try{
+                    RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+                    serverRMI.olaMesaVoto(this.getName());
+
+                    socketFindTerminal = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
+                    InetAddress groupTerminal = InetAddress.getByName(MULTICAST_ADDRESS_TERMINALS);
+                    socketFindTerminal.joinGroup(groupTerminal); //join the multicast group
+
+                    // Prepara o address para tratar das sessões dos eleitores
+                    int last = Integer.parseInt(MULTICAST_ADDRESS_TERMINALS.substring(MULTICAST_ADDRESS_TERMINALS.length() -1));
+                    if(last < 255) {
+                        last = last + 1;
+                    } else {
+                        last = last - 1;
+                    }
+
+                    String newAddress = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length()-1);
+                    newAddress = newAddress + last;
+
+                    InputStreamReader input = new InputStreamReader(System.in);
+                    BufferedReader reader = new BufferedReader(input);
+
+                    while (true) {
+
+                        System.out.printf("Introduza o seu número de Cartão de Cidadão: ");
+                        Integer cc = null;
+                        while(cc == null) cc = tryParse(reader.readLine());
+
+                        if(serverRMI.verificaEleitor(cc) != null) {
+                            System.out.println("Cartão de cidadão válido!");
+
+                            Eleição eleição = escolherEleição(serverRMI, departamento, cc);
+
+                            if(eleição == null) continue;
+
+                            System.out.println("Redirecionando-o para um terminal de voto");
+                            String message = "$ type | search; available | no";
+
+                            // Vê que terminais estão à espera da mensagem "Terminal Disponível"
+                            enviaServer(socketFindTerminal, message, groupTerminal);
+
+                            // Os que estiverem disponíveis enviam mensagem com o seu id. A mesa de voto capta um dos terminais.
+                            String terminal = filterMessage(socketFindTerminal, "type | search;");
+
+                            String[] decompose = terminal.trim().split(";");
+                            //System.out.println("1 - " + terminal);
+
+                            String nr = null;
+                            for(int i = 0; i < decompose.length; i++) {
+                                if(decompose[i].contains("terminal")) {
+                                    nr = decompose[i].substring(decompose[i].lastIndexOf(" ") + 1);
+                                    break;
+                                }
+                            }
+
+                            // "@ type | search; available | yes; terminal | nr terminal"
+                            terminal = "$ type | ack; terminal | " + nr;
+
+                            // Avisa os terminais qual dos terminais captou
+                            enviaServer(socketFindTerminal, terminal, groupTerminal);
+                            System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
+                            new HandleSession(serverRMI, newAddress, cc, eleição);
+
+                        } else {
+                            System.out.println("O cc introduzido não se encontra na nossa DB.");
+                        }
+
+
+                        try { sleep(2000); } catch (InterruptedException e) { }
+                    }
+                }
+                catch(RemoteException | NotBoundException ex1){
+                    System.out.println("Servidor não está online");
+                }
+                catch(IOException e)
+                {
+                    e.printStackTrace();
+                }
+                finally {
+                System.out.println("A fechar socket Mesa de voto");
+                socketFindTerminal.close();
             }
-
-        } catch (RemoteException | NotBoundException ex) {
-            System.out.println("Servidor não está online");
-            System.exit(0);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            System.out.println("A fechar socket Mesa de voto");
-            socketFindTerminal.close();
         }
+
     }
 }
 
@@ -238,7 +570,6 @@ class HandleSession extends Thread {
      * @param socket
      * @param message - mensagem a enviar no packet
      * @param group
-     *
      */
     public void enviaServer(MulticastSocket socket, String message, InetAddress group) throws IOException {
         byte[] buffer = message.getBytes();
@@ -250,19 +581,18 @@ class HandleSession extends Thread {
      * Método que vai receber um packet por UDP de um voting terminal
      *
      * @param socket
-     *
      * @return mensagem recebida
      */
     public String recebeServer(MulticastSocket socket) throws IOException {
         // Corre até receber uma mensagem do servidor, onde dá return
-        while(true){
+        while (true) {
             byte[] buffer = new byte[256];
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             socket.receive(packet);
             String message = new String(packet.getData(), 0, packet.getLength());
 
             // Se a mensagem não começar por @
-            if(message.charAt(0) != '$') {
+            if (message.charAt(0) != '$') {
                 return message;
             }
         }
@@ -270,9 +600,9 @@ class HandleSession extends Thread {
 
     public String filterMessage(MulticastSocket socket, String expression, String id) throws IOException {
         String message = null;
-        while(message == null) {
+        while (message == null) {
             message = recebeServer(socket);
-            if(!message.contains(expression) || !message.contains(id)) {
+            if (!message.contains(expression) || !message.contains(id)) {
                 message = null;
             }
         }
@@ -293,13 +623,13 @@ class HandleSession extends Thread {
             enviaServer(socketSession, message, groupSession);
             String[] info = null;
             int entrou = 0;
-            while(entrou == 0) {
+            while (entrou == 0) {
                 message = filterMessage(socketSession, "type | login", "cc | " + cc);
                 info = message.trim().split(";");
                 int cartao = Integer.parseInt(info[1].substring(info[1].lastIndexOf(" ") + 1));
                 String nick = info[2].substring(info[2].lastIndexOf(" ") + 1);
                 String password = info[3].substring(info[3].lastIndexOf(" ") + 1);
-                if(serverRMI.loginUser(nick, password, cc) && cc == cartao) {
+                if (serverRMI.loginUser(nick, password, cc) && cc == cartao) {
                     message = "$ type | status; cc | " + cc + "; logged | on; msg | Bem-vindo ao eVoting";
                     entrou = 1;
                 } else {
@@ -312,7 +642,7 @@ class HandleSession extends Thread {
             Thread.sleep(500);
             ArrayList<Lista> listas = eleição.getListas();
             message = "$ type | item_list; cc | " + cc + "; item_count | " + listas.size();
-            for(int i = 0; i < listas.size(); i++) {
+            for (int i = 0; i < listas.size(); i++) {
                 message = message + "; item_" + i + "_name | " + listas.get(i).getNome();
             }
 
@@ -324,8 +654,8 @@ class HandleSession extends Thread {
 
             info = message.trim().split(";");
             String lista = null;
-            for(int i = 0; i < info.length; i++) {
-                if(info[i].contains("list")) {
+            for (int i = 0; i < info.length; i++) {
+                if (info[i].contains("list")) {
                     lista = info[i].substring(info[i].lastIndexOf(" ") + 1);
                     break;
                 }
@@ -334,13 +664,9 @@ class HandleSession extends Thread {
             serverRMI.adicionaVoto(eleição, lista, cc);
             //System.out.println("\nVoto enviado na eleição " + eleição.getTitulo() + " na lista " + lista);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-
     }
-
-
+}
 }
