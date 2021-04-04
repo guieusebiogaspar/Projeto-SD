@@ -1,6 +1,7 @@
 package RMI;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 public class Pessoa implements Serializable {
     private String tipo;
@@ -12,6 +13,8 @@ public class Pessoa implements Serializable {
     private int cc;
     private String validade;
     private String grupo;
+    private HashMap<String, String> votou;
+    private DataEleição dataVoto;
 
     /**
      * Construtor vazio do objeto Pessoa
@@ -43,6 +46,7 @@ public class Pessoa implements Serializable {
         this.cc = cc;
         this.validade = validade;
         this.grupo = grupo;
+        this.votou = new HashMap<>();
     }
 
     public String getTipo() {
@@ -81,4 +85,13 @@ public class Pessoa implements Serializable {
         return grupo;
     }
 
+    public HashMap<String, String> getVotou() {
+        return votou;
+    }
+
+    public void setVotou(HashMap<String, String> votou) {
+        this.votou = votou;
+    }
+
+    //public DataEleição getDataVoto(Eleição)
 }
