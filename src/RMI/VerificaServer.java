@@ -29,14 +29,14 @@ public class VerificaServer extends Thread
             while(true)
             {
                 this.souB = 0;
-                System.out.println("entrei");
+                //System.out.println("entrei");
                 byte[] buffer = new byte[1000];
                 DatagramPacket requestB = new DatagramPacket(buffer, buffer.length);
                 bSocket.setSoTimeout(5000);
                 try{
                     bSocket.receive(requestB);
                     received = new String(requestB.getData(), 0, requestB.getLength());
-                    System.out.println("Recebido " + received);
+                    //System.out.println("Recebido " + received);
                 }
                 catch (SocketTimeoutException t)
                 {

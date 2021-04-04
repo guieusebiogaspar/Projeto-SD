@@ -687,7 +687,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
 
 
-                if(server.obterValor() == 0)
+                if(server.obterValor() == 1)
                 {
                     try{
                         server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
@@ -725,7 +725,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                         e.printStackTrace();
                     }
                 }
-                if(server.obterValor() == 1)
+                if(server.obterValor() == 0)
                 {
                     try{
                         server.olaAdmin(adminConsole);
