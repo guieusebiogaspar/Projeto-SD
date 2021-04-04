@@ -6,7 +6,7 @@ import java.util.HashMap;
 public class Pessoa implements Serializable {
     private String tipo;
     private String nome;
-    private String nickname;
+    private String username;
     private String password;
     private int phone;
     private String morada;
@@ -14,7 +14,7 @@ public class Pessoa implements Serializable {
     private String validade;
     private String grupo;
     private HashMap<String, String> votou;
-    private DataEleição dataVoto;
+    private boolean aVotar;
 
     /**
      * Construtor vazio do objeto Pessoa
@@ -27,7 +27,7 @@ public class Pessoa implements Serializable {
      *
      * @param tipo - tipo da pessoa
      * @param nome - nome da pessoa
-     * @param nickname - nickname da pessoa
+     * @param username - username da pessoa
      * @param password - password da pessoa
      * @param phone - numeor de contacto telefonico
      * @param morada - moarda da pessoa
@@ -36,16 +36,17 @@ public class Pessoa implements Serializable {
      * @param grupo - grupo a que pertence
      */
 
-    public Pessoa(String tipo, String nome, String nickname, String password, int phone, String morada, int cc, String validade, String grupo) {
+    public Pessoa(String tipo, String nome, String username, String password, int phone, String morada, int cc, String validade, String grupo) {
         this.tipo = tipo;
         this.nome = nome;
-        this.nickname = nickname;
+        this.username = username;
         this.password = password;
         this.phone = phone;
         this.morada = morada;
         this.cc = cc;
         this.validade = validade;
         this.grupo = grupo;
+        this.aVotar = false;
         this.votou = new HashMap<>();
     }
 
@@ -57,8 +58,8 @@ public class Pessoa implements Serializable {
         return nome;
     }
 
-    public String getNickname() {
-        return nickname;
+    public String getUsername() {
+        return username;
     }
 
     public String getPassword() {
@@ -93,5 +94,11 @@ public class Pessoa implements Serializable {
         this.votou = votou;
     }
 
-    //public DataEleição getDataVoto(Eleição)
+    public boolean getAVotar() {
+        return aVotar;
+    }
+
+    public void setAVotar(boolean aVotar) {
+        this.aVotar = aVotar;
+    }
 }

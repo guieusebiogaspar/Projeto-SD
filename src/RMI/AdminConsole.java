@@ -98,7 +98,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         System.out.println("---- Informações pessoais -----");
         System.out.println("Nome: " + p.getNome());
-        System.out.println("Username: " + p.getNickname());
+        System.out.println("Username: " + p.getUsername());
         System.out.println("Password: " + p.getPassword());
         System.out.println("Phone: " + p.getPhone());
         System.out.println("Morada: " + p.getMorada());
@@ -206,7 +206,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         for(int i = 0; i < pessoas.size(); i++) {
             HashMap<String, String> votou = pessoas.get(i).getVotou();
             if(votou.containsKey(eleição)) {
-                if(votou.get(eleição).equals(mesa)) {
+                if(votou.get(eleição).contains(mesa)) {
                     votos += 1;
                 }
             }
@@ -313,7 +313,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         boolean check = true;
 
         System.out.println("--------- Registar Pessoa ---------");
-        String tipo = "", nome, nickname, password,morada, validade, grupo;
+        String tipo = "", nome, username, password,morada, validade, grupo;
         Integer phone = null, cc = null;
         while(check) {
             System.out.println("A que grupo pertence?");
@@ -340,8 +340,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
         System.out.print("Nome: ");
         nome = reader.readLine();
-        System.out.print("Nickname: ");
-        nickname = reader.readLine();
+        System.out.print("Username: ");
+        username = reader.readLine();
         System.out.print("Password: ");
         password = reader.readLine();
         System.out.print("Phone: ");
@@ -364,7 +364,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.print("Departamento a que pertence: ");
         grupo = reader.readLine();
 
-        Pessoa pessoa = new Pessoa(tipo, nome, nickname, password, phone, morada, cc, validade, grupo);
+        Pessoa pessoa = new Pessoa(tipo, nome, username, password, phone, morada, cc, validade, grupo);
 
         server.registar(pessoa);
         System.out.println("Pessoa registada no servidor!");
@@ -673,7 +673,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
                                             if(server.rmvGrupo(eleição, inputzito)==1){
 
-                                            System.out.println("Departamento removido com sucesso!");
+                                                System.out.println("Departamento removido com sucesso!");
 
                                             }
 
