@@ -37,7 +37,7 @@ public class ContaTempo extends Thread{
                     System.out.println("Erro a abrir ficheiro.");
                 }
                 catch(IOException ex){
-                    System.out.println("Erro a ler ficheiro.A");
+                    //System.out.println("Erro a ler ficheiro.A");
                 }
                 catch(ClassNotFoundException ex){
                     System.out.println("Erro a converter objeto.");
@@ -55,7 +55,6 @@ public class ContaTempo extends Thread{
                         {
                             el.setAtiva(false);
                             el.setTerminada(true);
-
                             try {
                                 FileOutputStream fos = new FileOutputStream(f);
                                 ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -78,7 +77,6 @@ public class ContaTempo extends Thread{
                             {
                                 el.setAtiva(false);
                                 el.setTerminada(true);
-
                                 try {
                                     FileOutputStream fos = new FileOutputStream(f);
                                     ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -101,7 +99,6 @@ public class ContaTempo extends Thread{
                                 {
                                     el.setAtiva(false);
                                     el.setTerminada(true);
-
                                     try {
                                         FileOutputStream fos = new FileOutputStream(f);
                                         ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -124,7 +121,6 @@ public class ContaTempo extends Thread{
                                     {
                                         el.setAtiva(false);
                                         el.setTerminada(true);
-
                                         try {
                                             FileOutputStream fos = new FileOutputStream(f);
                                             ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -147,7 +143,6 @@ public class ContaTempo extends Thread{
                                         {
                                             el.setAtiva(false);
                                             el.setTerminada(true);
-
                                             try {
                                                 FileOutputStream fos = new FileOutputStream(f);
                                                 ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -203,7 +198,6 @@ public class ContaTempo extends Thread{
                                 if(!el.getAtiva())
                                 {
                                     el.setAtiva(true);
-                                    el.setTerminada(false);
                                     try {
                                         FileOutputStream fos = new FileOutputStream(f);
                                         ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -228,8 +222,6 @@ public class ContaTempo extends Thread{
                                 if(!el.getAtiva())
                                 {
                                     el.setAtiva(true);
-                                    el.setTerminada(false);
-
                                     try {
                                         FileOutputStream fos = new FileOutputStream(f);
                                         ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -255,8 +247,6 @@ public class ContaTempo extends Thread{
                                         if(!el.getAtiva())
                                         {
                                             el.setAtiva(true);
-                                            el.setTerminada(false);
-
                                             try {
                                                 FileOutputStream fos = new FileOutputStream(f);
                                                 ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -281,8 +271,6 @@ public class ContaTempo extends Thread{
                                         if(!el.getAtiva())
                                         {
                                             el.setAtiva(true);
-                                            el.setTerminada(false);
-
                                             try {
                                                 FileOutputStream fos = new FileOutputStream(f);
                                                 ObjectOutputStream oos = new ObjectOutputStream(fos);

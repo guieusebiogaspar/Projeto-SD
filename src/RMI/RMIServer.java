@@ -265,25 +265,31 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             }
         }
 
+        ArrayList<Eleição> eleicoes = getEleições();
+
         if(tipo != null && dep != null) {
-            for (int i = 0; i < eleições.size(); i++) {
-                /*System.out.println("Eleição - " + eleições.get(i).getTitulo());
-                System.out.println("Mesas de voto - " + eleições.get(i).getMesasVoto());
-                System.out.println("Quem pode votar - " + eleições.get(i).getQuemPodeVotar());
-                System.out.println("Grupo - " + eleições.get(i).getGrupos());*/
+            for (int i = 0; i < eleicoes.size(); i++) {
+                System.out.println("Aqui tambem");
+                if(eleições.get(i).getAtiva()) {
+                    System.out.println("Eleição - " + eleições.get(i).getTitulo());
+                    System.out.println("Mesas de voto - " + eleições.get(i).getMesasVoto());
+                    System.out.println("Quem pode votar - " + eleições.get(i).getQuemPodeVotar());
+                    System.out.println("Grupo - " + eleições.get(i).getGrupos());
+                }
 
                 // Se a eleição tiver a mesa de voto em questão
                 // Se a pessoa pertencer ao tipo de pessoas que pode votar (Estudantes, Docentes ou Funcionários)
                 // Se a pessoa pertence a um dos departamentos que podem votar na eleição
                 // Se a pessoa ainda não votou
                 // Se a eleição estiver ativa
-                if(eleições.get(i).getMesasVoto().contains(departamento) &&
-                    eleições.get(i).getQuemPodeVotar().contains(tipo) &&
-                    eleições.get(i).getGrupos().contains(dep) &&
-                    !eleições.get(i).getJaVotaram().contains(cc) &&
-                    eleições.get(i).getAtiva())
+                if(eleicoes.get(i).getMesasVoto().contains(departamento) &&
+                    eleicoes.get(i).getQuemPodeVotar().contains(tipo) &&
+                    eleicoes.get(i).getGrupos().contains(dep) &&
+                    !eleicoes.get(i).getJaVotaram().contains(cc) &&
+                    eleicoes.get(i).getAtiva())
                 {
-                    filtradas.add(eleições.get(i));
+                    //System.out.println("Adicionou as filtradas");
+                    filtradas.add(eleicoes.get(i));
                 }
             }
         }
@@ -302,7 +308,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         ArrayList<Integer> jaVotaram = eleições.get(i).getJaVotaram();
                         jaVotaram.add(cc);
                         eleições.get(i).setJaVotaram(jaVotaram);
-                        System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(i).getNome());
+                        System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome());
                         writeBD("eleicoes.obj");
                     }
                 }

@@ -208,12 +208,18 @@ class Session extends Thread {
         }
     }
 
-    public String filterMessage(MulticastSocket socket, String expression) throws IOException {
+    public String filterMessage(MulticastSocket socket, String expression, String id) throws IOException {
         String message = null;
         while(message == null) {
             message = recebeCliente(socket);
-            if(!message.contains(expression)) {
-                message = null;
+            if (id != null) {
+                if (!message.contains(expression) || !message.contains(id)) {
+                    message = null;
+                }
+            } else {
+                if (!message.contains(expression)) {
+                    message = null;
+                }
             }
         }
 
@@ -230,7 +236,7 @@ class Session extends Thread {
             socketSession.joinGroup(groupSession); //join the multicast group
 
             String message = null;
-            message = filterMessage(socketSession, "type | welcome;");
+            message = filterMessage(socketSession, "type | welcome", null);
             String[] info = message.trim().split(";");
             for(int i = 0; i < info.length; i++) {
                 if(info[i].contains("user")) {
@@ -253,7 +259,7 @@ class Session extends Thread {
                     while(!keyboardScanner.ready()) {
                         Thread.sleep(200);
                     }
-                    login = login + "username | " + keyboardScanner.readLine() + "; ";
+                    login = login + " username | " + keyboardScanner.readLine() + "; ";
 
                     System.out.print("Password: ");
                     while(!keyboardScanner.ready()) {
@@ -262,20 +268,20 @@ class Session extends Thread {
                     login = login + "password | " + keyboardScanner.readLine();
 
                     enviaCliente(socketSession, login, groupSession);
-
-                    message = filterMessage(socketSession, "type | status; cc | " + cc + "; logged");
-
+                    message = filterMessage(socketSession, "type | status", "cc | " + cc);
                     if (message.contains("logged | on")) {
                         info = message.trim().split(";");
+                        System.out.println();
                         for(int i = 0; i < info.length; i++) {
                             if(info[i].contains("msg")) {
-                                info = message.trim().trim().split("|");
-                                System.out.println(info[1]);
+                                String[] msg = info[i].trim().split("\\|");
+                                System.out.println(msg[1]);
+                                break;
                             }
                         }
 
                         tentativas = 0;
-                        message = filterMessage(socketSession, "type | item_list;");
+                        message = filterMessage(socketSession, "type | item_list", "cc | " + cc);
 
                         //System.out.println(message);
 
@@ -305,7 +311,7 @@ class Session extends Thread {
                             }
                         }
 
-                        message = "@ type | vote; list | " + listas.get(escolha-1);
+                        message = "@ type | vote; cc | " + cc + "; list | " + listas.get(escolha-1);
 
                         // ver se foi branco ou nulo
                         System.out.println("Votou " + listas.get(escolha-1) + "\nObrigado.\n");
