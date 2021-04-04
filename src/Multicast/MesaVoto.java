@@ -183,7 +183,7 @@ public class MesaVoto extends Thread {
                 // Avisa os terminais qual dos terminais captou
                 enviaServer(socketFindTerminal, terminal, groupTerminal);
                 System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
-                new HandleSession(serverRMI, newAddress, cc, eleição);
+                new HandleSession(serverRMI, newAddress, cc, eleição, departamento);
 
             } else {
                 System.out.println("O cc introduzido não se encontra na nossa DB.");
@@ -349,65 +349,144 @@ class HandleSession extends Thread {
         }
         return message;
     }
+    public void CorrerHandle(RMIServerInterface serverRMI, MulticastSocket socketSession, int serverPort) throws IOException, InterruptedException {
+        socketSession = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
+        InetAddress groupSession = InetAddress.getByName(MULTICAST_ADDRESS_SESSIONS);
+        socketSession.joinGroup(groupSession); //join the multicast group
 
+        HandleSession.sleep(1000);
+
+        String message = "$ type | welcome; user | " + cc;
+        enviaServer(socketSession, message, groupSession);
+        String[] info = null;
+        int entrou = 0;
+        while (entrou == 0) {
+            message = filterMessage(socketSession, "type | login", "cc | " + cc);
+            info = message.trim().split(";");
+            int cartao = Integer.parseInt(info[1].substring(info[1].lastIndexOf(" ") + 1));
+            String nick = info[2].substring(info[2].lastIndexOf(" ") + 1);
+            String password = info[3].substring(info[3].lastIndexOf(" ") + 1);
+            if (serverRMI.loginUser(nick, password, cc) && cc == cartao) {
+                message = "$ type | status; cc | " + cc + "; logged | on; msg | Bem-vindo ao eVoting";
+                entrou = 1;
+            } else {
+                message = "$ type | status; cc | " + cc + "; logged | off; msg | Username ou Password incorretos!";
+            }
+
+            enviaServer(socketSession, message, groupSession);
+        }
+
+        Thread.sleep(500);
+        ArrayList<Lista> listas = eleição.getListas();
+        message = "$ type | item_list; cc | " + cc + "; item_count | " + listas.size();
+        for (int i = 0; i < listas.size(); i++) {
+            message = message + "; item_" + i + "_name | " + listas.get(i).getNome();
+        }
+
+        // envia as listas
+        enviaServer(socketSession, message, groupSession);
+
+        // recebe a lista que o eleitor votou
+        message = filterMessage(socketSession, "type | vote", "cc | " + cc);
+
+        info = message.trim().split(";");
+        String lista = null;
+        for (int i = 0; i < info.length; i++) {
+            if (info[i].contains("list")) {
+                lista = info[i].substring(info[i].lastIndexOf(" ") + 1);
+                break;
+            }
+        }
+        try{
+            serverRMI.adicionaVoto(eleição, lista, cc, departamento);
+        }
+        catch(ConnectException c)
+        {
+            try{
+                RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(serverPort).lookup("Server");
+                server.adicionaVoto(eleição, lista, cc, departamento);
+            } catch (NotBoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+
+        //System.out.println("\nVoto enviado na eleição " + eleição.getTitulo() + " na lista " + lista);
+
+    }
     public void run() {
         MulticastSocket socketSession = null;
-
-        try {
-            socketSession = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
-            InetAddress groupSession = InetAddress.getByName(MULTICAST_ADDRESS_SESSIONS);
-            socketSession.joinGroup(groupSession); //join the multicast group
-
-            HandleSession.sleep(1000);
-
-            String message = "$ type | welcome; user | " + cc;
-            enviaServer(socketSession, message, groupSession);
-            String[] info = null;
-            int entrou = 0;
-            while (entrou == 0) {
-                message = filterMessage(socketSession, "type | login", "cc | " + cc);
-                info = message.trim().split(";");
-                int cartao = Integer.parseInt(info[1].substring(info[1].lastIndexOf(" ") + 1));
-                String nick = info[2].substring(info[2].lastIndexOf(" ") + 1);
-                String password = info[3].substring(info[3].lastIndexOf(" ") + 1);
-                if (serverRMI.loginUser(nick, password, cc) && cc == cartao) {
-                    message = "$ type | status; cc | " + cc + "; logged | on; msg | Bem-vindo ao eVoting";
-                    entrou = 1;
-                } else {
-                    message = "$ type | status; cc | " + cc + "; logged | off; msg | Username ou Password incorretos!";
+        while(true)
+        {
+            try {
+                if(serverRMI.obterValor() == 1)
+                {
+                    try{
+                        serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+                        CorrerHandle(serverRMI, socketSession, 7001);
+                    }
+                    catch(RemoteException | NotBoundException ex)
+                    {
+                        try{
+                            RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
+                            CorrerHandle(serverRMI1, socketSession, 7002);
+                        }
+                        catch(RemoteException | NotBoundException ex1)
+                        {
+                            System.out.println("Servidor não está online");
+                        }
+                        catch(IOException | InterruptedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                    catch(IOException | InterruptedException e){
+                        e.printStackTrace();
+                    }
                 }
-
-                enviaServer(socketSession, message, groupSession);
-            }
-
-            Thread.sleep(500);
-            ArrayList<Lista> listas = eleição.getListas();
-            message = "$ type | item_list; cc | " + cc + "; item_count | " + listas.size();
-            for (int i = 0; i < listas.size(); i++) {
-                message = message + "; item_" + i + "_name | " + listas.get(i).getNome();
-            }
-
-            // envia as listas
-            enviaServer(socketSession, message, groupSession);
-
-            // recebe a lista que o eleitor votou
-            message = filterMessage(socketSession, "type | vote", "cc | " + cc);
-
-            info = message.trim().split(";");
-            String lista = null;
-            for (int i = 0; i < info.length; i++) {
-                if (info[i].contains("list")) {
-                    lista = info[i].substring(info[i].lastIndexOf(" ") + 1);
-                    break;
+                if(serverRMI.obterValor() == 0)
+                {
+                    try{
+                        CorrerHandle(serverRMI, socketSession, 7002);
+                    }
+                    catch(RemoteException ex)
+                    {
+                        try{
+                            RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+                            CorrerHandle(serverRMI1, socketSession, 7001);
+                        }
+                        catch(RemoteException | NotBoundException ex1)
+                        {
+                            System.out.println("Servidor não está online");
+                        }
+                        catch(IOException | InterruptedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                    catch(IOException | InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }catch(RemoteException ex)
+            {
+                System.out.println("Servidor não está online");
+                try{
+                    RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+                    CorrerHandle(serverRMI, socketSession, 7001);
+                }
+                catch(RemoteException | NotBoundException ex1){
+                    System.out.println("Servidor não está online");
+                }
+                catch(IOException | InterruptedException e)
+                {
+                    e.printStackTrace();
                 }
             }
-
-            serverRMI.adicionaVoto(eleição, lista, cc, departamento);
-            //System.out.println("\nVoto enviado na eleição " + eleição.getTitulo() + " na lista " + lista);
-
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
         }
+
     }
 }
 }
