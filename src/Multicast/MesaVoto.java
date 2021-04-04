@@ -195,7 +195,7 @@ public class MesaVoto extends Thread {
                     // Avisa os terminais qual dos terminais captou
                     enviaServer(socketFindTerminal, terminal, groupTerminal);
                     System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
-                    new HandleSession(serverRMI, newAddress, cc, eleição);
+                    new HandleSession(serverRMI, newAddress, cc, eleição, departamento);
 
                 } else {
                     System.out.println("O cc introduzido não se encontra na nossa DB.");
@@ -223,12 +223,14 @@ class HandleSession extends Thread {
     private RMIServerInterface serverRMI;
     private int cc;
     private Eleição eleição;
+    private String departamento;
 
-    HandleSession(RMIServerInterface server, String address, int cartao, Eleição eleição) {
+    HandleSession(RMIServerInterface server, String address, int cartao, Eleição eleição, String departamento) {
         this.serverRMI = server;
         this.MULTICAST_ADDRESS_SESSIONS = address;
         this.cc = cartao;
         this.eleição = eleição;
+        this.departamento = departamento;
         this.start();
     }
 
@@ -331,7 +333,7 @@ class HandleSession extends Thread {
                 }
             }
 
-            serverRMI.adicionaVoto(eleição, lista, cc);
+            serverRMI.adicionaVoto(eleição, lista, cc, departamento);
             //System.out.println("\nVoto enviado na eleição " + eleição.getTitulo() + " na lista " + lista);
 
         } catch (IOException e) {

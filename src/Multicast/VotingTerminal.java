@@ -271,7 +271,6 @@ class Session extends Thread {
                     message = filterMessage(socketSession, "type | status", "cc | " + cc);
                     if (message.contains("logged | on")) {
                         info = message.trim().split(";");
-                        System.out.println();
                         for(int i = 0; i < info.length; i++) {
                             if(info[i].contains("msg")) {
                                 String[] msg = info[i].trim().split("\\|");

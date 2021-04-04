@@ -9,6 +9,7 @@ import java.rmi.server.*;
 import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static java.lang.Thread.getDefaultUncaughtExceptionHandler;
 import static java.lang.Thread.sleep;
@@ -206,7 +207,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     /**
-     * Método que vai receber do cliente o titulo de uma eleição.
+     * Método que vai receber o titulo de uma eleição.
      * Se a eleição existir na BD devolve o objeto da mesma, se não existir devolve null.
      *
      * @param titulo
@@ -229,19 +230,30 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         readBD("eleicoes.obj");
         return eleições;
     }
-    public void mostraEleicoesAtivas() throws RemoteException{
-        eleições = null;
-        readBD("eleicoes.obj");
-        for(Eleição el : getEleições())
-        {
-            System.out.println(el.getTitulo());
-        }
-    }
-    public ArrayList<Pessoa> getPessoas() throws RemoteException{
-        return pessoas;
-    }
-    public void check_results() throws RemoteException {
 
+    /**
+     * Método que vai receber o cc de uma pessoa.
+     * Se a pessoa existir na BD devolve o objeto da mesma, se não existir devolve null.
+     *
+     * @param cc
+     *
+     *  @return eleição - objeto eleição com o título dado como input
+     */
+    public Pessoa getPessoa(String cc) throws RemoteException {
+        pessoas = null;
+        readBD("pessoas.obj");
+        for(Pessoa p: pessoas)
+        {
+            String cartao = String.valueOf(p.getCc());
+            if(cartao.equals(cc))
+                return p;
+        }
+        return null;
+    }
+
+    public ArrayList<Pessoa> getPessoas() throws RemoteException{
+        readBD("pessoas.obj");
+        return pessoas;
     }
 
     /**
@@ -297,7 +309,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return filtradas;
     }
 
-    public void adicionaVoto(Eleição eleição, String lista, int cc) throws RemoteException {
+    public void adicionaVoto(Eleição eleição, String lista, int cc, String departamento) throws RemoteException {
         for(int i = 0; i < eleições.size(); i++) {
             if(eleições.get(i).getTitulo().equals(eleição.getTitulo()) && eleições.get(i).getAtiva()) { // Ao encontrar a eleição com o titulo correspondente
                 for(int j = 0; j < eleições.get(i).getListas().size(); j++) { // Vai percorrer as listas da eleição
@@ -305,11 +317,20 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         int votos = eleições.get(i).getListas().get(j).getNumVotos();
                         eleições.get(i).getListas().get(j).setNumVotos(votos+1);
 
+                        for(int k = 0; k < pessoas.size(); k++) {
+                            if(pessoas.get(k).getCc() == cc) {
+                                HashMap<String, String> votou = pessoas.get(k).getVotou();
+                                votou.put(eleição.getTitulo(), departamento);
+                                pessoas.get(k).setVotou(votou);
+                            }
+                        }
+
                         ArrayList<Integer> jaVotaram = eleições.get(i).getJaVotaram();
                         jaVotaram.add(cc);
                         eleições.get(i).setJaVotaram(jaVotaram);
                         System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome());
                         writeBD("eleicoes.obj");
+                        writeBD("pessoas.obj");
                     }
                 }
             }

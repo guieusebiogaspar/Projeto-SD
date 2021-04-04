@@ -8,6 +8,7 @@ import java.rmi.registry.LocateRegistry;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.time.*;
+import java.util.HashMap;
 
 public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInterface {
 
@@ -20,7 +21,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("[1] - Registar pessoa");
         System.out.println("[2] - Criar eleição");
         System.out.println("[3] - Editar eleição");
-        System.out.println("[4] - Detalhes de eleições");
+        System.out.println("[4] - Detalhes de pessoas");
+        System.out.println("[5] - Detalhes de eleições");
         System.out.println("[0] - Sair");
     }
     public void olaServidor() throws RemoteException
@@ -42,6 +44,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 editarEleiçao(server);
                 break;
             case "4":
+                showPersonDetails(server);
+                break;
+            case "5":
                 showDetails(server);
                 break;
             case "0":
@@ -60,6 +65,53 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             System.out.println("Introduza um número inteiro!");
             return null;
         }
+    }
+
+    public void showPersonDetails(RMIServerInterface server) throws IOException {
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+        System.out.println("----- Detalhes de Pessoas ------");
+
+        ArrayList<Pessoa> pessoas = server.getPessoas();
+
+        if(pessoas.size() > 0) {
+            for(Pessoa p: pessoas)
+            {
+                System.out.println(p.getNome() + " - " + p.getCc());
+            }
+        } else {
+            System.out.println("Não existem pessoas registadas");
+            return;
+        }
+
+        Pessoa p = null;
+        while(p == null)
+        {
+            System.out.println("De qual pessoa deseja ver as informações? (cc) (0 para sair)");
+            String cc = reader.readLine();
+            if(cc.equals("0"))
+                return;
+            p = server.getPessoa(cc);
+            if(p == null)
+                System.out.println("Por favor selecione uma pessoa");
+        }
+
+        System.out.println("---- Informações pessoais -----");
+        System.out.println("Nome: " + p.getNome());
+        System.out.println("Username: " + p.getNickname());
+        System.out.println("Password: " + p.getPassword());
+        System.out.println("Phone: " + p.getPhone());
+        System.out.println("Morada: " + p.getMorada());
+        System.out.println("Cartão de cidadão: " + p.getCc());
+        System.out.println("Validade Cartão de Cidadão: " + p.getValidade());
+        System.out.println("Departamento a que pertence: " + p.getGrupo());
+        System.out.println("Eleições e respetivas mesas de voto em que votou: ");
+        HashMap<String, String> votou = p.getVotou();
+        votou.entrySet().forEach(entry -> {
+            System.out.println("Eleição: " + entry.getKey() + " - Mesa de voto: " + entry.getValue());
+        });
+
+
     }
 
     public void showDetails(RMIServerInterface server) throws IOException
@@ -102,7 +154,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
             }
         } else {
-            System.out.println("Não existem eleições");
+            System.out.println("Não existem eleições ativas");
             return;
         }
 
@@ -140,6 +192,30 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
     }
 
+    /**
+     * Método que vai contar quantos votos existiram numa determinada mesa de voto
+     *
+     * @param server - server
+     * @param mesa - mesa de voto
+     *
+     * @return nº de votos da mesa
+     */
+    public int contaVotos(RMIServerInterface server, String mesa, String eleição) throws RemoteException {
+        int votos = 0;
+        ArrayList<Pessoa> pessoas = server.getPessoas();
+        for(int i = 0; i < pessoas.size(); i++) {
+            HashMap<String, String> votou = pessoas.get(i).getVotou();
+            if(votou.containsKey(eleição)) {
+                if(votou.get(eleição).equals(mesa)) {
+                    votos += 1;
+                }
+            }
+
+        }
+
+        return votos;
+    }
+
     public void mostrarTerminadas(RMIServerInterface server) throws IOException
     {
         InputStreamReader input = new InputStreamReader(System.in);
@@ -147,11 +223,16 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         ArrayList<Eleição> eleicoes = server.getEleições();
 
-        for(Eleição el: eleicoes)
-        {
-            if(!el.getAtiva())
-                System.out.println(el.getTitulo());
+        if(eleicoes.size() > 0) {
+            for(Eleição el: eleicoes)
+            {
+                if(!el.getAtiva())
+                    System.out.println(el.getTitulo());
 
+            }
+        } else {
+            System.out.println("Não existem eleições terminadas");
+            return;
         }
 
         Eleição el = null;
@@ -193,8 +274,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             }
 
         System.out.println("Mesas de Voto: ");
-        for(String s : el.getMesasVoto())
-            System.out.println("Mesa voto " + s);
+        for(int i = 0; i < el.getMesasVoto().size(); i++) {
+            System.out.println("Mesa voto " + el.getMesasVoto().get(i) + ": " + contaVotos(server, el.getMesasVoto().get(i), el.getTitulo()) + " eleitores");
+        }
 
         int max = 0;
         ArrayList<String> vencedora = new ArrayList<>();
