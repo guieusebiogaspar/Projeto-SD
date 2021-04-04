@@ -148,7 +148,7 @@ public class VotingTerminal extends Thread {
                 socketSession.joinGroup(groupSession); //join the multicast group
 
                 // Vai iniciar uma sessão para o votante votar
-                Session sessao = new Session(groupSession, cc);
+                Session sessao = new Session(socketSession, groupSession, cc);
                 Timer timer = new Timer();
 
                 // Após 120 segundos a thread fecha
@@ -170,11 +170,13 @@ public class VotingTerminal extends Thread {
 }
 
 class Session extends Thread {
+    private MulticastSocket socketSession;
     private InetAddress groupSession;
     private String cc;
     private int PORT = 4321;
 
-    Session(InetAddress group, String cc){
+    Session(MulticastSocket socket, InetAddress group, String cc){
+        this.socketSession = socket;
         this.groupSession = group;
         this.cc = cc;
     }
@@ -243,7 +245,6 @@ class Session extends Thread {
     }
 
     public void run() {
-        MulticastSocket socketSession = null;
 
         BufferedReader keyboardScanner = new BufferedReader(new InputStreamReader(System.in));
 

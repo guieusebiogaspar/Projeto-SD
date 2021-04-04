@@ -10,6 +10,7 @@ public interface RMIServerInterface extends Remote {
 
     void olaAdmin(AdminConsoleInterface adm) throws RemoteException;
     void adeusAdmin() throws RemoteException;
+    int obterValor() throws RemoteException;
     void olaMesaVoto(String mesa) throws RemoteException;
     void registar(Pessoa pessoa) throws RemoteException;
     int rmvLista(Eleição eleição, String lista) throws RemoteException;
@@ -32,6 +33,5 @@ public interface RMIServerInterface extends Remote {
     Pessoa getPessoa(String cc) throws RemoteException;
     ArrayList<Eleição> filterEleições(String departamento, int cc) throws RemoteException;
     void adicionaVoto(Eleição eleição, String lista, int cc, String departamento, String momento) throws RemoteException;
-    int obterValor() throws RemoteException;
     void pessoaAVotar(int cc, boolean estado) throws RemoteException;
 }
