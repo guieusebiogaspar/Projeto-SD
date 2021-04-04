@@ -54,6 +54,8 @@ public class ContaTempo extends Thread{
                         if(el.getAtiva())
                         {
                             el.setAtiva(false);
+                            el.setTerminada(true);
+
                             try {
                                 FileOutputStream fos = new FileOutputStream(f);
                                 ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -75,6 +77,8 @@ public class ContaTempo extends Thread{
                             if(el.getAtiva())
                             {
                                 el.setAtiva(false);
+                                el.setTerminada(true);
+
                                 try {
                                     FileOutputStream fos = new FileOutputStream(f);
                                     ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -96,6 +100,8 @@ public class ContaTempo extends Thread{
                                 if(el.getAtiva())
                                 {
                                     el.setAtiva(false);
+                                    el.setTerminada(true);
+
                                     try {
                                         FileOutputStream fos = new FileOutputStream(f);
                                         ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -117,6 +123,8 @@ public class ContaTempo extends Thread{
                                     if(el.getAtiva())
                                     {
                                         el.setAtiva(false);
+                                        el.setTerminada(true);
+
                                         try {
                                             FileOutputStream fos = new FileOutputStream(f);
                                             ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -138,6 +146,8 @@ public class ContaTempo extends Thread{
                                         if(el.getAtiva())
                                         {
                                             el.setAtiva(false);
+                                            el.setTerminada(true);
+
                                             try {
                                                 FileOutputStream fos = new FileOutputStream(f);
                                                 ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -193,6 +203,7 @@ public class ContaTempo extends Thread{
                                 if(!el.getAtiva())
                                 {
                                     el.setAtiva(true);
+                                    el.setTerminada(false);
                                     try {
                                         FileOutputStream fos = new FileOutputStream(f);
                                         ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -217,6 +228,8 @@ public class ContaTempo extends Thread{
                                 if(!el.getAtiva())
                                 {
                                     el.setAtiva(true);
+                                    el.setTerminada(false);
+
                                     try {
                                         FileOutputStream fos = new FileOutputStream(f);
                                         ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -242,6 +255,8 @@ public class ContaTempo extends Thread{
                                         if(!el.getAtiva())
                                         {
                                             el.setAtiva(true);
+                                            el.setTerminada(false);
+
                                             try {
                                                 FileOutputStream fos = new FileOutputStream(f);
                                                 ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -266,6 +281,8 @@ public class ContaTempo extends Thread{
                                         if(!el.getAtiva())
                                         {
                                             el.setAtiva(true);
+                                            el.setTerminada(false);
+
                                             try {
                                                 FileOutputStream fos = new FileOutputStream(f);
                                                 ObjectOutputStream oos = new ObjectOutputStream(fos);

@@ -60,18 +60,6 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     }
 
-    public void terminarEleição(Eleição eleição) throws RemoteException
-    {
-        for(Eleição el: eleições)
-        {
-            if(el.getTitulo().equals(eleição.getTitulo()))
-            {
-                el.setAtiva(false);
-            }
-        }
-        writeBD("eleicoes.obj");
-
-    }
     public void atualizaTitulo(Eleição eleição, String newTitle) throws RemoteException
     {
         for(Eleição el : eleições)
