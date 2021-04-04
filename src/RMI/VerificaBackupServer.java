@@ -35,14 +35,14 @@ public class VerificaBackupServer extends Thread
             while(true)
             {
                 this.souP = 0;
-                System.out.println("entrei");
+                //System.out.println("entrei");
                 byte[] buffer = new byte[1000];
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 aSocket.setSoTimeout(5000);
                 try{
                     aSocket.receive(request);
                     received = new String(request.getData(), 0, request.getLength());
-                    System.out.println("RECEBIDO\t" + received);
+                    //System.out.println("RECEBIDO\t" + received);
                 }
                 catch (SocketTimeoutException t){
                     System.out.println("Server de Backup agora como Server Principal");
