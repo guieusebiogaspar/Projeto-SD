@@ -198,16 +198,24 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     public Pessoa verificaEleitor(int cc) throws RemoteException {
         for(int i = 0; i < pessoas.size(); i++) {
-            if(pessoas.get(i).getCc() == cc) {
+            if(pessoas.get(i).getCc() == cc && !pessoas.get(i).getAVotar()) {
                 return pessoas.get(i);
             }
         }
         return null;
     }
 
+    public void pessoaAVotar(int cc, boolean estado) throws RemoteException {
+        for(int i = 0; i < pessoas.size(); i++) {
+            if(pessoas.get(i).getCc() == cc) {
+                pessoas.get(i).setAVotar(estado);
+            }
+        }
+    }
+
     public boolean loginUser(String username, String password, int cc) throws RemoteException {
         for(int i = 0; i < pessoas.size(); i++) {
-            if(pessoas.get(i).getNickname().equals(username) && pessoas.get(i).getPassword().equals(password) && pessoas.get(i).getCc() == cc) {
+            if(pessoas.get(i).getUsername().equals(username) && pessoas.get(i).getPassword().equals(password) && pessoas.get(i).getCc() == cc) {
                 return true;
             }
         }
@@ -289,13 +297,13 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
         if(tipo != null && dep != null) {
             for (int i = 0; i < eleicoes.size(); i++) {
-                System.out.println("Aqui tambem");
+                /*System.out.println("Aqui tambem");
                 if(eleições.get(i).getAtiva()) {
                     System.out.println("Eleição - " + eleições.get(i).getTitulo());
                     System.out.println("Mesas de voto - " + eleições.get(i).getMesasVoto());
                     System.out.println("Quem pode votar - " + eleições.get(i).getQuemPodeVotar());
                     System.out.println("Grupo - " + eleições.get(i).getGrupos());
-                }
+                }*/
 
                 // Se a eleição tiver a mesa de voto em questão
                 // Se a pessoa pertencer ao tipo de pessoas que pode votar (Estudantes, Docentes ou Funcionários)
@@ -317,7 +325,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return filtradas;
     }
 
-    public void adicionaVoto(Eleição eleição, String lista, int cc, String departamento) throws RemoteException {
+    public void adicionaVoto(Eleição eleição, String lista, int cc, String departamento, String momento) throws RemoteException {
         for(int i = 0; i < eleições.size(); i++) {
             if(eleições.get(i).getTitulo().equals(eleição.getTitulo()) && eleições.get(i).getAtiva()) { // Ao encontrar a eleição com o titulo correspondente
                 for(int j = 0; j < eleições.get(i).getListas().size(); j++) { // Vai percorrer as listas da eleição
@@ -328,13 +336,17 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         for(int k = 0; k < pessoas.size(); k++) {
                             if(pessoas.get(k).getCc() == cc) {
                                 HashMap<String, String> votou = pessoas.get(k).getVotou();
-                                votou.put(eleição.getTitulo(), departamento);
+                                String depTime = departamento + " - " + momento;
+                                votou.put(eleição.getTitulo(), depTime);
                                 pessoas.get(k).setVotou(votou);
+                                pessoas.get(k).setAVotar(false);
                             }
                         }
 
                         ArrayList<Integer> jaVotaram = eleições.get(i).getJaVotaram();
-                        jaVotaram.add(cc);
+                        synchronized (jaVotaram) {
+                            jaVotaram.add(cc);
+                        }
                         eleições.get(i).setJaVotaram(jaVotaram);
                         System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome());
                         writeBD("eleicoes.obj");

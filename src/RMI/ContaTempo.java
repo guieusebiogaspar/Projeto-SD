@@ -54,7 +54,7 @@ public class ContaTempo extends Thread{
                     System.out.println("Erro a abrir ficheiro.");
                 }
                 catch(IOException ex){
-                    System.out.println("Erro a ler ficheiro.A");
+                    //System.out.println("Erro a ler ficheiro.A");
                 }
                 catch(ClassNotFoundException ex){
                     System.out.println("Erro a converter objeto.");

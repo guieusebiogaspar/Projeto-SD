@@ -76,7 +76,7 @@ public class VotingTerminal extends Thread {
         String message = null;
         while(message == null) {
             message = recebeCliente(socket);
-            if(!message.contains(expression)) {
+            if (!message.contains(expression)) {
                 message = null;
             }
         }
@@ -133,12 +133,26 @@ public class VotingTerminal extends Thread {
                     }
                 }
 
+                message = filterMessage(socket, "type | welcome");
+                String[] info = message.trim().split(";");
+                String cc = null;
+                for(int i = 0; i < info.length; i++) {
+                    if(info[i].contains("user")) {
+                        System.out.println("Bem-vindo user com o cartão de cidadão " + info[i].substring(info[i].lastIndexOf(" ") + 1));
+                        cc = info[i].substring(info[i].lastIndexOf(" ") + 1);
+                    }
+                }
+
+                MulticastSocket socketSession = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
+                InetAddress groupSession = InetAddress.getByName(newAddress);
+                socketSession.joinGroup(groupSession); //join the multicast group
+
                 // Vai iniciar uma sessão para o votante votar
-                Session sessao = new Session(newAddress);
+                Session sessao = new Session(socketSession, groupSession, cc);
                 Timer timer = new Timer();
 
                 // Após 120 segundos a thread fecha
-                timer.schedule(new ControlaTempoSessão(sessao, timer), 120000);
+                timer.schedule(new ControlaTempoSessão(sessao, timer, socketSession, groupSession, this.getName(), cc), 20000);
                 sessao.start();
                 System.out.println("Tem 120 de segundos de sessão ativa!");
 
@@ -156,11 +170,15 @@ public class VotingTerminal extends Thread {
 }
 
 class Session extends Thread {
-    private String MULTICAST_ADDRESS_SESSIONS;
+    private MulticastSocket socketSession;
+    private InetAddress groupSession;
+    private String cc;
     private int PORT = 4321;
 
-    Session(String address){
-        this.MULTICAST_ADDRESS_SESSIONS = address;
+    Session(MulticastSocket socket, InetAddress group, String cc){
+        this.socketSession = socket;
+        this.groupSession = group;
+        this.cc = cc;
     }
 
     public Integer tryParse(String text) {
@@ -227,112 +245,91 @@ class Session extends Thread {
     }
 
     public void run() {
-        MulticastSocket socketSession = null;
+
+        BufferedReader keyboardScanner = new BufferedReader(new InputStreamReader(System.in));
 
         try {
+            int tentativas = 3;
 
-            socketSession = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
-            InetAddress groupSession = InetAddress.getByName(MULTICAST_ADDRESS_SESSIONS);
-            socketSession.joinGroup(groupSession); //join the multicast group
+            while (tentativas > 0) {
+                String login = "@ type | login; cc | " + cc + ";";
+                System.out.print("Username: ");
 
-            String message = null;
-            message = filterMessage(socketSession, "type | welcome", null);
-            String[] info = message.trim().split(";");
-            for(int i = 0; i < info.length; i++) {
-                if(info[i].contains("user")) {
-                    System.out.println("Bem-vindo user com o cartão de cidadão " + info[i].substring(info[i].lastIndexOf(" ") + 1));
+                while(!keyboardScanner.ready()) {
+                    Thread.sleep(200);
                 }
-            }
+                login = login + " username | " + keyboardScanner.readLine() + "; ";
 
-            String[] obterCC = message.trim().split(";");
-            String cc = obterCC[1].substring(obterCC[1].lastIndexOf(" ") + 1);
+                System.out.print("Password: ");
+                while(!keyboardScanner.ready()) {
+                    Thread.sleep(200);
+                }
+                login = login + "password | " + keyboardScanner.readLine();
 
-            BufferedReader keyboardScanner = new BufferedReader(new InputStreamReader(System.in));
-
-            try {
-                int tentativas = 3;
-
-                while (tentativas > 0) {
-                    String login = "@ type | login; cc | " + cc + ";";
-                    System.out.print("Username: ");
-
-                    while(!keyboardScanner.ready()) {
-                        Thread.sleep(200);
+                enviaCliente(socketSession, login, groupSession);
+                String message = filterMessage(socketSession, "type | status", "cc | " + cc);
+                String info[] = null;
+                if (message.contains("logged | on")) {
+                    info = message.trim().split(";");
+                    for(int i = 0; i < info.length; i++) {
+                        if(info[i].contains("msg")) {
+                            String[] msg = info[i].trim().split("\\|");
+                            System.out.println(msg[1]);
+                            break;
+                        }
                     }
-                    login = login + " username | " + keyboardScanner.readLine() + "; ";
 
-                    System.out.print("Password: ");
-                    while(!keyboardScanner.ready()) {
-                        Thread.sleep(200);
+                    tentativas = 0;
+                    message = filterMessage(socketSession, "type | item_list", "cc | " + cc);
+
+                    //System.out.println(message);
+
+                    info = message.trim().split(";");
+                    ArrayList<String> listas = new ArrayList<>();
+                    for(int i = 0; i < info.length; i++) {
+                        if(info[i].contains("name")) {
+                            listas.add(info[i].substring(info[i].lastIndexOf(" ") + 1));
+                        }
                     }
-                    login = login + "password | " + keyboardScanner.readLine();
 
-                    enviaCliente(socketSession, login, groupSession);
-                    message = filterMessage(socketSession, "type | status", "cc | " + cc);
-                    if (message.contains("logged | on")) {
-                        info = message.trim().split(";");
-                        for(int i = 0; i < info.length; i++) {
-                            if(info[i].contains("msg")) {
-                                String[] msg = info[i].trim().split("\\|");
-                                System.out.println(msg[1]);
-                                break;
-                            }
+                    System.out.println("------- Listas --------");
+                    for(int i = 0; i < listas.size(); i++) {
+                        System.out.println("" + (i+1) + " - " + listas.get(i));
+                    }
+
+                    System.out.print("Introduza o número da lista em que pretende votar: ");
+                    Integer escolha = null;
+                    int check = 0;
+                    while(check == 0) {
+                        while(!keyboardScanner.ready()) {
+                            Thread.sleep(200);
                         }
-
-                        tentativas = 0;
-                        message = filterMessage(socketSession, "type | item_list", "cc | " + cc);
-
-                        //System.out.println(message);
-
-                        info = message.trim().split(";");
-                        ArrayList<String> listas = new ArrayList<>();
-                        for(int i = 0; i < info.length; i++) {
-                            if(info[i].contains("name")) {
-                                listas.add(info[i].substring(info[i].lastIndexOf(" ") + 1));
-                            }
-                        }
-
-                        System.out.println("------- Listas --------");
-                        for(int i = 0; i < listas.size(); i++) {
-                            System.out.println("" + (i+1) + " - " + listas.get(i));
-                        }
-
-                        System.out.print("Introduza o número da lista em que pretende votar: ");
-                        Integer escolha = null;
-                        int check = 0;
-                        while(check == 0) {
-                            while(escolha == null) escolha = tryParse(keyboardScanner.readLine());
-                            if(escolha > 0 && escolha <= (listas.size() + 1)) {
-                                check = 1;
-                            } else {
-                                System.out.println("Número não corresponde a nenhuma lista");
-                                escolha = null;
-                            }
-                        }
-
-                        message = "@ type | vote; cc | " + cc + "; list | " + listas.get(escolha-1);
-
-                        // ver se foi branco ou nulo
-                        System.out.println("Votou " + listas.get(escolha-1) + "\nObrigado.\n");
-                        enviaCliente(socketSession, message, groupSession);
-
-                    } else {
-                        tentativas -= 1;
-                        if (tentativas > 0) {
-                            System.out.println("A autenticação falhou, tem mais " + tentativas + " tentativas");
+                        while(escolha == null) escolha = tryParse(keyboardScanner.readLine());
+                        if(escolha > 0 && escolha <= (listas.size() + 1)) {
+                            check = 1;
                         } else {
-                            System.out.println("Falhou na autenticação 3 vezes... Dirija-se à mesa de voto outra vez se quiser votar");
+                            System.out.println("Número não corresponde a nenhuma lista");
+                            escolha = null;
                         }
                     }
-                }
 
-            } catch (IOException | InterruptedException e) {
+                    message = "@ type | vote; cc | " + cc + "; list | " + listas.get(escolha-1);
+
+                    // ver se foi branco ou nulo
+                    System.out.println("Votou " + listas.get(escolha-1) + "\nObrigado.\n");
+                    enviaCliente(socketSession, message, groupSession);
+
+                } else {
+                    tentativas -= 1;
+                    if (tentativas > 0) {
+                        System.out.println("A autenticação falhou, tem mais " + tentativas + " tentativas");
+                    } else {
+                        System.out.println("Falhou na autenticação 3 vezes... Dirija-se à mesa de voto outra vez se quiser votar");
+                    }
+                }
             }
 
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | InterruptedException e) {
         }
     }
 }
@@ -340,15 +337,44 @@ class Session extends Thread {
 class ControlaTempoSessão extends TimerTask {
     private Thread sessao;
     private Timer timer;
+    private MulticastSocket socketSession;
+    private InetAddress groupSession;
+    private String terminal;
+    private String cc;
+    private int PORT = 4321;
 
-    ControlaTempoSessão(Thread sessao, Timer timer) {
+    ControlaTempoSessão(Thread sessao, Timer timer, MulticastSocket socket, InetAddress group, String terminal, String cc) {
         this.sessao = sessao;
         this.timer = timer;
+        this.socketSession = socket;
+        this.groupSession = group;
+        this.terminal = terminal;
+        this.cc = cc;
     }
+
+    /**
+     * Método que vai enviar um packet por UDP para a mesa de voto
+     *
+     * @param socket
+     * @param message - mensagem a enviar no packet
+     * @param group
+     *
+     */
+    public void enviaCliente(MulticastSocket socket, String message, InetAddress group) throws IOException {
+        byte[] buffer = message.getBytes();
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, PORT);
+        socket.send(packet);
+    }
+
 
     public void run() {
         if(sessao != null && sessao.isAlive()) {
             System.out.println("\nO seu tempo de sessão expirou. Dirija-se de novo à Mesa de Voto.");
+            try {
+                enviaCliente(socketSession, "@ type | timeout; user | " + cc + "; terminal | " + terminal, groupSession);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             sessao.interrupt();
             timer.cancel();
         }
