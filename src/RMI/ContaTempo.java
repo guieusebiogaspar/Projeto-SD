@@ -83,7 +83,7 @@ public class ContaTempo extends Thread{
                             {
                                 el.setAtiva(true);
                                 el.setTerminada(false);
-                                if(writeBD(" iniciada1", eleicoes, el) == 1)
+                                if(writeBD(" iniciada", eleicoes, el) == 1)
                                     break;
                             }
                         }
@@ -103,7 +103,7 @@ public class ContaTempo extends Thread{
                         if(atual.equals(fim))
                         {
                             LocalTime lt = LocalTime.now();
-                            if(lt.getHour() >= el.getInicio().getHora())
+                            if(lt.getHour() == el.getInicio().getHora())
                             {
                                 if(el.getInicio().getHora() == el.getFim().getHora())
                                 {
@@ -115,7 +115,7 @@ public class ContaTempo extends Thread{
                                             {
                                                 el.setAtiva(true);
                                                 el.setTerminada(false);
-                                                if(writeBD(" iniciada2", eleicoes, el) == 1)
+                                                if(writeBD(" iniciada", eleicoes, el) == 1)
                                                     break;
                                             }
                                         }
@@ -139,7 +139,7 @@ public class ContaTempo extends Thread{
                                             el.setAtiva(true);
                                             el.setTerminada(false);
                                             System.out.println("3");
-                                            if(writeBD(" iniciada3", eleicoes, el) == 1)
+                                            if(writeBD(" iniciada", eleicoes, el) == 1)
                                                 break;
                                         }
                                     }
@@ -153,6 +153,32 @@ public class ContaTempo extends Thread{
                                         }
                                     }
                                 }
+                            }
+                            if(lt.getHour() > el.getInicio().getHora())
+                            {
+                                if(lt.getHour() >= el.getFim().getHora())
+                                {
+                                    if(el.getAtiva())
+                                    {
+                                        el.setAtiva(false);
+                                        el.setTerminada(true);
+                                        if(writeBD(" terminada", eleicoes, el) == 1)
+                                            break;
+                                    }
+
+                                }
+                                else
+                                {
+                                    if(!el.getAtiva())
+                                    {
+                                        el.setAtiva(true);
+                                        el.setTerminada(false);
+                                        System.out.println("3");
+                                        if(writeBD(" iniciada", eleicoes, el) == 1)
+                                            break;
+                                    }
+                                }
+
                             }
 
                         }

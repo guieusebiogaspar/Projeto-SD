@@ -549,7 +549,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      *  @return eleição - objeto eleição com o título dado como input
      */
     public Pessoa getPessoa(String cc) throws RemoteException {
-        pessoas = null;
+        //pessoas = null;
         readBD("pessoas.obj");
         for(Pessoa p: pessoas)
         {
@@ -626,6 +626,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      * @return devolve 1 se correu tudo bem
      */
     public int adicionaVoto(Eleição eleição, String lista, int cc, String departamento, String momento) throws RemoteException {
+        if(eleições != null)
+        {
 
         for(int i = 0; i < eleições.size(); i++) {
             if(eleições.get(i).getTitulo().equals(eleição.getTitulo()) && eleições.get(i).getAtiva()) { // Ao encontrar a eleição com o titulo correspondente
@@ -643,9 +645,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                                 votou.put(eleição.getTitulo(), depTime);
                                 pessoas.get(k).setVotou(votou);
                                 pessoas.get(k).setAVotar(false);
-                            }
-                        }
-
+                            }                        
                         // Adiciona a pessoa ao arrayList das pessoas que ja votaram naquela dada eleição
                         ArrayList<Integer> jaVotaram = eleições.get(i).getJaVotaram();
                         jaVotaram.add(cc);
@@ -658,6 +658,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 }
             }
         }
+
         return 0;
 
     }
