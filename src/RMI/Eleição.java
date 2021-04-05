@@ -32,7 +32,11 @@ public class Eleição implements Serializable {
      * @param titulo - titulo eleicao
      * @param descrição - descrição da eleição
      * @param grupos - grupos que podem votar na eleição
+     * @param listas - listas de candidatos
+     * @param mesasVoto - mesas de voto associadas
+     * @param quemPodeVotar - tipo de pessoas que podem votar na eleição
      */
+
     public Eleição(DataEleição inicio, DataEleição fim, String titulo, String descrição, ArrayList<String> grupos, ArrayList<Lista> listas, ArrayList<String> mesasVoto, String quemPodeVotar) {
         this.inicio = inicio;
         this.fim = fim;
@@ -97,10 +101,6 @@ public class Eleição implements Serializable {
 
     public ArrayList<String> getMesasVoto() {
         return mesasVoto;
-    }
-
-    public void setMesasVoto() {
-        this.mesasVoto = mesasVoto;
     }
 
     public ArrayList<Integer> getJaVotaram() {

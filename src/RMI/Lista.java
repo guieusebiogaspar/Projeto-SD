@@ -10,16 +10,26 @@ public class Lista implements Serializable {
     private int numVotos;
     private ArrayList<Pessoa> membros;
 
+    /**
+     * Construtor vazio do objeto Lista
+     */
     public Lista()
     {
     }
 
+    /**
+     * Construtor do objeto Lista
+     *
+     * @param nome - nome da lista
+     * @param tipo - tipo dos membros da lista
+     *
+     */
     public Lista(String nome, String tipo)
     {
         this.nome = nome;
         this.tipo = tipo;
-        this.numVotos = 0;
-        this.membros = new ArrayList<>();
+        this.numVotos = 0; // numero de votos da lista
+        this.membros = new ArrayList<>(); // membros da lista
     }
 
     public String getNome() {
@@ -42,7 +52,4 @@ public class Lista implements Serializable {
         return membros;
     }
 
-    public void setMembros(ArrayList<Pessoa> membros) {
-        this.membros = membros;
-    }
 }
