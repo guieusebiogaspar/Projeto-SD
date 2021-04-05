@@ -193,7 +193,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println();
         System.out.println("Dados Listas: ");
         for(int i = 0; i < el.getListas().size(); i++) {
-            if(i == (el.getListas().size() - 1) || i == (el.getListas().size() - 2)) {
+            if (!(el.getListas().get(i).getNome().equals("Nulo") || el.getListas().get(i).getNome().equals("Branco"))) {
                 System.out.println("\tVotos " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
             } else {
                 System.out.println("\tVotos Lista " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
@@ -294,14 +294,17 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         int max = 0;
         ArrayList<String> vencedora = new ArrayList<>();
-        for(int i = 0; i < (el.getListas().size() - 2); i++) {
+        for(int i = 0; i < el.getListas().size(); i++) {
             if(el.getListas().get(i).getNumVotos() > max) { // se os votos for maior que o max limpa o arraylist e adiciona a lista
-                max = el.getListas().get(i).getNumVotos();
-                vencedora.clear();
-                vencedora.add(el.getListas().get(i).getNome());
+                if (!(el.getListas().get(i).getNome().equals("Nulo") || el.getListas().get(i).getNome().equals("Branco"))) {
+                    max = el.getListas().get(i).getNumVotos();
+                    vencedora.clear();
+                    vencedora.add(el.getListas().get(i).getNome());
+                }
             }
             else if (el.getListas().get(i).getNumVotos() == max) {
-                vencedora.add(el.getListas().get(i).getNome());
+                if (!(el.getListas().get(i).getNome().equals("Nulo") || el.getListas().get(i).getNome().equals("Branco")))
+                    vencedora.add(el.getListas().get(i).getNome());
             }
         }
 
@@ -334,7 +337,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             System.out.println("[1] - Estudante");
             System.out.println("[2] - Docente");
             System.out.println("[3] - Funcionário");
-            tipo = reader.readLine();
+            tipo = reader.readLine().trim();
             switch(tipo) {
                 case "1":
                     tipo = "Estudante";
@@ -436,6 +439,31 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         DataEleição inicio = new DataEleição(diaInicio, mesInicio, anoInicio, horaInicio, minutoInicio);
         DataEleição fim = new DataEleição(diaFim, mesFim, anoFim, horaFim, minutoFim);
 
+        String opcao = null;
+        while(check) {
+            System.out.println("Que grupo de pessoas pode votar?");
+            System.out.println("1 - Estudantes");
+            System.out.println("2 - Docentes");
+            System.out.println("3 - Funcionários");
+            opcao = reader.readLine().trim();
+            switch(opcao) {
+                case "1":
+                    opcao = "Estudante";
+                    check = false;
+                    break;
+                case "2":
+                    opcao = "Docente";
+                    check = false;
+                    break;
+                case "3":
+                    opcao = "Funcionário";
+                    check = false;
+                    break;
+                default:
+                    System.out.println("Opção inválida");
+            }
+        }
+
         System.out.println("Quantas listas tem a eleição?");
         Integer nListas = tryParse(reader.readLine());
         for(int i = 0; i < nListas; i++)
@@ -446,7 +474,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             {
                 System.out.print("Lista: ");
                 nome = reader.readLine();
-                Lista l = new Lista(nome);
+                Lista l = new Lista(nome, opcao);
                 listas.add(l);
             }
             else{
@@ -467,13 +495,13 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                         cond = 1;
                 }
 
-                Lista l = new Lista(nome);
+                Lista l = new Lista(nome, opcao);
                 listas.add(l);
             }
         }
 
-        Lista branco = new Lista("Branco");
-        Lista nulo = new Lista("Nulo");
+        Lista branco = new Lista("Branco", opcao);
+        Lista nulo = new Lista("Nulo", opcao);
         listas.add(branco);
         listas.add(nulo);
 
@@ -505,23 +533,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 mesas.add(nome);
             }
         }
-        System.out.println("Quais os grupos de pessoas que podem votar? (separe por espaços o número de opções que pretende)");
-        System.out.println("1 - Estudantes");
-        System.out.println("2 - Docentes");
-        System.out.println("3 - Funcionários");
-        String[] opcoes = reader.readLine().trim().split(" ");
 
-        for(int i = 0; i < opcoes.length; i++)
-        {
-            if(opcoes[i].equals("1"))
-                opcoesVoto.add("Estudante");
-            if(opcoes[i].equals("2"))
-                opcoesVoto.add("Docente");
-            if(opcoes[i].equals("3"))
-                opcoesVoto.add("Funcionário");
-        }
-
-        Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, listas, mesas, opcoesVoto);
+        Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, listas, mesas, opcao);
         server.criarEleição(eleição);
         System.out.println("Eleição registada no servidor!");
     }
@@ -576,8 +589,10 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                         System.out.println("- " + eleição.getGrupos().get(i));
                     }
                     System.out.println("Listas:");
-                    for(Lista l : eleição.getListas())
-                        System.out.println(l.getNome());
+                    for(int i = 0; i < eleição.getListas().size(); i++) {
+                        if (!(eleição.getListas().get(i).getNome().equals("Nulo") || eleição.getListas().get(i).getNome().equals("Branco")))
+                            System.out.println("- " + eleição.getListas().get(i).getNome());
+                    }
                     System.out.println("Qual o campo da eleição que pretende alterar?");
                     System.out.println("[1] - Título");
                     System.out.println("[2] - Descrição");
@@ -586,7 +601,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     System.out.println("[5] - Departamentos");
                     System.out.println("[6] - Listas");
                     System.out.println("[7] - Mesas de Voto");
-                    System.out.println("[8] - Quem pode votar");
                     System.out.println("[0] - Sair");
                     inputzito = reader.readLine();
                     if (inputzito.equals("0")) return;//menu();
@@ -689,8 +703,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                 check = 1;
                                 break;
                             case "6":
-                                for(int i = 0; i < eleição.getListas().size() - 2; i++) {
-                                    System.out.println(eleição.getListas().get(i));
+                                for(int i = 0; i < eleição.getListas().size(); i++) {
+                                    if (!(eleição.getListas().get(i).getNome().equals("Nulo") || eleição.getListas().get(i).getNome().equals("Branco")))
+                                        System.out.println(eleição.getListas().get(i).getNome());
                                 }
 
                                 System.out.println("Que operação deseja fazer?");
@@ -707,9 +722,17 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                     switch(inputzito)
                                     {
                                         case "1":
-                                            System.out.println("Qual a lista: ");
-                                            inputzito = reader.readLine();
-                                            //server.addLista(eleição, inputzito);
+                                            boolean verifica = true;
+                                            System.out.println("Qual a lista que pretende adicionar: ");
+                                            server.addLista(eleição, inputzito);
+                                            while(verifica) {
+                                                inputzito = reader.readLine();
+                                                verifica = server.verificaLista(eleição, inputzito);
+                                                if(verifica) {
+                                                    System.out.println("Essa lista já está criada!");
+                                                    inputzito = null;
+                                                }
+                                            }
                                             System.out.println("Lista adicionada com sucesso!");
                                             check2 = 1;
                                             break;
@@ -726,14 +749,97 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                             check2=1;
                                             break;
                                         case "3":
-                                            /*System.out.println("Qual a lista: ");
-                                            inputzito = reader.readLine();
-                                            //server.addLista(eleição, inputzito);
-                                            System.out.println("Lista adicionada com sucesso!");
-                                            check2 = 1;
-                                            break;*/
+                                            System.out.println("Qual a lista que pretende adicionar pessoas: ");
+                                            verifica = true;
+                                            boolean verifica2 = true;
+                                            while(verifica) {
+                                                String lista = reader.readLine();
+                                                verifica = server.verificaLista(eleição, lista);
+                                                if(verifica) {
+                                                    ArrayList<Pessoa> pessoas = server.getPessoas();
+                                                    ArrayList<Pessoa> pessoasValidas = new ArrayList<>();
+
+                                                    for(int i = 0; i < pessoas.size(); i++) {
+                                                        if(pessoas.get(i).getTipo().equals(eleição.getQuemPodeVotar())) {
+                                                            System.out.println(pessoas.get(i).getNome() + " - " + pessoas.get(i).getCc());
+                                                            pessoasValidas.add(pessoas.get(i));
+                                                        }
+                                                    }
+                                                    System.out.print("Introduza o cartão de cidadão da pessoa que pretende adicionar: ");
+                                                    while(verifica2) {
+                                                        Integer cc = null;
+                                                        while(cc == null) {
+                                                            inputzito = reader.readLine();
+                                                            cc = tryParse(inputzito);
+                                                        }
+                                                        verifica2 = server.verificaCC(cc);
+
+                                                        int entrou = 0;
+                                                        Pessoa p = null;
+                                                        for(int i = 0; i < pessoasValidas.size(); i++) {
+                                                            if(pessoasValidas.get(i).getCc() == cc) {
+                                                                entrou = 1;
+                                                                p = pessoasValidas.get(i);
+                                                                break;
+                                                            }
+                                                        }
+                                                        if(verifica2 && entrou == 1) {
+                                                            server.adicionaPessoaLista(eleição, lista, p);
+                                                            System.out.println("Pessoa adicionada com sucesso!");
+                                                            verifica2 = false;
+                                                            verifica = false;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                        case "4":
+                                            System.out.println("Qual a lista que pretende remover pessoas: ");
+                                            verifica = true;
+                                            verifica2 = true;
+                                            while(verifica) {
+                                                String lista = reader.readLine();
+                                                verifica = server.verificaLista(eleição, lista);
+                                                if(verifica) {
+                                                    ArrayList<Pessoa> pessoasValidas = null;
+                                                    for(int i = 0; i < eleição.getListas().size(); i++) {
+                                                        if(eleição.getListas().get(i).getNome().equals(lista)) {
+                                                            pessoasValidas = eleição.getListas().get(i).getMembros();
+                                                            for(int j = 0; j < pessoasValidas.size(); j++) {
+                                                                System.out.println(pessoasValidas.get(j).getNome() + " - " + pessoasValidas.get(j).getCc());
+                                                            }
+                                                        }
+                                                    }
+                                                    System.out.print("Introduza o cartão de cidadão da pessoa que pretende remover: ");
+                                                    while(verifica2) {
+                                                        Integer cc = null;
+                                                        while(cc == null) {
+                                                            inputzito = reader.readLine();
+                                                            cc = tryParse(inputzito);
+                                                        }
+                                                        verifica2 = server.verificaCC(cc);
+
+                                                        int entrou = 0;
+                                                        Pessoa p = null;
+                                                        for(int i = 0; i < pessoasValidas.size(); i++) {
+                                                            if(pessoasValidas.get(i).getCc() == cc) {
+                                                                entrou = 1;
+                                                                p = pessoasValidas.get(i);
+                                                                break;
+                                                            }
+                                                        }
+                                                        if(verifica2 && entrou == 1) {
+                                                            server.removePessoaLista(eleição, lista, p);
+                                                            System.out.println("Pessoa removida com sucesso!");
+                                                            verifica2 = false;
+                                                            verifica = false;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            break;
                                         case "5":
-                                            System.out.println("Qual a lista: ");
+                                            System.out.println("Qual a lista que pretende mudar o nome: ");
                                             inputzito = reader.readLine();
                                             System.out.println("Nome da lista: ");
                                             boolean vamos = true;
@@ -802,28 +908,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                 }
                                 check = 1;
                                 break;
-
-                            case "8":
-                                System.out.println("Quais os grupos de pessoas que podem votar? (separe por espaços o número de opções que pretende)");
-                                System.out.println("1 - Estudantes");
-                                System.out.println("2 - Docentes");
-                                System.out.println("3 - Funcionários");
-                                String[] opcoes = reader.readLine().trim().split(" ");
-                                ArrayList<String> opcoesVoto = new ArrayList<>();
-
-                                for(int i = 0; i < opcoes.length; i++)
-                                {
-                                    if(opcoes[i].equals("1"))
-                                        opcoesVoto.add("Estudante");
-                                    if(opcoes[i].equals("2"))
-                                        opcoesVoto.add("Docente");
-                                    if(opcoes[i].equals("3"))
-                                        opcoesVoto.add("Funcionário");
-                                }
-
-                                server.addTipos(eleição, opcoesVoto);
-                                System.out.println("Pessoas que podem votar editadas com sucesso!");
-
                             case "0":
                                 check = 1;
                                 break;
@@ -834,11 +918,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 }
             }
 
-            System.out.println("Pessoa registada no servidor!");
         }
-
-
-        //server.editarEleição(eleição);
 
     }
 

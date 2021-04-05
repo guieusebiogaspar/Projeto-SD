@@ -148,7 +148,12 @@ public class MesaVoto extends Thread {
         String newAddress2 = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length()-1);
         newAddress2 = newAddress2 + last2;
 
-        new AtualizaMesa(departamento, newAddress2, serverRMI);
+        MulticastSocket socketAtualiza = null;  // create socket without binding it (only for sending)
+        socketAtualiza = new MulticastSocket(PORT);
+        InetAddress groupAtualiza = InetAddress.getByName(newAddress2);
+        socketAtualiza.joinGroup(groupAtualiza); //join the multicast group
+
+        new AtualizaMesa(departamento, serverRMI, socketAtualiza);
 
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -519,15 +524,16 @@ class HandleSession extends Thread {
 }
 
 class AtualizaMesa extends Thread {
-    private String ATUALIZA_ADDRESS;
     private int PORT = 4321;
     private RMIServerInterface serverRMI;
     private String departamento;
+    private MulticastSocket socketAtualiza;
+    private InetAddress group;
 
-    public AtualizaMesa(String departamento, String address, RMIServerInterface serverRMI) {
-        this.ATUALIZA_ADDRESS = address;
+    public AtualizaMesa(String departamento, RMIServerInterface serverRMI, MulticastSocket socket) {
         this.serverRMI = serverRMI;
         this.departamento = departamento;
+        this.socketAtualiza = socket;
         this.start();
     }
 
@@ -567,10 +573,6 @@ class AtualizaMesa extends Thread {
 
     public void run() {
         try {
-            MulticastSocket socketAtualiza = null;  // create socket without binding it (only for sending)
-            socketAtualiza = new MulticastSocket(PORT);
-            InetAddress groupAtualiza = InetAddress.getByName(ATUALIZA_ADDRESS);
-            socketAtualiza.joinGroup(groupAtualiza); //join the multicast group
 
             ArrayList<String> terminais = new ArrayList<>();
 
