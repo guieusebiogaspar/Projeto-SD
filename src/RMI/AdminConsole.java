@@ -11,9 +11,15 @@ import java.time.*;
 import java.util.HashMap;
 
 public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInterface {
+    private boolean on;
 
     AdminConsole() throws RemoteException {
         super();
+        this.on = false;
+    }
+
+    public void printOnAdmin(String departamento, int terminais) throws RemoteException {
+        if(on) System.out.println("Mesa de voto " + departamento + " - " + terminais + " terminais ativos");
     }
 
     public void menu() {
@@ -23,6 +29,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("[3] - Editar eleição");
         System.out.println("[4] - Detalhes de pessoas");
         System.out.println("[5] - Detalhes de eleições");
+        System.out.println("[6] - Estado das mesas de voto ON/OFF");
         System.out.println("[0] - Sair");
     }
     public void olaServidor() throws RemoteException
@@ -48,6 +55,13 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 break;
             case "5":
                 showDetails(server);
+                break;
+            case "6":
+                if(on) {
+                    on = false;
+                } else {
+                    on = true;
+                }
                 break;
             case "0":
                 System.out.println("Encerrando admin console...");
@@ -481,7 +495,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     nome = reader.readLine();
                     for (String a : mesas) {
                         if (a.equals(nome)) {
-                            System.out.println("Já há uma lista com esse nome!!");
+                            System.out.println("Já há uma mesa com esse nome!!");
                             n_passou = 1;
                         }
                     }
@@ -675,9 +689,16 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                 check = 1;
                                 break;
                             case "6":
+                                for(int i = 0; i < eleição.getListas().size() - 2; i++) {
+                                    System.out.println(eleição.getListas().get(i));
+                                }
+
                                 System.out.println("Que operação deseja fazer?");
                                 System.out.println("[1] - Adicionar nova lista");
                                 System.out.println("[2] - Remover lista");
+                                System.out.println("[3] - Adicionar pessoa a lista");
+                                System.out.println("[4] - Remover pessoa da lista");
+                                System.out.println("[5] - Mudar nome da lista");
                                 System.out.println("[0] - Voltar");
                                 inputzito = reader.readLine();
                                 int check2 = 0;
@@ -688,7 +709,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                         case "1":
                                             System.out.println("Qual a lista: ");
                                             inputzito = reader.readLine();
-                                            server.addLista(eleição, inputzito);
+                                            //server.addLista(eleição, inputzito);
                                             System.out.println("Lista adicionada com sucesso!");
                                             check2 = 1;
                                             break;
@@ -703,6 +724,32 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                                 System.out.println("A lista nao existe");
                                             }
                                             check2=1;
+                                            break;
+                                        case "3":
+                                            /*System.out.println("Qual a lista: ");
+                                            inputzito = reader.readLine();
+                                            //server.addLista(eleição, inputzito);
+                                            System.out.println("Lista adicionada com sucesso!");
+                                            check2 = 1;
+                                            break;*/
+                                        case "5":
+                                            System.out.println("Qual a lista: ");
+                                            inputzito = reader.readLine();
+                                            System.out.println("Nome da lista: ");
+                                            boolean vamos = true;
+                                            String nome = null;
+                                            while(vamos) {
+                                                nome = reader.readLine();
+                                                vamos = server.verificaLista(eleição, nome);
+                                                if(vamos) {
+                                                    System.out.println("Essa lista já existe!");
+                                                    nome = null;
+                                                }
+                                            }
+
+                                            server.mudaNomeLista(eleição, inputzito, nome);
+                                            System.out.println("Nome da lista editado com sucesso!");
+                                            check2 = 1;
                                             break;
                                         case "0":
                                             check2 = 1;

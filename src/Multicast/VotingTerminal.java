@@ -94,14 +94,21 @@ public class VotingTerminal extends Thread {
 
             // Prepara o address para tratar das sessões dos eleitores
             int last = Integer.parseInt(MULTICAST_ADDRESS.substring(MULTICAST_ADDRESS.length() -1));
+            int last2 = 0;
             if(last < 255) {
                 last = last + 1;
+                last2 = last + 1;
             } else {
                 last = last - 1;
+                last2 = last - 2;
             }
 
             String newAddress = MULTICAST_ADDRESS.substring(0, MULTICAST_ADDRESS.length()-1);
             newAddress = newAddress + last;
+            String newAddress2 = MULTICAST_ADDRESS.substring(0, MULTICAST_ADDRESS.length()-1);
+            newAddress2 = newAddress2 + last2;
+
+            new Atualiza(newAddress2, this.getName());
 
             while(true) {
 
@@ -379,5 +386,41 @@ class ControlaTempoSessão extends TimerTask {
             sessao.interrupt();
             timer.cancel();
         }
+    }
+}
+
+class Atualiza extends Thread {
+    private String ATUALIZA_ADDRESS;
+    private int PORT = 4321;
+    private String terminal;
+
+    public Atualiza(String address, String terminal) {
+        this.ATUALIZA_ADDRESS = address;
+        this.terminal = terminal;
+        this.start();
+    }
+
+    public void enviaCliente(MulticastSocket socket, String message, InetAddress group) throws IOException {
+        byte[] buffer = message.getBytes();
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, PORT);
+        socket.send(packet);
+    }
+
+    public void run() {
+        try {
+            MulticastSocket socketAtualiza = null;  // create socket without binding it (only for sending)
+            socketAtualiza = new MulticastSocket(PORT);
+            InetAddress groupAtualiza = InetAddress.getByName(ATUALIZA_ADDRESS);
+            socketAtualiza.joinGroup(groupAtualiza); //join the multicast group
+
+            while(true) {
+                enviaCliente(socketAtualiza, "@ type | update; terminal | " + terminal, groupAtualiza);
+                Thread.sleep(3000);
+            }
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 }

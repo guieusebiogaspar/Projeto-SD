@@ -24,6 +24,7 @@ public class MesaVoto extends Thread {
             System.exit(0);
         }
 
+
         MesaVoto mesa = new MesaVoto(args[0], args[1]);
         mesa.start();
     }
@@ -99,6 +100,7 @@ public class MesaVoto extends Thread {
             System.out.println("Não existem eleições disponíveis em que esteja autorizado a votar nesta mesa de voto");
             return null;
         }
+
         System.out.println("-------- Eleições nesta mesa de voto --------");
         for (int i = 0; i < eleições.size(); i++) {
             System.out.println("" + (i + 1) + " - " + eleições.get(i).getTitulo());
@@ -126,21 +128,32 @@ public class MesaVoto extends Thread {
         InetAddress groupTerminal = InetAddress.getByName(MULTICAST_ADDRESS_TERMINALS);
         socketFindTerminal.joinGroup(groupTerminal); //join the multicast group
 
+
+
         // Prepara o address para tratar das sessões dos eleitores
         int last = Integer.parseInt(MULTICAST_ADDRESS_TERMINALS.substring(MULTICAST_ADDRESS_TERMINALS.length() - 1));
 
         // caso seja o ultimo endereço ip permitido, usa o anterior no outro grupo mutlicast
-        if (last < 255) {
+        int last2 = 0;
+        if(last < 255) {
             last = last + 1;
+            last2 = last + 1;
         } else {
             last = last - 1;
+            last2 = last - 2;
         }
 
         String newAddress = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length() - 1);
         newAddress = newAddress + last;
+        String newAddress2 = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length()-1);
+        newAddress2 = newAddress2 + last2;
+
+        new AtualizaMesa(departamento, newAddress2, serverRMI);
 
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
+
+
 
         while (true) {
 
@@ -213,13 +226,13 @@ public class MesaVoto extends Thread {
                 if (serverRMI.obterValor() == 1) {
                     try {
                         serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                        serverRMI.olaMesaVoto(this.getName());
+                        serverRMI.olaMesaVoto(departamento);
                         Correr(serverRMI, socketFindTerminal);
 
                     } catch (RemoteException | NotBoundException ex) {
                         try {
                             RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
-                            serverRMI1.olaMesaVoto(this.getName());
+                            serverRMI1.olaMesaVoto(departamento);
                             Correr(serverRMI1, socketFindTerminal);
                         } catch (RemoteException | NotBoundException ex1) {
                             System.out.println("Servidor não está online");
@@ -234,14 +247,14 @@ public class MesaVoto extends Thread {
                 if (serverRMI.obterValor() == 0) {
                     try {
                         //serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                        serverRMI.olaMesaVoto(this.getName());
+                        serverRMI.olaMesaVoto(departamento);
                         Correr(serverRMI, socketFindTerminal);
 
                     } catch (RemoteException ex) {
                         System.out.println("Servidor não está online");
                         try {
                             RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                            serverRMI1.olaMesaVoto(this.getName());
+                            serverRMI1.olaMesaVoto(departamento);
                             Correr(serverRMI1, socketFindTerminal);
 
                         } catch (RemoteException | NotBoundException ex1) {
@@ -257,7 +270,7 @@ public class MesaVoto extends Thread {
                 System.out.println("Servidor não está online");
                 try {
                     RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                    serverRMI.olaMesaVoto(this.getName());
+                    serverRMI.olaMesaVoto(departamento);
                     Correr(serverRMI, socketFindTerminal);
                 } catch (RemoteException | NotBoundException ex1) {
                     System.out.println("Servidor não está online");
@@ -268,7 +281,6 @@ public class MesaVoto extends Thread {
                     socketFindTerminal.close();
                 }
             }
-
         }
     }
 }
@@ -505,6 +517,86 @@ class HandleSession extends Thread {
                     e.printStackTrace();
                 }
             }
+        }
+
+    }
+}
+
+class AtualizaMesa extends Thread {
+    private String ATUALIZA_ADDRESS;
+    private int PORT = 4321;
+    private RMIServerInterface serverRMI;
+    private String departamento;
+
+    public AtualizaMesa(String departamento, String address, RMIServerInterface serverRMI) {
+        this.ATUALIZA_ADDRESS = address;
+        this.serverRMI = serverRMI;
+        this.departamento = departamento;
+        this.start();
+    }
+
+    /**
+     * Método que vai receber um packet por UDP da mesa de voto
+     *
+     * @param socket
+     *
+     * @return mensagem recebida
+     */
+    public String recebeCliente(MulticastSocket socket) throws IOException {
+        // Corre até receber uma mensagem do servidor, onde dá return
+        while(true){
+            byte[] buffer = new byte[256];
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            socket.receive(packet);
+            String message = new String(packet.getData(), 0, packet.getLength());
+
+            // Se a mensagem não começar por @
+            if(message.charAt(0) != '$') {
+                return message;
+            }
+        }
+    }
+
+    public String filterMessage(MulticastSocket socket, String expression) throws IOException {
+        String message = null;
+        while (message == null) {
+            message = recebeCliente(socket);
+            if (!message.contains(expression)) {
+                message = null;
+            }
+        }
+
+        return message;
+    }
+
+    public void run() {
+        try {
+            MulticastSocket socketAtualiza = null;  // create socket without binding it (only for sending)
+            socketAtualiza = new MulticastSocket(PORT);
+            InetAddress groupAtualiza = InetAddress.getByName(ATUALIZA_ADDRESS);
+            socketAtualiza.joinGroup(groupAtualiza); //join the multicast group
+
+            ArrayList<String> terminais = new ArrayList<>();
+
+            String terminal = null;
+            while(true) {
+                String[] info = filterMessage(socketAtualiza, "type | update").split(";");
+                for(int i = 0; i < info.length; i++) {
+                    if(info[i].contains("terminal")) {
+                        terminal = info[i].substring(info[i].lastIndexOf(" ") + 1);
+                        break;
+                    }
+                }
+
+                if(terminais.contains(terminal)) {
+                    serverRMI.printOnServer(departamento, terminais.size());
+                    terminais.clear();
+                }
+                terminais.add(terminal);
+            }
+
+        } catch (IOException e) {
+            this.run();
         }
 
     }
