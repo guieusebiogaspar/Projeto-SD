@@ -34,6 +34,7 @@ public class Pessoa implements Serializable {
      * @param cc - numero do cc
      * @param validade - validade cc
      * @param grupo - grupo a que pertence
+     *
      */
 
     public Pessoa(String tipo, String nome, String username, String password, int phone, String morada, int cc, String validade, String grupo) {
@@ -46,8 +47,8 @@ public class Pessoa implements Serializable {
         this.cc = cc;
         this.validade = validade;
         this.grupo = grupo;
-        this.aVotar = false;
-        this.votou = new HashMap<>();
+        this.aVotar = false; // Fica a true se a pessoa estiver num voting terminal
+        this.votou = new HashMap<>(); // HasMap com uma eleição como key e uma mesa de voto como value
     }
 
     public String getTipo() {
