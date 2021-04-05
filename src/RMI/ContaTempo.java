@@ -193,7 +193,6 @@ public class ContaTempo extends Thread{
                                     {
                                         el.setAtiva(true);
                                         el.setTerminada(false);
-                                        System.out.println("3");
                                         if(writeBD(" iniciada", eleicoes, el) == 1)
                                             break;
                                     }
