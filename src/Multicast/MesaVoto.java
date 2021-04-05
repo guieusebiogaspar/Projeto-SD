@@ -356,9 +356,9 @@ class HandleSession extends Thread {
         while (entrou == 0) {
             message = filterMessage(socketSession, "type | login", "cc | " + cc);
             if(message.equals("Interrupt")) {
-                System.out.println("Thread foi terminada");
                 return;
             }
+
             info = message.trim().split(";");
             int cartao = 0;
             String nick = null;
@@ -399,7 +399,6 @@ class HandleSession extends Thread {
         // recebe a lista que o eleitor votou
         message = filterMessage(socketSession, "type | vote", "cc | " + cc);
         if(message.equals("Interrupt")) {
-            System.out.println("Thread foi terminada");
             return;
         }
 
