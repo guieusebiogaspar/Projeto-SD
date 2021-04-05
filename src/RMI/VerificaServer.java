@@ -14,7 +14,7 @@ public class VerificaServer extends Thread
     }
 
     public int getSouB() {
-        return souB;
+        return this.souB;
     }
 
     public void run()
@@ -28,12 +28,12 @@ public class VerificaServer extends Thread
             System.out.println("Estou a espera no porto 7070");
             while(true)
             {
-                this.souB = 0;
                 //System.out.println("entrei");
                 byte[] buffer = new byte[1000];
                 DatagramPacket requestB = new DatagramPacket(buffer, buffer.length);
                 bSocket.setSoTimeout(5000);
                 try{
+                    this.souB = 0;
                     bSocket.receive(requestB);
                     received = new String(requestB.getData(), 0, requestB.getLength());
                     //System.out.println("Recebido " + received);

@@ -1012,7 +1012,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 //RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
                 RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
 
-
                 if(server.obterValor() == 1)
                 {
                     try{
