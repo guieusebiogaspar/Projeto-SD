@@ -39,8 +39,6 @@ public interface RMIServerInterface extends Remote {
     Pessoa getPessoa(String cc) throws RemoteException;
     ArrayList<Eleição> filterEleições(String departamento, int cc) throws RemoteException;
     int adicionaVoto(Eleição eleição, String lista, int cc, String departamento, String momento) throws RemoteException;
-    ArrayList<String> getMesas() throws RemoteException;
     void pessoaAVotar(int cc, boolean estado) throws RemoteException;
-    public int getSouEU() throws RemoteException;
     void verificaOnServer(String departamento) throws RemoteException;
 }
