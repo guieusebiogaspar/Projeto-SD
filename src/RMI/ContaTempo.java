@@ -8,6 +8,10 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.time.*;
+import java.util.Date;
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public class ContaTempo extends Thread{
 
@@ -38,7 +42,7 @@ public class ContaTempo extends Thread{
         System.setSecurityManager(new RMISecurityManager());
 
         ArrayList<Eleição> eleicoes = new ArrayList<>();
-        System.out.println("Estou a contar o tempo");
+        //System.out.println("Estou a contar o tempo");
         while(true)
         {
             File f = new File("eleicoes.obj");
@@ -62,160 +66,89 @@ public class ContaTempo extends Thread{
             }
             for(Eleição el: eleicoes) {
                 LocalDate ld = LocalDate.now();
-                LocalTime lt = LocalTime.now();
-
-                if(ld.getYear() >= el.getFim().getAno() && ld.getMonthValue() >= el.getFim().getMes() && ld.getDayOfMonth() >= el.getFim().getDia())
-                {
-                    if(ld.getYear() > el.getFim().getAno())
+                SimpleDateFormat sdfo = new SimpleDateFormat("yyyy-MM-dd");
+                String dataInicio = new String(el.getInicio().getAno() + "-" + el.getInicio().getMes() + "-" + el.getInicio().getDia());
+                String dataFim = new String(el.getFim().getAno() + "-" + el.getFim().getMes() + "-" + el.getFim().getDia());
+                String atualDate = new String(ld.getYear()+"-"+ld.getMonthValue()+"-"+ld.getDayOfMonth());
+                try {
+                    Date i = sdfo.parse(dataInicio);
+                    Date fim = sdfo.parse(dataFim);
+                    Date atual = sdfo.parse(atualDate);
+                    //System.out.println(i);
+                    if(atual.after(i))
                     {
-                        if(el.getAtiva())
+                        if(atual.before(fim))
                         {
-                            el.setAtiva(false);
-                            el.setTerminada(true);
-                            if(writeBD("terminada", eleicoes, el) == 1)
-                                break;
+                            if(!el.getAtiva())
+                            {
+                                el.setAtiva(true);
+                                el.setTerminada(false);
+                                if(writeBD(" iniciada", eleicoes, el) == 1)
+                                    break;
+                            }
                         }
-                    }
-                    if(ld.getYear() == el.getFim().getAno())
-                    {
-                        if(ld.getMonthValue() > el.getFim().getMes())
+                        if(atual.after(fim))
                         {
                             if(el.getAtiva())
                             {
                                 el.setAtiva(false);
                                 el.setTerminada(true);
-                                if(writeBD("terminada", eleicoes, el) == 1)
+                                if(writeBD(" terminada", eleicoes, el) == 1)
                                     break;
                             }
                         }
-                        if(ld.getMonthValue() == el.getFim().getMes())
-                        {
-                            if(ld.getDayOfMonth() > el.getFim().getDia())
-                            {
-                                if(el.getAtiva())
-                                {
-                                    el.setAtiva(false);
-                                    el.setTerminada(true);
-
-                                    if(writeBD("terminada", eleicoes, el) == 1)
-                                        break;
-                                }
-                            }
-                            if(ld.getDayOfMonth() == el.getFim().getDia())
-                            {
-                                if(lt.getHour() > el.getFim().getHora())
-                                {
-                                    if(el.getAtiva())
-                                    {
-                                        el.setAtiva(false);
-                                        el.setTerminada(true);
-
-                                        if(writeBD("terminada1", eleicoes, el) == 1)
-                                            break;
-                                    }
-                                }
-                                if(lt.getHour() == el.getFim().getHora())
-                                {
-                                    if(lt.getMinute() >= el.getFim().getMinuto())
-                                    {
-                                        if(el.getAtiva())
-                                        {
-                                            el.setAtiva(false);
-                                            el.setTerminada(true);
-
-                                            if(writeBD("terminada", eleicoes, el) == 1)
-                                                break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
-                }
-                if(ld.getYear() >= el.getInicio().getAno() && ld.getMonthValue() >= el.getInicio().getMes() && ld.getDayOfMonth() >= el.getInicio().getDia())
-                {
-                    if(el.getInicio().getAno() == el.getFim().getAno() && el.getInicio().getMes() == el.getFim().getMes() && el.getInicio().getDia() == el.getFim().getDia())
+                    if(atual.equals(i))
                     {
-                        if(el.getInicio().getHora() == el.getFim().getHora())
+                        if(atual.equals(fim))
                         {
+                            LocalTime lt = LocalTime.now();
                             if(lt.getHour() >= el.getInicio().getHora())
                             {
-                                if(lt.getMinute() >= el.getInicio().getMinuto() && lt.getMinute() < el.getFim().getMinuto())
+                                if(el.getInicio().getHora() == el.getFim().getHora())
                                 {
-                                    if(!el.getAtiva())
+                                    if(lt.getMinute() >= el.getInicio().getMinuto())
                                     {
-                                        el.setAtiva(true);
-                                        if(writeBD("iniciada1", eleicoes, el) == 1)
-                                            break;
+                                        if(lt.getMinute() < el.getFim().getMinuto())
+                                        {
+                                            if(!el.getAtiva())
+                                            {
+                                                el.setAtiva(true);
+                                                el.setTerminada(false);
+                                                if(writeBD(" iniciada", eleicoes, el) == 1)
+                                                    break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if(el.getAtiva())
+                                            {
+                                                el.setAtiva(false);
+                                                el.setTerminada(true);
+                                                if(writeBD(" terminada", eleicoes, el) == 1)
+                                                    break;
+                                            }
+                                        }
                                     }
                                 }
-                            }
-
-                        }
-                        else{
-                            if(lt.getHour() >= el.getInicio().getHora() && lt.getHour() < el.getFim().getHora())
-                            {
-                                if(!el.getAtiva())
-                                {
-                                    el.setAtiva(true);
-                                    el.setTerminada(false);
-                                    if(writeBD("iniciada", eleicoes, el) == 1)
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                    else{
-                        if(el.getInicio().getAno() != el.getFim().getAno())
-                        {
-                            if(ld.getYear() >= el.getInicio().getAno() && ld.getYear() < el.getFim().getAno())
-                            {
-                                if(!el.getAtiva())
-                                {
-                                    el.setAtiva(true);
-                                    el.setTerminada(false);
-
-                                    if(writeBD("iniciada", eleicoes, el) == 1)
-                                        break;
-                                }
-                            }
-                        }
-                        else{
-                            if(el.getInicio().getMes() != el.getFim().getMes())
-                            {
-                                if(ld.getMonthValue() >= el.getInicio().getMes() && ld.getMonthValue() < el.getFim().getMes())
-                                {
-                                    if(ld.getYear() >= el.getInicio().getAno() && ld.getYear() < el.getFim().getAno())
+                                else{
+                                    if(lt.getHour() < el.getFim().getHora())
                                     {
                                         if(!el.getAtiva())
                                         {
                                             el.setAtiva(true);
                                             el.setTerminada(false);
-
-                                            if(writeBD("iniciada", eleicoes, el) == 1)
+                                            if(writeBD(" iniciada", eleicoes, el) == 1)
                                                 break;
                                         }
                                     }
                                 }
                             }
-                            else{
-                                if(el.getInicio().getDia() != el.getFim().getDia())
-                                {
-                                    if(ld.getDayOfMonth() >= el.getInicio().getDia() && ld.getDayOfMonth() < el.getFim().getDia())
-                                    {
-                                        if(!el.getAtiva())
-                                        {
-                                            el.setAtiva(true);
-                                            el.setTerminada(false);
 
-                                            if(writeBD("iniciada", eleicoes, el) == 1)
-                                                break;
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
             }
         }

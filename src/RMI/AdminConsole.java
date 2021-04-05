@@ -179,7 +179,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println();
         System.out.println("Dados Listas: ");
         for(int i = 0; i < el.getListas().size(); i++) {
-            if(i == (el.getListas().size() - 1) || i == (el.getListas().size() - 1)) {
+            if(i == (el.getListas().size() - 1) || i == (el.getListas().size() - 2)) {
                 System.out.println("\tVotos " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
             } else {
                 System.out.println("\tVotos Lista " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
@@ -775,6 +775,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                         server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
                         server.olaAdmin(adminConsole);
                         System.out.println("Admin informou server que está ligado");
+                        new ContaTempo();
                         while (true) {
                             menu();
                             System.out.print("> ");
@@ -789,6 +790,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
                             server.olaAdmin(adminConsole);
                             System.out.println("Admin informou server que está ligado");
+                            new ContaTempo();
                             while (true) {
                                 menu();
                                 System.out.print("> ");
@@ -812,6 +814,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     try{
                         server.olaAdmin(adminConsole);
                         System.out.println("Admin informou server que está ligado");
+                        new ContaTempo();
                         while (true) {
                             menu();
                             System.out.print("> ");
@@ -826,6 +829,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
                             server.olaAdmin(adminConsole);
                             System.out.println("Admin informou server que está ligado");
+                            new ContaTempo();
                             while (true) {
                                 menu();
                                 System.out.print("> ");
@@ -851,6 +855,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
                     server.olaAdmin(adminConsole);
                     System.out.println("Admin informou server que está ligado");
+                    new ContaTempo();
                     while (true) {
                         menu();
                         System.out.print("> ");
