@@ -134,22 +134,42 @@ public class ContaTempo extends Thread{
                                 else{
                                     if(lt.getHour() < el.getFim().getHora())
                                     {
-                                        if(!el.getAtiva())
+                                        if(lt.getMinute() >= el.getInicio().getMinuto())
                                         {
-                                            el.setAtiva(true);
-                                            el.setTerminada(false);
-                                            System.out.println("3");
-                                            if(writeBD(" iniciada", eleicoes, el) == 1)
-                                                break;
+                                            if(!el.getAtiva())
+                                            {
+                                                el.setAtiva(true);
+                                                el.setTerminada(false);
+                                                if(writeBD(" iniciada", eleicoes, el) == 1)
+                                                    break;
+                                            }
                                         }
                                     }
                                     else{
-                                        if(el.getAtiva())
+                                        if(lt.getHour() == el.getFim().getHora())
                                         {
-                                            el.setAtiva(false);
-                                            el.setTerminada(true);
-                                            if(writeBD(" terminada", eleicoes, el) == 1)
-                                                break;
+                                            if(lt.getMinute() >= el.getFim().getMinuto())
+                                            {
+                                                if(el.getAtiva())
+                                                {
+                                                    el.setAtiva(false);
+                                                    el.setTerminada(true);
+                                                    if(writeBD(" terminada", eleicoes, el) == 1)
+                                                        break;
+                                                }
+                                            }
+                                            else{
+                                                if(lt.getMinute() >= el.getInicio().getMinuto())
+                                                {
+                                                    if(!el.getAtiva())
+                                                    {
+                                                        el.setAtiva(true);
+                                                        el.setTerminada(false);
+                                                        if(writeBD(" iniciada", eleicoes, el) == 1)
+                                                            break;
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
