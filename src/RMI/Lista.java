@@ -6,18 +6,30 @@ import java.util.ArrayList;
 
 public class Lista implements Serializable {
     private String nome;
+    private String tipo;
     private int numVotos;
     private ArrayList<Pessoa> membros;
 
+    /**
+     * Construtor vazio do objeto Lista
+     */
     public Lista()
     {
     }
 
-    public Lista(String nome)
+    /**
+     * Construtor do objeto Lista
+     *
+     * @param nome - nome da lista
+     * @param tipo - tipo dos membros da lista
+     *
+     */
+    public Lista(String nome, String tipo)
     {
         this.nome = nome;
-        this.numVotos = 0;
-        this.membros = new ArrayList<>();
+        this.tipo = tipo;
+        this.numVotos = 0; // numero de votos da lista
+        this.membros = new ArrayList<>(); // membros da lista
     }
 
     public String getNome() {
@@ -34,6 +46,10 @@ public class Lista implements Serializable {
 
     public void setNumVotos(int numVotos) {
         this.numVotos = numVotos;
+    }
+
+    public ArrayList<Pessoa> getMembros() {
+        return membros;
     }
 
 }
