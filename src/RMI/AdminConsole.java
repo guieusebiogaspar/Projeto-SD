@@ -72,6 +72,13 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
     }
 
+    /**
+     * Método que so avança quando receber um inteiro
+     *
+     * @param text
+     *
+     * @return Inteiro
+     */
     public Integer tryParse(String text) {
         try {
             return Integer.parseInt(text);

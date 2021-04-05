@@ -1,23 +1,22 @@
 package Multicast;
 
-import RMI.RMIServerInterface;
-
-import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.UnknownHostException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+
+
+/**
+ * Terminal de voto. Local onde os votantes realizam o voto na eleição que selecionaram na Mesa de Voto.
+ *
+ * Primeiro os votantes fazem login e depois escolhem a lista em que pretendem votar.
+ *
+ */
 
 public class VotingTerminal extends Thread {
-    //private String MULTICAST_ADDRESS = "224.0.224.0";
     private String MULTICAST_ADDRESS;
     private int PORT = 4321;
 
@@ -31,6 +30,12 @@ public class VotingTerminal extends Thread {
         client.start();
     }
 
+    /**
+     * Construtor do objeto VotingTerminal
+     *
+     * @param address - endereço que vai abrir o socket
+     *
+     */
     public VotingTerminal(String address) {
         super("" + (long) (Math.random() * 1000));
         this.MULTICAST_ADDRESS = address;
@@ -65,13 +70,21 @@ public class VotingTerminal extends Thread {
             socket.receive(packet);
             String message = new String(packet.getData(), 0, packet.getLength());
 
-            // Se a mensagem não começar por @
+            // Se a mensagem não começar por @ (tipo de mensagens enviadas pelo voting terminal)
             if(message.charAt(0) != '@') {
                 return message;
             }
         }
     }
 
+    /**
+     * Método que vai filtrar a mensagem recebida da Mesa de Voto. Só devolve a mensagem quando esta tiver a expressão indicada
+     *
+     * @param socket
+     * @param expression - expressao que a mensagem precisa de conter para nao ser ignorada
+     *
+     * @return message
+     */
     public String filterMessage(MulticastSocket socket, String expression) throws IOException {
         String message = null;
         while(message == null) {
@@ -103,15 +116,29 @@ public class VotingTerminal extends Thread {
                 last2 = last - 2;
             }
 
+            // endereço para a thread que vai tratar das sessões dos votantes
             String newAddress = MULTICAST_ADDRESS.substring(0, MULTICAST_ADDRESS.length()-1);
             newAddress = newAddress + last;
+
+            // endereço para a thread que vai enviar pings à mesa de voto
             String newAddress2 = MULTICAST_ADDRESS.substring(0, MULTICAST_ADDRESS.length()-1);
             newAddress2 = newAddress2 + last2;
 
-            new Atualiza(newAddress2, this.getName());
+            MulticastSocket socketAtualiza = null;  // create socket without binding it (only for sending)
+            socketAtualiza = new MulticastSocket(PORT);
+            InetAddress groupAtualiza = InetAddress.getByName(newAddress2);
+            socketAtualiza.joinGroup(groupAtualiza); //join the multicast group
+
+            // Thread que vai enviar pings a mesa de voto
+            new Atualiza(socketAtualiza, groupAtualiza, this.getName());
 
             while(true) {
+                /*
+                    Através de um sistema em que o voting terminal recebe, envia e recebe, este vai (ou não) receber um votante
 
+                    Se enviar uma mensagem a dizer que está disponível, mas não for escolhido, fica simplesmente a espera de uma mensagem
+                    em como mais tarde acabou por ser escolhido
+                 */
                 boolean disponível = true;
                 int enviou = 0;
                 String message;
@@ -119,12 +146,10 @@ public class VotingTerminal extends Thread {
                 while (disponível) {
                     if(enviou == 0) {
                         message = recebeCliente(socket);
-                        //System.out.println("1 - " + message);
                         if (message.contains("type | search; available | no")) {
                             enviaCliente(socket, "@ type | search; available | yes; terminal | " + this.getName(), group);
                             enviou = 1;
                             message = recebeCliente(socket);
-                            //System.out.println("2 - " + message);
                             if (message.contains("type | ack; terminal | " + this.getName())) {
                                 disponível = false;
                                 enviou = 0;
@@ -132,7 +157,6 @@ public class VotingTerminal extends Thread {
                         }
                     } else {
                         message = recebeCliente(socket);
-                        //System.out.println("2 - " + message);
                         if (message.contains("type | ack; terminal | " + this.getName())) {
                             disponível = false;
                             enviou = 0;
@@ -140,6 +164,7 @@ public class VotingTerminal extends Thread {
                     }
                 }
 
+                // Da as boas vindas ao user
                 message = filterMessage(socket, "type | welcome");
                 String[] info = message.trim().split(";");
                 String cc = null;
@@ -159,7 +184,7 @@ public class VotingTerminal extends Thread {
                 Timer timer = new Timer();
 
                 // Após 120 segundos a thread fecha
-                timer.schedule(new ControlaTempoSessão(sessao, timer, socketSession, groupSession, this.getName(), cc), 20000);
+                timer.schedule(new ControlaTempoSessão(sessao, timer, socketSession, groupSession, this.getName(), cc), 120000);
                 sessao.start();
                 System.out.println("Tem 120 de segundos de sessão ativa!");
 
@@ -188,6 +213,13 @@ class Session extends Thread {
         this.cc = cc;
     }
 
+    /**
+     * Método que so avança quando receber um inteiro
+     *
+     * @param text
+     *
+     * @return Inteiro
+     */
     public Integer tryParse(String text) {
         try {
             return Integer.parseInt(text);
@@ -233,6 +265,15 @@ class Session extends Thread {
         }
     }
 
+    /**
+     * Método que vai filtrar a mensagem recebida da Mesa de Voto. Só devolve a mensagem quando esta tiver a expressão indicada e o id indicado
+     *
+     * @param socket
+     * @param expression - expressao que a mensagem precisa de conter para nao ser ignorada
+     * @param id - cc do votante
+     *
+     * @return message
+     */
     public String filterMessage(MulticastSocket socket, String expression, String id) throws IOException {
         String message = null;
         while(message == null) {
@@ -390,13 +431,15 @@ class ControlaTempoSessão extends TimerTask {
 }
 
 class Atualiza extends Thread {
-    private String ATUALIZA_ADDRESS;
+    private MulticastSocket socketAtualiza;
+    private InetAddress groupAtualiza;
     private int PORT = 4321;
     private String terminal;
 
-    public Atualiza(String address, String terminal) {
-        this.ATUALIZA_ADDRESS = address;
+    public Atualiza(MulticastSocket socket, InetAddress group, String terminal) {
+        this.socketAtualiza = socket;
         this.terminal = terminal;
+        this.groupAtualiza = group;
         this.start();
     }
 
@@ -408,10 +451,6 @@ class Atualiza extends Thread {
 
     public void run() {
         try {
-            MulticastSocket socketAtualiza = null;  // create socket without binding it (only for sending)
-            socketAtualiza = new MulticastSocket(PORT);
-            InetAddress groupAtualiza = InetAddress.getByName(ATUALIZA_ADDRESS);
-            socketAtualiza.joinGroup(groupAtualiza); //join the multicast group
 
             while(true) {
                 enviaCliente(socketAtualiza, "@ type | update; terminal | " + terminal, groupAtualiza);
