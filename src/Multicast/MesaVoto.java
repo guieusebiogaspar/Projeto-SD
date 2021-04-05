@@ -16,15 +16,16 @@ public class MesaVoto extends Thread {
     private String MULTICAST_ADDRESS_TERMINALS;
     private int PORT = 4321;
     private String departamento;
+    private String localAddress;
 
     public static void main(String[] args) {
-        if (args.length == 0 || args.length == 1) {
-            System.out.println("java MesaVoto multicastAddress departamento");
+        if (args.length == 0 || args.length == 1 || args.length == 2) {
+            System.out.println("java MesaVoto multicastAddress departamento localaddress");
             System.exit(0);
         }
 
 
-        MesaVoto mesa = new MesaVoto(args[0], args[1]);
+        MesaVoto mesa = new MesaVoto(args[0], args[1], args[2]);
         mesa.start();
     }
 
@@ -33,12 +34,14 @@ public class MesaVoto extends Thread {
      *
      * @param address - endereço que vai abrir o socket
      * @param depart - departamento onde vai estar localizada a mesa de voto
+     * @param localAddress - ipv4 da máquina onde se está a correr o server
      *
      */
-    public MesaVoto(String address, String depart) {
+    public MesaVoto(String address, String depart, String localAddress) {
         super("Mesa de Voto " + (long) (Math.random() * 1000));
         this.MULTICAST_ADDRESS_TERMINALS = address;
         this.departamento = depart;
+        this.localAddress = localAddress;
     }
 
     /**
@@ -274,7 +277,7 @@ public class MesaVoto extends Thread {
         while (true) {
             try {
                 //RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
-                RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
+                RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(localAddress, 7001).lookup("Server");
                 if (serverRMI.obterValor() == 1) {
                     try {
                         serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
@@ -287,7 +290,7 @@ public class MesaVoto extends Thread {
                     } catch (RemoteException | NotBoundException ex) {
                         try {
                             //RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
-                            RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
+                            RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(localAddress, 7001).lookup("Server");
                             if(serverRMI1.olaMesaVoto(departamento)==1)
                             {
                                 System.out.println("Já existe uma mesa de voto no "+departamento);
@@ -317,7 +320,7 @@ public class MesaVoto extends Thread {
                         System.out.println("Servidor não está online");
                         try {
                             //RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                            RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7002).lookup("Server");
+                            RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(localAddress, 7002).lookup("Server");
                             if(serverRMI1.olaMesaVoto(departamento)==1)
                             {
                                 System.out.println("Já existe uma mesa de voto no "+departamento);
@@ -339,7 +342,7 @@ public class MesaVoto extends Thread {
                 System.out.println("Servidor não está online");
                 try {
                     //RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                    RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7002).lookup("Server");
+                    RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(localAddress, 7002).lookup("Server");
                     if(serverRMI.olaMesaVoto(departamento)==1){
                         System.out.println("Já existe uma mesa de voto no "+departamento);
                         return;
