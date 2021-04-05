@@ -505,7 +505,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         System.out.println("RMI Server ready.");
 
         VerificaServer v =new VerificaServer();
-        new ContaTempo();
+        //new ContaTempo();
         System.out.println("Passei");
         while (true) {
             if(v.getSouB() == 1)
@@ -573,7 +573,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 }
                 System.out.println("RMI Backup Server ready.");
                 VerificaBackupServer v1 = new VerificaBackupServer();
-                new ContaTempo();
+                //new ContaTempo();
                 while (true) {
                     if(v1.getSouP() == 1)
                         auxServer--;

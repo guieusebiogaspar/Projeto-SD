@@ -818,6 +818,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                         server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
                         server.olaAdmin(adminConsole);
                         System.out.println("Admin informou server que está ligado");
+                        new ContaTempo();
                         while (true) {
                             menu();
                             System.out.print("> ");
@@ -832,6 +833,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
                             server.olaAdmin(adminConsole);
                             System.out.println("Admin informou server que está ligado");
+                            new ContaTempo();
                             while (true) {
                                 menu();
                                 System.out.print("> ");
@@ -855,6 +857,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     try{
                         server.olaAdmin(adminConsole);
                         System.out.println("Admin informou server que está ligado");
+                        new ContaTempo();
                         while (true) {
                             menu();
                             System.out.print("> ");
@@ -869,6 +872,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
                             server.olaAdmin(adminConsole);
                             System.out.println("Admin informou server que está ligado");
+                            new ContaTempo();
                             while (true) {
                                 menu();
                                 System.out.print("> ");
@@ -894,6 +898,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
                     server.olaAdmin(adminConsole);
                     System.out.println("Admin informou server que está ligado");
+                    new ContaTempo();
                     while (true) {
                         menu();
                         System.out.print("> ");
