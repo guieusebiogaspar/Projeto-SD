@@ -255,8 +255,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
 
         System.out.println("Mesas de Voto: ");
-        for(String s : el.getMesasVoto())
-            System.out.println("Mesa voto " + s);
+        for(int i = 0; i < el.getMesasVoto().size(); i++) {
+            System.out.println("Mesa voto " + el.getMesasVoto().get(i) + ": " + contaVotos(server, el.getMesasVoto().get(i), el.getTitulo()) + " eleitores");
+        }
 
     }
 
@@ -446,8 +447,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
 
         System.out.println("Mesas de Voto: ");
-        for(String s : el.getMesasVoto())
-            System.out.println("Mesa voto " + s);
+        for(int i = 0; i < el.getMesasVoto().size(); i++) {
+            System.out.println("Mesa voto " + el.getMesasVoto().get(i) + ": " + contaVotos(server, el.getMesasVoto().get(i), el.getTitulo()) + " eleitores");
+        }
 
     }
 
@@ -1075,8 +1077,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
     public void init(AdminConsole adminConsole) {
 
         String command;
-        System.getProperties().put("java.security.policy", "policy.all");
-        System.setSecurityManager(new RMISecurityManager());
+        //System.getProperties().put("java.security.policy", "policy.all");
+        //System.setSecurityManager(new RMISecurityManager());
         //System.setProperty("java.rmi.server.hostname", "192.168.1.171");
 
         InputStreamReader input = new InputStreamReader(System.in);
@@ -1084,13 +1086,14 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         while(true)
         {
             try {
-                //RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
-                RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
+                RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
+                //RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
 
                 if(server.obterValor() == 1)
                 {
                     try{
-                        server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+                        //server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+                        server = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171",7002).lookup("Server");
                         server.olaAdmin(adminConsole);
                         System.out.println("Admin informou server que está ligado");
                         new ContaTempo();
@@ -1104,8 +1107,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     catch (RemoteException | NotBoundException ex) {
                         System.out.println("Servidor não está online");
                         try{
-                            RMIServerInterface server1 = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
-
+                            //RMIServerInterface server1 = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
+                            RMIServerInterface server1 = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171", 7001).lookup("Server");
                             server.olaAdmin(adminConsole);
                             System.out.println("Admin informou server que está ligado");
                             new ContaTempo();
@@ -1143,8 +1146,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     catch (RemoteException ex) {
                         System.out.println("Servidor não está online");
                         try{
-                            RMIServerInterface server1 = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-
+                            //RMIServerInterface server1 = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+                            RMIServerInterface server1 = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171",7002).lookup("Server");
+                            System.out.println("alo3");
                             server.olaAdmin(adminConsole);
                             System.out.println("Admin informou server que está ligado");
                             new ContaTempo();
@@ -1161,16 +1165,17 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                         catch (IOException e) {
                             e.printStackTrace();
                         }
-                        //System.exit(0);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             } catch (RemoteException | NotBoundException ex) {
+                System.out.println("sera");
                 System.out.println("Servidor não está online");
                 try{
-                    RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-
+                    //RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+                    RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry("192.168.1.171",7002).lookup("Server");
+                    System.out.println("alo4");
                     server.olaAdmin(adminConsole);
                     System.out.println("Admin informou server que está ligado");
                     new ContaTempo();

@@ -49,7 +49,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public void olaAdmin(AdminConsoleInterface adm) throws RemoteException {
         System.out.println("Admin entrou no server");
         admin = adm;
-        admin.olaServidor();
+        //admin.olaServidor();
     }
 
     /**
@@ -59,7 +59,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      */
     public void adeusAdmin() throws RemoteException {
         System.out.println("Admin saiu do server");
-        admin.adeusServidor();
+        //admin.adeusServidor();
     }
 
     /**
@@ -741,9 +741,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
     }
 
-    public static void servidorAtivar() throws RemoteException
+    public static void servidorAtivar(String address) throws RemoteException
     {
         RMIServer server = new RMIServer();
+        System.setProperty("java.rmi.server.hostname", address);
         Registry r = LocateRegistry.createRegistry(7001);
         r.rebind("Server", server);
         File f = new File("pessoas.obj");
@@ -797,16 +798,21 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
     public static void main(String args[]) throws RemoteException {
 
-        System.getProperties().put("java.security.policy", "policy.all");
-        System.setSecurityManager(new RMISecurityManager());
-        //System.setProperty("java.rmi.server.hostname", "192.168.1.171");
+        if (args.length == 0) {
+            System.out.println("java RMISERVER localAddress");
+            System.exit(0);
+        }
+        //System.getProperties().put("java.security.policy", "policy.all");
+        //System.setSecurityManager(new RMISecurityManager());
+        System.setProperty("java.rmi.server.hostname", args[0]);
 
         try {
-            servidorAtivar();
+            servidorAtivar(args[0]);
         } catch (Exception e) {
 
             try{
                 RMIServer server = new RMIServer();
+                System.setProperty("java.rmi.server.hostname", args[0]);
                 Registry r = LocateRegistry.createRegistry(7002);
                 r.rebind("Server", server);
 
