@@ -271,6 +271,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 }
             }
         }
+        writeBD("eleicoes.obj");
     }
 
     public void removePessoaLista(Eleição eleição, String lista, Pessoa pessoa) throws RemoteException {
@@ -282,11 +283,19 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 {
                     if(l.getNome().equals(lista))
                     {
-                        l.getMembros().remove(pessoa);
+                        for (int i = 0; i < l.getMembros().size(); i++) {
+                            if(l.getMembros().get(i).getNome().equals(pessoa.getNome())) {
+                                l.getMembros().remove(i);
+                            }
+                        }
+                        for (int i = 0; i < l.getMembros().size(); i++) {
+                            System.out.println(l.getMembros().get(i).getNome());
+                        }
                     }
                 }
             }
         }
+        writeBD("eleicoes.obj");
     }
 
     /**
@@ -576,8 +585,6 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         System.out.println("RMI Server ready.");
 
         VerificaServer v =new VerificaServer();
-        //new ContaTempo();
-        System.out.println("Passei");
         while (true) {
             if(v.getSouB() == 1)
                 auxServer++;
