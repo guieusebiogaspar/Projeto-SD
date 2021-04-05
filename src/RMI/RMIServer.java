@@ -17,9 +17,9 @@ import static java.lang.Thread.sleep;
 
 public class RMIServer extends UnicastRemoteObject implements RMIServerInterface, Serializable{
     static AdminConsoleInterface admin;
-    static MesaVoto mesaVoto;
     private static ArrayList<Pessoa> pessoas = new ArrayList<>();
     private static ArrayList<Eleição> eleições = new ArrayList<>();
+    private static ArrayList<String> mesas = new ArrayList<>();
     private static int auxServer;
 
 
@@ -46,7 +46,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     public void olaMesaVoto(String mesa) throws RemoteException {
-        System.out.println("Mesa de voto entrou no server");
+        System.out.println("Mesa de voto " + mesa + " entrou no server");
+        mesas.add(mesa);
     }
 
     public void registar(Pessoa pessoa) throws RemoteException {
@@ -179,18 +180,23 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return 0;
     }
 
-    public void addLista(Eleição eleição, String lista) throws RemoteException
+   /* public boolean addLista(Eleição eleição, String lista) throws RemoteException
     {
-        for(Eleição el : eleições)
-        {
-            if(el.getTitulo().equals(eleição.getTitulo()))
-            {
+        for(int i = 0; i < eleições.size(); i++) {
+            if(eleições.get(i).getTitulo().equals(eleição.getTitulo())) {
+                for(int j = 0; j < eleições.get(i).getListas().size(); j++) {
+                    if(eleições.get(i).getListas().get(j).getNome().equals(lista)) {
+                        return true;
+                    }
+                }
+
                 Lista l = new Lista(lista);
-                el.getListas().add(l);
+                eleições.get(i).getListas().add(l);
             }
         }
         writeBD("eleicoes.obj");
-    }
+        return false;
+    }*/
 
     public int rmvLista(Eleição eleição, String lista) throws RemoteException
     {
@@ -226,6 +232,43 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
         writeBD("eleicoes.obj");
     }
+
+    public boolean verificaLista(Eleição eleição, String nome) throws RemoteException
+    {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                for(Lista l: el.getListas())
+                {
+                    if(l.getNome().equals(nome))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public void mudaNomeLista(Eleição eleição, String nome, String novoNome) throws RemoteException {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                for(Lista l: el.getListas())
+                {
+                    if(l.getNome().equals(nome))
+                    {
+                        l.setNome(novoNome);
+                    }
+                }
+            }
+        }
+        writeBD("eleicoes.obj");
+    }
+
     /**
      * Método que vai verificar se o cc introduzido já existe na base de dados
      *
@@ -410,6 +453,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             }
         }
 
+    }
+
+    public void printOnServer(String departamento, int terminais) throws RemoteException {
+        if(admin != null) admin.printOnAdmin(departamento, terminais);
     }
 
     public void writeBD(String name) throws RemoteException {

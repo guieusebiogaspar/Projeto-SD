@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class Lista implements Serializable {
     private String nome;
     private int numVotos;
+    private ArrayList<Pessoa> membros;
 
     public Lista()
     {
@@ -16,6 +17,7 @@ public class Lista implements Serializable {
     {
         this.nome = nome;
         this.numVotos = 0;
+        this.membros = new ArrayList<>();
     }
 
     public String getNome() {
