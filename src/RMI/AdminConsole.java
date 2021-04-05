@@ -1,13 +1,13 @@
 package RMI;
 
+import org.w3c.dom.ls.LSOutput;
+
 import java.io.*;
-import java.lang.reflect.Array;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.registry.LocateRegistry;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.time.*;
 import java.util.HashMap;
 
 public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInterface {
@@ -18,10 +18,19 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         this.on = false;
     }
 
+    /**
+     * Método que dá print ao estado das mesas de voto se a flag on estiver a true
+     *
+     * @param departamento
+     * @param terminais
+     */
     public void printOnAdmin(String departamento, int terminais) throws RemoteException {
         if(on) System.out.println("Mesa de voto " + departamento + " - " + terminais + " terminais ativos");
     }
 
+    /**
+     * Menu principal
+     */
     public void menu() {
         System.out.println("--------- MENU ----------");
         System.out.println("[1] - Registar pessoa");
@@ -32,13 +41,28 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("[6] - Estado das mesas de voto ON/OFF");
         System.out.println("[0] - Sair");
     }
+
+    /**
+     * Servidor reconhece que admin foi ligada
+     */
     public void olaServidor() throws RemoteException
     {
         System.out.println("Servidor diz ola ao admin");
     }
+
+    /**
+     * Servidor reconhece que admin foi desligada
+     */
     public void adeusServidor() throws RemoteException{
         System.out.println("Servidor diz adeus ao admin");
     }
+
+    /**
+     * Recebe o comando introduzido pelo user e direciona-o para a função desejada
+     *
+     * @param server
+     * @param command
+     */
     public void readCommand(RMIServerInterface server, String command) throws IOException {
         switch (command) {
             case "1":
@@ -88,6 +112,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
     }
 
+    /**
+     * Método qye mstra os detalhes de uma pessoa
+     *
+     * @param server
+     */
     public void showPersonDetails(RMIServerInterface server) throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -135,6 +164,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
     }
 
+    /**
+     * Método qye pergunta o tipo de eleições que se quer ver os detalhes
+     *
+     * @param server
+     */
     public void showDetails(RMIServerInterface server) throws IOException
     {
         InputStreamReader input = new InputStreamReader(System.in);
@@ -163,6 +197,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
     }
 
+    /**
+     * Método qye mostra os detalhes das eleições ativas
+     *
+     * @param server
+     */
     public void mostrarAtivas(RMIServerInterface server) throws IOException{
 
         InputStreamReader input = new InputStreamReader(System.in);
@@ -245,6 +284,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         return votos;
     }
 
+    /**
+     * Método qye mostra os detalhes das eleições terminadas
+     *
+     * @param server
+     */
     public void mostrarTerminadas(RMIServerInterface server) throws IOException
     {
         InputStreamReader input = new InputStreamReader(System.in);
@@ -344,6 +388,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
     }
 
+    /**
+     * Método qye mostra os detalhes das eleições inativas
+     *
+     * @param server
+     */
     public void mostrarInativas(RMIServerInterface server) throws IOException{
 
         InputStreamReader input = new InputStreamReader(System.in);
@@ -402,6 +451,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
     }
 
+    /**
+     * Método qye pede ao utilizador os dados necessários para registar uma pessoa
+     *
+     * @param server
+     */
     public void registar(RMIServerInterface server) throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -465,6 +519,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("Pessoa registada no servidor!");
     }
 
+    /**
+     * Método qye pede ao utilizador os dados necessários para criar uma eleição
+     *
+     * @param server
+     */
     public void criarEleiçao(RMIServerInterface server) throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -476,7 +535,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         ArrayList<String> grupos = new ArrayList<>();
         ArrayList<Lista> listas = new ArrayList<>();
         ArrayList<String> mesas = new ArrayList<>();
-        ArrayList<String> opcoesVoto = new ArrayList<>();
+
         System.out.print("Dia de início da eleição: ");
         while(diaInicio == null) diaInicio = tryParse(reader.readLine());
         System.out.print("Mês de início da eleição: ");
@@ -618,6 +677,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("Eleição registada no servidor!");
     }
 
+    /**
+     * Método qye permite ao utilizador editar as propriedades da eleição (incluindo gerir as listas de candidatos)
+     *
+     * @param server
+     */
     public void editarEleiçao(RMIServerInterface server) throws IOException {
 
         InputStreamReader input = new InputStreamReader(System.in);
@@ -1003,7 +1067,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
     }
 
-
+    /**
+     * Método que o main chama de arranque da admin
+     *
+     * @param adminConsole
+     */
     public void init(AdminConsole adminConsole) {
 
         String command;
@@ -1119,7 +1187,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 catch (IOException e) {
                     e.printStackTrace();
                 }
-                //System.exit(0);
             }
         }
 

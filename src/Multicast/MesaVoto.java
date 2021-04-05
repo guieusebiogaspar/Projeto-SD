@@ -239,7 +239,6 @@ public class MesaVoto extends Thread {
                     }
                 }
 
-                // "@ type | search; available | yes; terminal | nr terminal"
                 terminal = "$ type | ack; terminal | " + nr;
 
                 // Avisa os terminais qual dos terminais captou
