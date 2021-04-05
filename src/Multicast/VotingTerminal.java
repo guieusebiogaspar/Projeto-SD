@@ -325,6 +325,7 @@ class Session extends Thread {
                         System.out.println("A autenticação falhou, tem mais " + tentativas + " tentativas");
                     } else {
                         System.out.println("Falhou na autenticação 3 vezes... Dirija-se à mesa de voto outra vez se quiser votar");
+                        enviaCliente(socketSession, "@ type | timeout; user | " + cc + ";", groupSession);
                     }
                 }
             }
