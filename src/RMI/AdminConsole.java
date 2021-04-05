@@ -135,6 +135,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.println("----- Detalhes de Eleições ------");
         System.out.println("[1] - Ativas");
         System.out.println("[2] - Terminadas");
+        System.out.println("[3] - Por começar");
         System.out.println("[0] - Sair");
 
         String inputzao = reader.readLine();
@@ -146,6 +147,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             case "2":
                 mostrarTerminadas(server);
                 break;
+            case "3":
+                mostrarInativas(server);
             case "0":
                 return;
             default:
@@ -197,6 +200,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 System.out.println("\tVotos " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
             } else {
                 System.out.println("\tVotos Lista " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
+            }
+
+            if(el.getListas().get(i).getMembros().size() > 0) System.out.println("\tMembros: ");
+            for (int j = 0; j < el.getListas().get(i).getMembros().size(); j++) {
+                System.out.println("\t- " + el.getListas().get(i).getMembros().get(i).getNome());
             }
         }
 
@@ -280,13 +288,18 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         System.out.println("Total de votos: " + (int) totalVotos);
         System.out.println("Dados Listas: ");
-        for(Lista l : el.getListas())
-            if(totalVotos > 0) {
+        for(Lista l : el.getListas()) {
+            if (totalVotos > 0) {
                 System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos() + " -> " + df2.format((((double) l.getNumVotos()) * 100.0) / totalVotos) + "%");
             } else {
                 System.out.println("\tVotos Lista " + l.getNome() + ": " + l.getNumVotos() + " -> " + "0%");
             }
 
+            if(l.getMembros().size() > 0) System.out.println("\tMembros: ");
+            for (int i = 0; i < l.getMembros().size(); i++) {
+                System.out.println("\t- " + l.getMembros().get(i).getNome());
+            }
+        }
         System.out.println("Mesas de Voto: ");
         for(int i = 0; i < el.getMesasVoto().size(); i++) {
             System.out.println("Mesa voto " + el.getMesasVoto().get(i) + ": " + contaVotos(server, el.getMesasVoto().get(i), el.getTitulo()) + " eleitores");
@@ -321,6 +334,64 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         } else {
             System.out.println("A lista vencedora foi a lista " + vencedora.get(0));
         }
+
+    }
+
+    public void mostrarInativas(RMIServerInterface server) throws IOException{
+
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+
+        ArrayList<Eleição> eleicoes = server.getEleições();
+
+        if(eleicoes.size() > 0) {
+            for(Eleição el: eleicoes)
+            {
+                if(!el.getAtiva() && !el.getTerminada())
+                    System.out.println(el.getTitulo());
+
+            }
+        } else {
+            System.out.println("Não existem eleições");
+            return;
+        }
+
+        Eleição el = null;
+        while(el == null || el.getAtiva() || el.getTerminada())
+        {
+            System.out.println("De qual eleicao deseja ver as informações? (titulo) (0 para sair)");
+            String tit = reader.readLine();
+            if(tit.equals("0"))
+                return;
+            el = server.getEleição(tit);
+            if(el == null || el.getAtiva() || el.getTerminada())
+                System.out.println("Por favor selecione uma eleição inativa");
+        }
+        System.out.println("---- ELEIÇÃO " + el.getTitulo() + " -----");
+        System.out.println("Descrição: " + el.getDescrição());
+        System.out.println("Data inicio: " + el.getInicio().toString());
+        System.out.println("Data fim: " + el.getFim().toString());
+        System.out.println("Grupos: ");
+        for(String s : el.getGrupos())
+            System.out.print(s + "\t");
+        System.out.println();
+        System.out.println("Dados Listas: ");
+        for(int i = 0; i < el.getListas().size(); i++) {
+            if (!(el.getListas().get(i).getNome().equals("Nulo") || el.getListas().get(i).getNome().equals("Branco"))) {
+                System.out.println("\tVotos " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
+            } else {
+                System.out.println("\tVotos Lista " + el.getListas().get(i).getNome() + ": " + el.getListas().get(i).getNumVotos());
+            }
+
+            if(el.getListas().get(i).getMembros().size() > 0) System.out.println("\tMembros: ");
+            for (int j = 0; j < el.getListas().get(i).getMembros().size(); j++) {
+                System.out.println("\t- " + el.getListas().get(i).getMembros().get(j).getNome());
+            }
+        }
+
+        System.out.println("Mesas de Voto: ");
+        for(String s : el.getMesasVoto())
+            System.out.println("Mesa voto " + s);
 
     }
 
@@ -440,6 +511,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         DataEleição fim = new DataEleição(diaFim, mesFim, anoFim, horaFim, minutoFim);
 
         String opcao = null;
+        check = true;
         while(check) {
             System.out.println("Que grupo de pessoas pode votar?");
             System.out.println("1 - Estudantes");
@@ -602,11 +674,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     System.out.println("[6] - Listas");
                     System.out.println("[7] - Mesas de Voto");
                     System.out.println("[0] - Sair");
-                    inputzito = reader.readLine();
-                    if (inputzito.equals("0")) return;//menu();
 
                     int check = 0;
                     while(check == 0) {
+                        inputzito = reader.readLine();
+                        if (inputzito.equals("0")) return;//menu();
                         switch (inputzito) {
                             case "1":
                                 System.out.println("Titulo atual: " + eleição.getTitulo());
@@ -715,10 +787,10 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                 System.out.println("[4] - Remover pessoa da lista");
                                 System.out.println("[5] - Mudar nome da lista");
                                 System.out.println("[0] - Voltar");
-                                inputzito = reader.readLine();
                                 int check2 = 0;
                                 while(check2 == 0)
                                 {
+                                    inputzito = reader.readLine();
                                     switch(inputzito)
                                     {
                                         case "1":
@@ -730,7 +802,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                                 verifica = server.verificaLista(eleição, inputzito);
                                                 if(verifica) {
                                                     System.out.println("Essa lista já está criada!");
-                                                    inputzito = null;
                                                 }
                                             }
                                             System.out.println("Lista adicionada com sucesso!");
@@ -765,10 +836,10 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                                             pessoasValidas.add(pessoas.get(i));
                                                         }
                                                     }
-                                                    System.out.print("Introduza o cartão de cidadão da pessoa que pretende adicionar: ");
+                                                    Integer cc = null;
                                                     while(verifica2) {
-                                                        Integer cc = null;
-                                                        while(cc == null) {
+                                                        System.out.print("Introduza o cartão de cidadão da pessoa que pretende adicionar: ");
+                                                        while (cc == null) {
                                                             inputzito = reader.readLine();
                                                             cc = tryParse(inputzito);
                                                         }
@@ -776,22 +847,24 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
                                                         int entrou = 0;
                                                         Pessoa p = null;
-                                                        for(int i = 0; i < pessoasValidas.size(); i++) {
-                                                            if(pessoasValidas.get(i).getCc() == cc) {
+                                                        for (int i = 0; i < pessoasValidas.size(); i++) {
+                                                            if (pessoasValidas.get(i).getCc() == cc) {
                                                                 entrou = 1;
                                                                 p = pessoasValidas.get(i);
                                                                 break;
                                                             }
                                                         }
-                                                        if(verifica2 && entrou == 1) {
+
+                                                        if (verifica2 && entrou == 1) {
                                                             server.adicionaPessoaLista(eleição, lista, p);
-                                                            System.out.println("Pessoa adicionada com sucesso!");
+                                                            System.out.println("Pessoa adicionada com sucesso");
                                                             verifica2 = false;
-                                                            verifica = false;
                                                         }
                                                     }
                                                 }
+                                                verifica = false;
                                             }
+                                            check2 = 1;
                                             break;
                                         case "4":
                                             System.out.println("Qual a lista que pretende remover pessoas: ");
@@ -810,8 +883,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                                             }
                                                         }
                                                     }
-                                                    System.out.print("Introduza o cartão de cidadão da pessoa que pretende remover: ");
                                                     while(verifica2) {
+                                                        System.out.print("Introduza o cartão de cidadão da pessoa que pretende remover: ");
                                                         Integer cc = null;
                                                         while(cc == null) {
                                                             inputzito = reader.readLine();
@@ -832,11 +905,12 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                                             server.removePessoaLista(eleição, lista, p);
                                                             System.out.println("Pessoa removida com sucesso!");
                                                             verifica2 = false;
-                                                            verifica = false;
                                                         }
                                                     }
                                                 }
+                                                verifica = false;
                                             }
+                                            check2 = 1;
                                             break;
                                         case "5":
                                             System.out.println("Qual a lista que pretende mudar o nome: ");

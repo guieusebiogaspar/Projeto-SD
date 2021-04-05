@@ -83,7 +83,7 @@ public class ContaTempo extends Thread{
                             {
                                 el.setAtiva(true);
                                 el.setTerminada(false);
-                                if(writeBD(" iniciada", eleicoes, el) == 1)
+                                if(writeBD(" iniciada1", eleicoes, el) == 1)
                                     break;
                             }
                         }
@@ -115,7 +115,7 @@ public class ContaTempo extends Thread{
                                             {
                                                 el.setAtiva(true);
                                                 el.setTerminada(false);
-                                                if(writeBD(" iniciada", eleicoes, el) == 1)
+                                                if(writeBD(" iniciada2", eleicoes, el) == 1)
                                                     break;
                                             }
                                         }
@@ -138,7 +138,8 @@ public class ContaTempo extends Thread{
                                         {
                                             el.setAtiva(true);
                                             el.setTerminada(false);
-                                            if(writeBD(" iniciada", eleicoes, el) == 1)
+                                            System.out.println("3");
+                                            if(writeBD(" iniciada3", eleicoes, el) == 1)
                                                 break;
                                         }
                                     }
