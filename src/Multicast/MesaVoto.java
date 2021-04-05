@@ -13,7 +13,6 @@ import java.util.ArrayList;
 
 
 public class MesaVoto extends Thread {
-    //private String MULTICAST_ADDRESS_TERMINALS = "224.0.224.0";
     private String MULTICAST_ADDRESS_TERMINALS;
     private int PORT = 4321;
     private String departamento;
@@ -29,13 +28,26 @@ public class MesaVoto extends Thread {
         mesa.start();
     }
 
+    /**
+     * Construtor do objeto MesaVoto
+     *
+     * @param address - endereço que vai abrir o socket
+     * @param depart - departamento onde vai estar localizada a mesa de voto
+     *
+     */
     public MesaVoto(String address, String depart) {
         super("Mesa de Voto " + (long) (Math.random() * 1000));
         this.MULTICAST_ADDRESS_TERMINALS = address;
         this.departamento = depart;
     }
 
-
+    /**
+     * Método que so avança quando receber um inteiro
+     *
+     * @param text
+     *
+     * @return Inteiro
+     */
     public Integer tryParse(String text) {
         try {
             return Integer.parseInt(text);
@@ -72,13 +84,21 @@ public class MesaVoto extends Thread {
             socket.receive(packet);
             String message = new String(packet.getData(), 0, packet.getLength());
 
-            // Se a mensagem não começar por @
+            // Se a mensagem não começar por $ (tipo de mensagens enviadas pela mesa de voto)
             if (message.charAt(0) != '$') {
                 return message;
             }
         }
     }
 
+    /**
+     * Método que vai filtrar a mensagem recebida do Voting Terminal. Só devolve a mensagem quando esta tiver a expressão indicada
+     *
+     * @param socket
+     * @param expression - expressao que a mensagem precisa de conter para nao ser ignorada
+     *
+     * @return message
+     */
     public String filterMessage(MulticastSocket socket, String expression) throws IOException {
         String message = null;
         while (message == null) {
@@ -91,10 +111,20 @@ public class MesaVoto extends Thread {
         return message;
     }
 
+    /**
+     * Método que devolve a eleição escolhida pelo votante
+     *
+     * @param serverRMI
+     * @param departamento - departamento da mesa de voto
+     * @param cc - cartao de cidadao do votante
+     *
+     * @return eleição escolhida
+     */
     public Eleição escolherEleição(RMIServerInterface serverRMI, String departamento, int cc) throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
+        // va chamar um metdoo no serverRMI que devolve as eleições válidas para o votante votar
         ArrayList<Eleição> eleições = serverRMI.filterEleições(departamento, cc);
         if (eleições.size() == 0) {
             System.out.println("Não existem eleições disponíveis em que esteja autorizado a votar nesta mesa de voto");
@@ -123,6 +153,13 @@ public class MesaVoto extends Thread {
         return eleições.get(escolha - 1);
     }
 
+    /**
+     * Método que faz o papel do método run
+     *
+     * @param serverRMI
+     * @param socketFindTerminal
+     *
+     */
     public void Correr(RMIServerInterface serverRMI, MulticastSocket socketFindTerminal) throws IOException {
         socketFindTerminal = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
         InetAddress groupTerminal = InetAddress.getByName(MULTICAST_ADDRESS_TERMINALS);
@@ -143,8 +180,11 @@ public class MesaVoto extends Thread {
             last2 = last - 2;
         }
 
+        // endereço para a thread que vai tratar das sessões dos votantes
         String newAddress = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length() - 1);
         newAddress = newAddress + last;
+
+        // endereço para a thread que vai verificar quantos terminais estão ON/OFF
         String newAddress2 = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length()-1);
         newAddress2 = newAddress2 + last2;
 
@@ -154,6 +194,7 @@ public class MesaVoto extends Thread {
         InetAddress groupAtualiza = InetAddress.getByName(newAddress2);
         socketAtualiza.joinGroup(groupAtualiza); //join the multicast group
 
+        // Thread que vai receber pings dos terminais e enviar ao servidor o estado dos mesmos
         new AtualizaMesa(departamento, serverRMI, socketAtualiza);
         new verificaMesa(departamento, newAddress2, serverRMI);
 
@@ -168,13 +209,16 @@ public class MesaVoto extends Thread {
             Integer cc = null;
             while (cc == null) cc = tryParse(reader.readLine());
 
+            // Verifica no servidor se o cartão de cidadão pertence a alguém
             if (serverRMI.verificaEleitor(cc) != null) {
                 System.out.println("Cartão de cidadão válido!");
 
+                // Escolhe a eleição em que vai votar
                 Eleição eleição = escolherEleição(serverRMI, departamento, cc);
 
                 if (eleição == null) continue;
 
+                // Sistema envia - recebe - envia para encontrar um terminal disponível e envir os dados do user
                 System.out.println("Redirecionando-o para um terminal de voto");
                 String message = "$ type | search; available | no";
 
@@ -202,10 +246,12 @@ public class MesaVoto extends Thread {
                 enviaServer(socketFindTerminal, terminal, groupTerminal);
                 System.out.println("Será dirigido para o terminal " + decompose[2].substring(decompose[2].lastIndexOf(" ") + 1));
 
+                // A pessoa fica a votar
                 serverRMI.pessoaAVotar(cc, true);
                 message = "$ type | welcome; user | " + cc;
                 enviaServer(socketFindTerminal, message, groupTerminal);
 
+                // Inicio da thread que vai lidar com a sessão do user
                 new HandleSession(serverRMI, newAddress, cc, eleição, departamento);
 
             } else {
@@ -318,6 +364,17 @@ class HandleSession extends Thread {
     private Eleição eleição;
     private String departamento;
 
+    /**
+     * Construtor do objeto HandleSession
+     *
+     * @param server
+     * @param address - endereço que vai ligar o socket
+     * @param cartao - cartãp de cidadão do votante
+     * @param eleição - eleição que o user vai votar
+     * @param departamento - departamento da mesa de voto
+     *
+     */
+
     HandleSession(RMIServerInterface server, String address, int cartao, Eleição eleição, String departamento) {
         this.serverRMI = server;
         this.MULTICAST_ADDRESS_SESSIONS = address;
@@ -361,10 +418,21 @@ class HandleSession extends Thread {
         }
     }
 
+    /**
+     * Método que vai filtrar a mensagem recebida do Voting Terminal. Só devolve a mensagem quando esta tiver a expressão e o cc indicados
+     *
+     * @param socket
+     * @param expression - expressao que a mensagem precisa de conter para nao ser ignorada
+     * @param id - cartão de cidadão do user
+     *
+     * @return message
+     */
     public String filterMessage(MulticastSocket socket, String expression, String id) throws IOException {
         String message = null;
         while (message == null) {
             message = recebeServer(socket);
+
+            // Se a sessão do user for abaixo (ou por falha na autenticação ou por exceder o tempo de sessão) o server é avisado que o user já não se encontra a votar
             if(message.contains("type | timeout")) {
                 String info[] = message.trim().split(";");
                 for(int i = 0; i < info.length; i++) {
@@ -380,6 +448,15 @@ class HandleSession extends Thread {
         }
         return message;
     }
+
+    /**
+     * Método que faz o papel do método run
+     *
+     * @param serverRMI
+     * @param socketSession
+     * @param serverPort
+     *
+     */
     public void CorrerHandle(RMIServerInterface serverRMI, MulticastSocket socketSession, int serverPort) throws IOException, InterruptedException {
         socketSession = new MulticastSocket(PORT);  // create socket without binding it (only for sending)
         InetAddress groupSession = InetAddress.getByName(MULTICAST_ADDRESS_SESSIONS);
@@ -391,6 +468,8 @@ class HandleSession extends Thread {
         String message = null;
         int entrou = 0;
         while (entrou == 0) {
+
+            // Recebe do voting terminal os dados de login
             message = filterMessage(socketSession, "type | login", "cc | " + cc);
             if(message.equals("Interrupt")) {
                 return;
@@ -413,6 +492,7 @@ class HandleSession extends Thread {
                 }
             }
 
+            // Veirfica se os dados de login estão válidos
             if (serverRMI.loginUser(nick, password, cc) && cc == cartao) {
                 message = "$ type | status; cc | " + cc + "; logged | on; msg | Bem-vindo ao eVoting";
                 entrou = 1;
@@ -424,7 +504,9 @@ class HandleSession extends Thread {
         }
 
         Thread.sleep(300);
+
         ArrayList<Lista> listas = eleição.getListas();
+
         message = "$ type | item_list; cc | " + cc + "; item_count | " + listas.size();
         for (int i = 0; i < listas.size(); i++) {
             message = message + "; item_" + i + "_name | " + listas.get(i).getNome();
@@ -448,8 +530,11 @@ class HandleSession extends Thread {
             }
         }
 
+
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         LocalDateTime now = LocalDateTime.now();
+
+        // Envia o voto do user
         while(true)
         {
             try{
@@ -547,6 +632,12 @@ class HandleSession extends Thread {
     }
 }
 
+
+/**
+ *
+ * Thread que vai receber pings dos voting terminals e enviar o estado dos mesmos para o server RMI
+ *
+ */
 class AtualizaMesa extends Thread {
     private int PORT = 4321;
     private RMIServerInterface serverRMI;
