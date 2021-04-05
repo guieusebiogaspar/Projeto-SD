@@ -275,7 +275,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      * @param eleição
      * @param lista
      */
-   public boolean addLista(Eleição eleição, String lista) throws RemoteException
+    public boolean addLista(Eleição eleição, String lista) throws RemoteException
     {
         for(int i = 0; i < eleições.size(); i++) {
             if(eleições.get(i).getTitulo().equals(eleição.getTitulo())) {
@@ -626,38 +626,40 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      * @return devolve 1 se correu tudo bem
      */
     public int adicionaVoto(Eleição eleição, String lista, int cc, String departamento, String momento) throws RemoteException {
+        if(eleições != null){
+            for(int i = 0; i < eleições.size(); i++) {
+                if(eleições.get(i).getTitulo().equals(eleição.getTitulo()) && eleições.get(i).getAtiva()) { // Ao encontrar a eleição com o titulo correspondente
+                    for(int j = 0; j < eleições.get(i).getListas().size(); j++) { // Vai percorrer as listas da eleição
+                        if(eleições.get(i).getListas().get(j).getNome().equals(lista)) { // Se encontrar uma lista com o nome igual introduzido
+                            int votos = eleições.get(i).getListas().get(j).getNumVotos(); // vai buscar o nr de votos dessa lista
+                            eleições.get(i).getListas().get(j).setNumVotos(votos+1); // Adiciona o novo voto
 
-        for(int i = 0; i < eleições.size(); i++) {
-            if(eleições.get(i).getTitulo().equals(eleição.getTitulo()) && eleições.get(i).getAtiva()) { // Ao encontrar a eleição com o titulo correspondente
-                for(int j = 0; j < eleições.get(i).getListas().size(); j++) { // Vai percorrer as listas da eleição
-                    if(eleições.get(i).getListas().get(j).getNome().equals(lista)) { // Se encontrar uma lista com o nome igual introduzido
-                        int votos = eleições.get(i).getListas().get(j).getNumVotos(); // vai buscar o nr de votos dessa lista
-                        eleições.get(i).getListas().get(j).setNumVotos(votos+1); // Adiciona o novo voto
-
-                        for(int k = 0; k < pessoas.size(); k++) {
-                            if(pessoas.get(k).getCc() == cc) {
-                                // Atualiza na pessoa que votou em x eleição e em y mesa de voto
-                                // Diz que a pessoa não está a votar
-                                HashMap<String, String> votou = pessoas.get(k).getVotou();
-                                String depTime = departamento + " - " + momento;
-                                votou.put(eleição.getTitulo(), depTime);
-                                pessoas.get(k).setVotou(votou);
-                                pessoas.get(k).setAVotar(false);
+                            for(int k = 0; k < pessoas.size(); k++) {
+                                if(pessoas.get(k).getCc() == cc) {
+                                    // Atualiza na pessoa que votou em x eleição e em y mesa de voto
+                                    // Diz que a pessoa não está a votar
+                                    HashMap<String, String> votou = pessoas.get(k).getVotou();
+                                    String depTime = departamento + " - " + momento;
+                                    votou.put(eleição.getTitulo(), depTime);
+                                    pessoas.get(k).setVotou(votou);
+                                    pessoas.get(k).setAVotar(false);
+                                }
                             }
-                        }
 
-                        // Adiciona a pessoa ao arrayList das pessoas que ja votaram naquela dada eleição
-                        ArrayList<Integer> jaVotaram = eleições.get(i).getJaVotaram();
-                        jaVotaram.add(cc);
-                        eleições.get(i).setJaVotaram(jaVotaram);
-                        System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome());
-                        writeBD("eleicoes.obj");
-                        writeBD("pessoas.obj");
-                        return 1;
+                            // Adiciona a pessoa ao arrayList das pessoas que ja votaram naquela dada eleição
+                            ArrayList<Integer> jaVotaram = eleições.get(i).getJaVotaram();
+                            jaVotaram.add(cc);
+                            eleições.get(i).setJaVotaram(jaVotaram);
+                            System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome());
+                            writeBD("eleicoes.obj");
+                            writeBD("pessoas.obj");
+                            return 1;
+                        }
                     }
                 }
             }
         }
+
         return 0;
 
     }
