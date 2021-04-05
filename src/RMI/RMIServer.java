@@ -180,7 +180,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return 0;
     }
 
-   /* public boolean addLista(Eleição eleição, String lista) throws RemoteException
+   public boolean addLista(Eleição eleição, String lista) throws RemoteException
     {
         for(int i = 0; i < eleições.size(); i++) {
             if(eleições.get(i).getTitulo().equals(eleição.getTitulo())) {
@@ -190,13 +190,13 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                     }
                 }
 
-                Lista l = new Lista(lista);
+                Lista l = new Lista(lista, eleição.getQuemPodeVotar());
                 eleições.get(i).getListas().add(l);
             }
         }
         writeBD("eleicoes.obj");
         return false;
-    }*/
+    }
 
     public int rmvLista(Eleição eleição, String lista) throws RemoteException
     {
@@ -219,18 +219,6 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             }
         }
         return 0;
-    }
-
-    public void addTipos(Eleição eleição, ArrayList<String> tipos) throws RemoteException
-    {
-        for(Eleição el : eleições)
-        {
-            if(el.getTitulo().equals(eleição.getTitulo()))
-            {
-                el.setQuemPodeVotar(tipos);
-            }
-        }
-        writeBD("eleicoes.obj");
     }
 
     public boolean verificaLista(Eleição eleição, String nome) throws RemoteException
@@ -267,6 +255,38 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             }
         }
         writeBD("eleicoes.obj");
+    }
+
+    public void adicionaPessoaLista(Eleição eleição, String lista, Pessoa pessoa) throws RemoteException {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                for(Lista l: el.getListas())
+                {
+                    if(l.getNome().equals(lista))
+                    {
+                        l.getMembros().add(pessoa);
+                    }
+                }
+            }
+        }
+    }
+
+    public void removePessoaLista(Eleição eleição, String lista, Pessoa pessoa) throws RemoteException {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                for(Lista l: el.getListas())
+                {
+                    if(l.getNome().equals(lista))
+                    {
+                        l.getMembros().remove(pessoa);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -410,7 +430,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 // Se a pessoa ainda não votou
                 // Se a eleição estiver ativa
                 if(eleicoes.get(i).getMesasVoto().contains(departamento) &&
-                        eleicoes.get(i).getQuemPodeVotar().contains(tipo) &&
+                        eleicoes.get(i).getQuemPodeVotar().equals(tipo) &&
                         eleicoes.get(i).getGrupos().contains(dep) &&
                         !eleicoes.get(i).getJaVotaram().contains(cc) &&
                         eleicoes.get(i).getAtiva())
