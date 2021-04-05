@@ -196,7 +196,7 @@ public class MesaVoto extends Thread {
 
         // Thread que vai receber pings dos terminais e enviar ao servidor o estado dos mesmos
         new AtualizaMesa(departamento, serverRMI, socketAtualiza);
-        new verificaMesa(departamento, newAddress2, serverRMI);
+        new verificaMesa(departamento, serverRMI);
 
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -356,6 +356,9 @@ public class MesaVoto extends Thread {
     }
 }
 
+/**
+ * Thread que vai lidar com a sessão do votante que entrou
+ */
 class HandleSession extends Thread {
     private String MULTICAST_ADDRESS_SESSIONS;
     private int PORT = 4321;
@@ -643,8 +646,14 @@ class AtualizaMesa extends Thread {
     private RMIServerInterface serverRMI;
     private String departamento;
     private MulticastSocket socketAtualiza;
-    private InetAddress group;
 
+    /**
+     * Construtor do objeto AtualizaMesa
+     *
+     * @param departamento
+     * @param serverRMI
+     * @param socket
+     */
     public AtualizaMesa(String departamento, RMIServerInterface serverRMI, MulticastSocket socket) {
         this.serverRMI = serverRMI;
         this.departamento = departamento;
@@ -667,13 +676,21 @@ class AtualizaMesa extends Thread {
             socket.receive(packet);
             String message = new String(packet.getData(), 0, packet.getLength());
 
-            // Se a mensagem não começar por @
+            // Se a mensagem não começar por $
             if(message.charAt(0) != '$') {
                 return message;
             }
         }
     }
 
+    /**
+     * Método que vai filtrar a mensagem recebida do Voting Terminal. Só devolve a mensagem quando esta tiver a expressão indicada
+     *
+     * @param socket
+     * @param expression - expressao que a mensagem precisa de conter para nao ser ignorada
+     *
+     * @return message
+     */
     public String filterMessage(MulticastSocket socket, String expression) throws IOException {
         String message = null;
         while (message == null) {
@@ -682,7 +699,6 @@ class AtualizaMesa extends Thread {
                 message = null;
             }
         }
-
         return message;
     }
 
@@ -701,6 +717,7 @@ class AtualizaMesa extends Thread {
                     }
                 }
 
+                // Atualiza em tempo real o total de terminais
                 if(terminais.contains(terminal)) {
                     serverRMI.printOnServer(departamento, terminais.size());
                     terminais.clear();
@@ -714,59 +731,28 @@ class AtualizaMesa extends Thread {
 
     }
 }
+
+/**
+    Thread que avisa o server que esta mesa de voto esta ligada
+ */
 class verificaMesa extends Thread{
-    private String ATUALIZA_ADDRESS;
     private int PORT = 4321;
     private RMIServerInterface serverRMI;
     private String departamento;
 
-    public verificaMesa(String departamento, String address, RMIServerInterface serverRMI) {
-        this.ATUALIZA_ADDRESS = address;
+    public verificaMesa(String departamento, RMIServerInterface serverRMI) {
         this.serverRMI = serverRMI;
         this.departamento = departamento;
         this.start();
     }
 
-    /**
-     * Método que vai receber um packet por UDP da mesa de voto
-     *
-     * @param socket
-     *
-     * @return mensagem recebida
-     */
-    public String recebeCliente(MulticastSocket socket) throws IOException {
-        // Corre até receber uma mensagem do servidor, onde dá return
-        while(true){
-            byte[] buffer = new byte[256];
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-            socket.receive(packet);
-            String message = new String(packet.getData(), 0, packet.getLength());
-
-            // Se a mensagem não começar por @
-            if(message.charAt(0) != '$') {
-                return message;
-            }
-        }
-    }
-
-    public String filterMessage(MulticastSocket socket, String expression) throws IOException {
-        String message = null;
-        while (message == null) {
-            message = recebeCliente(socket);
-            if (!message.contains(expression)) {
-                message = null;
-            }
-        }
-
-        return message;
-    }
-
     public void run() {
         try {
             while(true) {
+                Thread.sleep(3000);
                 serverRMI.verificaOnServer(departamento);
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             this.run();
         }
 

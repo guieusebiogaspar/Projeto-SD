@@ -201,12 +201,23 @@ public class VotingTerminal extends Thread {
 
 }
 
+/**
+ * Thread que vai ser a sessão do votante que entrou
+ */
 class Session extends Thread {
     private MulticastSocket socketSession;
     private InetAddress groupSession;
     private String cc;
     private int PORT = 4321;
 
+    /**
+     * Construtor do objeto Session
+     *
+     * @param socket
+     * @param group
+     * @param cc - cartão de cidadão do votante
+     *
+     */
     Session(MulticastSocket socket, InetAddress group, String cc){
         this.socketSession = socket;
         this.groupSession = group;
@@ -299,7 +310,9 @@ class Session extends Thread {
         try {
             int tentativas = 3;
 
+
             while (tentativas > 0) {
+                // Pede ao utilizador os dados do login, ao fim de 3 tentativas ou 120 segundos a sessão encerra
                 String login = "@ type | login; cc | " + cc + ";";
                 System.out.print("Username: ");
 
@@ -317,7 +330,8 @@ class Session extends Thread {
                 enviaCliente(socketSession, login, groupSession);
                 String message = filterMessage(socketSession, "type | status", "cc | " + cc);
                 String info[] = null;
-                if (message.contains("logged | on")) {
+
+                if (message.contains("logged | on")) { // Se o login foi bem sucedido
                     info = message.trim().split(";");
                     for(int i = 0; i < info.length; i++) {
                         if(info[i].contains("msg")) {
@@ -327,10 +341,10 @@ class Session extends Thread {
                         }
                     }
 
+                    // Recebe as listas para votar
+
                     tentativas = 0;
                     message = filterMessage(socketSession, "type | item_list", "cc | " + cc);
-
-                    //System.out.println(message);
 
                     info = message.trim().split(";");
                     ArrayList<String> listas = new ArrayList<>();
@@ -365,6 +379,8 @@ class Session extends Thread {
 
                     // ver se foi branco ou nulo
                     System.out.println("Votou " + listas.get(escolha-1) + "\nObrigado.\n");
+
+                    // Envia a mesa de voto a lista escolhida
                     enviaCliente(socketSession, message, groupSession);
 
                 } else {
@@ -383,6 +399,9 @@ class Session extends Thread {
     }
 }
 
+/**
+ * Thread que controla o tempo que a sessão está ativa
+ */
 class ControlaTempoSessão extends TimerTask {
     private Thread sessao;
     private Timer timer;
@@ -392,6 +411,17 @@ class ControlaTempoSessão extends TimerTask {
     private String cc;
     private int PORT = 4321;
 
+    /**
+     * Construtor do objeto ControlaTempoSessao
+     *
+     * @param sessao
+     * @param timer
+     * @param socket
+     * @param group
+     * @param terminal
+     * @param cc
+     *
+     */
     ControlaTempoSessão(Thread sessao, Timer timer, MulticastSocket socket, InetAddress group, String terminal, String cc) {
         this.sessao = sessao;
         this.timer = timer;
@@ -430,12 +460,24 @@ class ControlaTempoSessão extends TimerTask {
     }
 }
 
+/**
+ *
+ * Thread que vai enviar pings à mesa de voto
+ *
+ */
 class Atualiza extends Thread {
     private MulticastSocket socketAtualiza;
     private InetAddress groupAtualiza;
     private int PORT = 4321;
     private String terminal;
 
+    /**
+     * Construtor do objeto Atualiza
+     *
+     * @param socket
+     * @param group
+     * @param terminal
+     */
     public Atualiza(MulticastSocket socket, InetAddress group, String terminal) {
         this.socketAtualiza = socket;
         this.terminal = terminal;
