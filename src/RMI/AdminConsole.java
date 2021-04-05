@@ -376,7 +376,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         System.out.println("--------- Criar Eleição ---------");
         Integer diaInicio = null, mesInicio = null, anoInicio = null, horaInicio = null, minutoInicio = null, diaFim = null, mesFim = null, anoFim = null, horaFim = null, minutoFim = null;
-        String titulo, descrição;
+        String titulo = null, descrição;
         String[] gruposInput;
         ArrayList<String> grupos = new ArrayList<>();
         ArrayList<Lista> listas = new ArrayList<>();
@@ -403,7 +403,15 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         System.out.print("Minuto de fim da eleição: ");
         while(minutoFim == null) minutoFim = tryParse(reader.readLine());
         System.out.print("Título da eleição: ");
-        titulo = reader.readLine();
+        boolean check = true;
+        while(check) {
+            titulo = reader.readLine();
+            check = server.verificaEleicao(titulo);
+            if(check) {
+                System.out.println("Essa eleição já está criada!");
+                titulo = null;
+            }
+        }
         System.out.print("Descrição da eleição: ");
         descrição = reader.readLine();
         System.out.print("Departamentos (sigla) que podem votar nesta eleição (separe por espaços o nome dos departamentos): ");
@@ -498,26 +506,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             if(opcoes[i].equals("3"))
                 opcoesVoto.add("Funcionário");
         }
-        LocalDate ld = LocalDate.now();
-        LocalTime lt = LocalTime.now();
-        /*if(ld.getYear() >= inicio.getAno() && ld.getMonthValue() >= inicio.getMes() && ld.getDayOfMonth() >= inicio.getDia() && lt.getHour() >= inicio.getHora() && lt.getMinute() >= inicio.getMinuto()){
-            if(ld.getYear() <= fim.getAno() && ld.getMonthValue() <= fim.getMes() && ld.getDayOfMonth() <= fim.getDia() && lt.getHour() <= fim.getHora() && lt.getMinute() <= fim.getMinuto())
-            {
-                Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, true, listas, mesas, opcoesVoto, false);
-                server.criarEleição(eleição);
-                System.out.println("1111111");
-            }
-            if(ld.getYear() >= fim.getAno() && ld.getMonthValue() >= fim.getMes() && ld.getDayOfMonth() >= fim.getDia() && lt.getHour() >= fim.getHora() && lt.getMinute() >= fim.getMinuto()){
-                Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, false, listas, mesas, opcoesVoto, true);
-                server.criarEleição(eleição);
-                System.out.println("222222");
-            }
-        }
-        if(ld.getYear() <= inicio.getAno() && ld.getMonthValue() <= inicio.getMes() && ld.getDayOfMonth() <= inicio.getDia() && lt.getHour() <= inicio.getHora() && lt.getMinute() <= inicio.getMinuto()){
-            Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, false, listas, mesas, opcoesVoto, false);
-            server.criarEleição(eleição);
-            System.out.println("33333333");
-        }*/
+
         Eleição eleição = new Eleição(inicio, fim, titulo, descrição, grupos, listas, mesas, opcoesVoto);
         server.criarEleição(eleição);
         System.out.println("Eleição registada no servidor!");
@@ -582,6 +571,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     System.out.println("[4] - Data fim");
                     System.out.println("[5] - Departamentos");
                     System.out.println("[6] - Listas");
+                    System.out.println("[7] - Mesas de Voto");
+                    System.out.println("[8] - Quem pode votar");
                     System.out.println("[0] - Sair");
                     inputzito = reader.readLine();
                     if (inputzito.equals("0")) return;//menu();
@@ -604,7 +595,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                 System.out.print("Nova descrição: ");
                                 inputzito = reader.readLine();
 
-                                //eleição.setDescrição(inputzito);
                                 server.atualizaDescricao(eleição, inputzito);
                                 System.out.println("Descrição atualizada com sucesso!");
                                 check = 1;
@@ -619,9 +609,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                 System.out.println("Novo ano: ");
                                 while(ano == null) ano = tryParse(reader.readLine());
 
-                                //eleição.getInicio().setDia(dia);
-                                //eleição.getInicio().setDia(mes);
-                                //eleição.getInicio().setDia(ano);
                                 DataEleição d = new DataEleição(dia, mes, ano, eleição.getInicio().getHora(), eleição.getInicio().getMinuto());
                                 server.atualizaDataInicio(eleição, d);
 
@@ -660,9 +647,6 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                             System.out.print("Departamento grupo: ");
                                             inputzito = reader.readLine();
 
-                                            //ArrayList<String> temp = eleição.getGrupos();
-                                            //temp.add(inputzito);
-                                            //eleição.setGrupos(temp);
                                             server.addGrupo(eleição, inputzito);
                                             System.out.println("Departamento adicionado com sucesso!");
                                             check1 = 1;
@@ -672,9 +656,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                             inputzito = reader.readLine();
 
                                             if(server.rmvGrupo(eleição, inputzito)==1){
-
                                                 System.out.println("Departamento removido com sucesso!");
-
                                             }
 
                                             else {
@@ -733,9 +715,70 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                                 }
                                 check = 1;
                                 break;
+
+                            case "7":
+                                System.out.println("Que operação deseja fazer?");
+                                System.out.println("[1] - Adicionar mesa de voto");
+                                System.out.println("[2] - Remover mesa de voto");
+                                System.out.println("[0] - Voltar");
+                                inputzito = reader.readLine();
+                                check2 = 0;
+                                while(check2 == 0)
+                                {
+                                    switch(inputzito)
+                                    {
+                                        case "1":
+                                            System.out.println("Qual a mesa de voto: ");
+                                            inputzito = reader.readLine();
+                                            server.addMesa(eleição, inputzito);
+                                            System.out.println("Mesa de voto adicionada com sucesso!");
+                                            check2 = 1;
+                                            break;
+                                        case "2":
+                                            System.out.println("Que mesa de voto deseja remover: ");
+                                            inputzito = reader.readLine();
+                                            if(server.rmvMesa(eleição, inputzito) == 1)
+                                            {
+                                                System.out.println("Mesa de voto removida com sucesso");
+                                            }
+                                            else{
+                                                System.out.println("A mesa de voto não existe");
+                                            }
+                                            check2=1;
+                                            break;
+                                        case "0":
+                                            check2 = 1;
+                                            break;
+                                        default:
+                                            System.out.println("Opção inválida");
+                                    }
+                                }
+                                check = 1;
+                                break;
+
+                            case "8":
+                                System.out.println("Quais os grupos de pessoas que podem votar? (separe por espaços o número de opções que pretende)");
+                                System.out.println("1 - Estudantes");
+                                System.out.println("2 - Docentes");
+                                System.out.println("3 - Funcionários");
+                                String[] opcoes = reader.readLine().trim().split(" ");
+                                ArrayList<String> opcoesVoto = new ArrayList<>();
+
+                                for(int i = 0; i < opcoes.length; i++)
+                                {
+                                    if(opcoes[i].equals("1"))
+                                        opcoesVoto.add("Estudante");
+                                    if(opcoes[i].equals("2"))
+                                        opcoesVoto.add("Docente");
+                                    if(opcoes[i].equals("3"))
+                                        opcoesVoto.add("Funcionário");
+                                }
+
+                                server.addTipos(eleição, opcoesVoto);
+                                System.out.println("Pessoas que podem votar editadas com sucesso!");
+
                             case "0":
                                 check = 1;
-                                //menu();
                                 break;
                             default:
                                 System.out.println("Opção inválida");
