@@ -49,7 +49,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public void olaAdmin(AdminConsoleInterface adm) throws RemoteException {
         System.out.println("Admin entrou no server");
         admin = adm;
-        admin.olaServidor();
+        //admin.olaServidor();
     }
 
     /**
@@ -59,7 +59,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      */
     public void adeusAdmin() throws RemoteException {
         System.out.println("Admin saiu do server");
-        admin.adeusServidor();
+        //admin.adeusServidor();
     }
 
     /**
@@ -549,7 +549,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      *  @return eleição - objeto eleição com o título dado como input
      */
     public Pessoa getPessoa(String cc) throws RemoteException {
-        //pessoas = null;
+        pessoas = null;
         readBD("pessoas.obj");
         for(Pessoa p: pessoas)
         {
@@ -626,17 +626,16 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      * @return devolve 1 se correu tudo bem
      */
     public int adicionaVoto(Eleição eleição, String lista, int cc, String departamento, String momento) throws RemoteException {
-        if (eleições != null) {
-
-            for (int i = 0; i < eleições.size(); i++) {
-                if (eleições.get(i).getTitulo().equals(eleição.getTitulo()) && eleições.get(i).getAtiva()) { // Ao encontrar a eleição com o titulo correspondente
-                    for (int j = 0; j < eleições.get(i).getListas().size(); j++) { // Vai percorrer as listas da eleição
-                        if (eleições.get(i).getListas().get(j).getNome().equals(lista)) { // Se encontrar uma lista com o nome igual introduzido
+        if(eleições != null){
+            for(int i = 0; i < eleições.size(); i++) {
+                if(eleições.get(i).getTitulo().equals(eleição.getTitulo()) && eleições.get(i).getAtiva()) { // Ao encontrar a eleição com o titulo correspondente
+                    for(int j = 0; j < eleições.get(i).getListas().size(); j++) { // Vai percorrer as listas da eleição
+                        if(eleições.get(i).getListas().get(j).getNome().equals(lista)) { // Se encontrar uma lista com o nome igual introduzido
                             int votos = eleições.get(i).getListas().get(j).getNumVotos(); // vai buscar o nr de votos dessa lista
-                            eleições.get(i).getListas().get(j).setNumVotos(votos + 1); // Adiciona o novo voto
+                            eleições.get(i).getListas().get(j).setNumVotos(votos+1); // Adiciona o novo voto
 
-                            for (int k = 0; k < pessoas.size(); k++) {
-                                if (pessoas.get(k).getCc() == cc) {
+                            for(int k = 0; k < pessoas.size(); k++) {
+                                if(pessoas.get(k).getCc() == cc) {
                                     // Atualiza na pessoa que votou em x eleição e em y mesa de voto
                                     // Diz que a pessoa não está a votar
                                     HashMap<String, String> votou = pessoas.get(k).getVotou();
@@ -645,110 +644,181 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                                     pessoas.get(k).setVotou(votou);
                                     pessoas.get(k).setAVotar(false);
                                 }
-                                // Adiciona a pessoa ao arrayList das pessoas que ja votaram naquela dada eleição
-                                ArrayList<Integer> jaVotaram = eleições.get(i).getJaVotaram();
-                                jaVotaram.add(cc);
-                                eleições.get(i).setJaVotaram(jaVotaram);
-                                System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome());
-                                writeBD("eleicoes.obj");
-                                writeBD("pessoas.obj");
-                                return 1;
                             }
+
+                            // Adiciona a pessoa ao arrayList das pessoas que ja votaram naquela dada eleição
+                            ArrayList<Integer> jaVotaram = eleições.get(i).getJaVotaram();
+                            jaVotaram.add(cc);
+                            eleições.get(i).setJaVotaram(jaVotaram);
+                            System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome());
+                            writeBD("eleicoes.obj");
+                            writeBD("pessoas.obj");
+                            return 1;
                         }
                     }
                 }
-
-                return 0;
-
             }
         }
+
         return 0;
+
     }
 
-            /**
-             * Método que chama o método da admin console que dá print ao estado das mesas de voto e respetivos terminais
-             *
-             * @param departamento
-             * @param terminais
-             */
-            public void printOnServer(String departamento, int terminais) throws RemoteException {
-            if(admin != null) admin.printOnAdmin(departamento, terminais);
+    /**
+     * Método que chama o método da admin console que dá print ao estado das mesas de voto e respetivos terminais
+     *
+     * @param departamento
+     * @param terminais
+     */
+    public void printOnServer(String departamento, int terminais) throws RemoteException {
+        if(admin != null) admin.printOnAdmin(departamento, terminais);
+    }
+
+    /**
+     * Verifica se a mesa de voto esta no arrayList das mesas de voto
+     *
+     * @param departamento
+     */
+    public void verificaOnServer(String departamento) throws RemoteException
+    {
+        if(mesas.contains(departamento)) {
+            mesas.clear();
         }
+        mesas.add(departamento);
 
-            /**
-             * Verifica se a mesa de voto esta no arrayList das mesas de voto
-             *
-             * @param departamento
-             */
-            public void verificaOnServer(String departamento) throws RemoteException
-            {
-                if(mesas.contains(departamento)) {
-                    mesas.clear();
-                }
-                mesas.add(departamento);
+    }
 
-            }
+    /**
+     * (R)Escreve na base de dados o ficheiro indicado
+     *
+     * @param name
+     */
+    public void writeBD(String name) throws RemoteException {
+        File f = new File(name);
+        try{
+            FileOutputStream fos = new FileOutputStream(f);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            if(name.equals("pessoas.obj"))
+                oos.writeObject(pessoas);
+            if(name.equals("eleicoes.obj"))
+                oos.writeObject(eleições);
+            oos.close();
+        }
+        catch (FileNotFoundException ex){
+            System.out.println("Erro a criar ficheiro.");
+        }
+        catch(IOException ex){
+            System.out.println("Erro a escrever para o ficheiro.");
+        }
+    }
 
-            /**
-             * (R)Escreve na base de dados o ficheiro indicado
-             *
-             * @param name
-             */
-            public void writeBD(String name) throws RemoteException {
-            File f = new File(name);
+    /**
+     * Lê da base de dados o ficheiro indicado
+     *
+     * @param name
+     */
+    public void readBD(String name) throws RemoteException {
+        File f = new File(name);
+        if(f.exists() && f.isFile())
+        {
             try{
-                FileOutputStream fos = new FileOutputStream(f);
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
+                FileInputStream fis = new FileInputStream(f);
+                ObjectInputStream ois = new ObjectInputStream(fis);
                 if(name.equals("pessoas.obj"))
-                    oos.writeObject(pessoas);
+                    pessoas = (ArrayList<Pessoa>)ois.readObject();
                 if(name.equals("eleicoes.obj"))
-                    oos.writeObject(eleições);
-                oos.close();
+                    eleições = (ArrayList<Eleição>)ois.readObject();
+                ois.close();
+
             }
-            catch (FileNotFoundException ex){
-                System.out.println("Erro a criar ficheiro.");
+            catch(FileNotFoundException ex){
+                System.out.println("Erro a abrir ficheiro.");
             }
             catch(IOException ex){
-                System.out.println("Erro a escrever para o ficheiro.");
+                System.out.println("Erro a ler ficheiro.");
+            }
+            catch(ClassNotFoundException ex){
+                System.out.println("Erro a converter objeto.");
             }
         }
+    }
 
-            /**
-             * Lê da base de dados o ficheiro indicado
-             *
-             * @param name
-             */
-            public void readBD(String name) throws RemoteException {
-            File f = new File(name);
-            if(f.exists() && f.isFile())
-            {
-                try{
-                    FileInputStream fis = new FileInputStream(f);
-                    ObjectInputStream ois = new ObjectInputStream(fis);
-                    if(name.equals("pessoas.obj"))
-                        pessoas = (ArrayList<Pessoa>)ois.readObject();
-                    if(name.equals("eleicoes.obj"))
-                        eleições = (ArrayList<Eleição>)ois.readObject();
-                    ois.close();
+    public static void servidorAtivar(String address) throws RemoteException
+    {
+        RMIServer server = new RMIServer();
+        System.setProperty("java.rmi.server.hostname", address);
+        Registry r = LocateRegistry.createRegistry(7001);
+        r.rebind("Server", server);
+        File f = new File("pessoas.obj");
+        if(f.exists() && f.isFile())
+        {
+            try{
+                FileInputStream fis = new FileInputStream(f);
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                pessoas = (ArrayList<Pessoa>)ois.readObject();
+                ois.close();
 
-                }
-                catch(FileNotFoundException ex){
-                    System.out.println("Erro a abrir ficheiro.");
-                }
-                catch(IOException ex){
-                    System.out.println("Erro a ler ficheiro.");
-                }
-                catch(ClassNotFoundException ex){
-                    System.out.println("Erro a converter objeto.");
-                }
+            }
+            catch(FileNotFoundException ex){
+                System.out.println("Erro a abrir ficheiro.");
+            }
+            catch(IOException ex){
+                System.out.println("Erro a ler ficheiro. Ainda nao existe");
+            }
+            catch(ClassNotFoundException ex){
+                System.out.println("Erro a converter objeto.");
             }
         }
+        f = new File("eleicoes.obj");
+        if(f.exists() && f.isFile())
+        {
+            try{
+                FileInputStream fis = new FileInputStream(f);
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                eleições = (ArrayList<Eleição>)ois.readObject();
+                ois.close();
 
-            public static void servidorAtivar() throws RemoteException
-            {
+            }
+            catch(FileNotFoundException ex){
+                System.out.println("Erro a abrir ficheiro.");
+            }
+            catch(IOException ex){
+                System.out.println("Erro a ler ficheiro. Ainda nao existeA");
+            }
+            catch(ClassNotFoundException ex){
+                System.out.println("Erro a converter objeto.");
+            }
+        }
+        System.out.println("RMI Server ready.");
+
+        VerificaServer v =new VerificaServer();
+        while (true) {
+            if(v.getSouB() == 1)
+                auxServer++;
+
+        }
+    }
+    public static void main(String args[]) throws RemoteException {
+
+        if (args.length == 0) {
+            System.out.println("java RMISERVER localAddress");
+            System.exit(0);
+        }
+        //System.getProperties().put("java.security.policy", "policy.all");
+        //System.setSecurityManager(new RMISecurityManager());
+        System.setProperty("java.rmi.server.hostname", args[0]);
+
+        try {
+            servidorAtivar(args[0]);
+        } catch (Exception e) {
+
+            try{
                 RMIServer server = new RMIServer();
-                Registry r = LocateRegistry.createRegistry(7001);
+                System.setProperty("java.rmi.server.hostname", args[0]);
+                Registry r = LocateRegistry.createRegistry(7002);
                 r.rebind("Server", server);
+
+                // Carrega estruturas de dados
                 File f = new File("pessoas.obj");
                 if(f.exists() && f.isFile())
                 {
@@ -763,7 +833,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         System.out.println("Erro a abrir ficheiro.");
                     }
                     catch(IOException ex){
-                        System.out.println("Erro a ler ficheiro. Ainda nao existe");
+                        System.out.println("Erro a ler ficheiro. Ainda não existia");
                     }
                     catch(ClassNotFoundException ex){
                         System.out.println("Erro a converter objeto.");
@@ -783,94 +853,29 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         System.out.println("Erro a abrir ficheiro.");
                     }
                     catch(IOException ex){
-                        System.out.println("Erro a ler ficheiro. Ainda nao existeA");
+                        System.out.println("Erro a ler ficheiro. Ainda não existia");
                     }
                     catch(ClassNotFoundException ex){
                         System.out.println("Erro a converter objeto.");
                     }
                 }
-                System.out.println("RMI Server ready.");
+                System.out.println("RMI Backup Server ready.");
+                VerificaBackupServer v1 = new VerificaBackupServer();
 
-                VerificaServer v =new VerificaServer();
                 while (true) {
-                    if(v.getSouB() == 1)
-                        auxServer++;
-
+                    if(v1.getSouP() == 1)
+                        auxServer--;
                 }
             }
-            public static void main(String args[]) throws RemoteException {
-
-            System.getProperties().put("java.security.policy", "policy.all");
-            System.setSecurityManager(new RMISecurityManager());
-            //System.setProperty("java.rmi.server.hostname", "192.168.1.171");
-
-            try {
-                servidorAtivar();
-            } catch (Exception e) {
-
-                try{
-                    RMIServer server = new RMIServer();
-                    Registry r = LocateRegistry.createRegistry(7002);
-                    r.rebind("Server", server);
-
-                    // Carrega estruturas de dados
-                    File f = new File("pessoas.obj");
-                    if(f.exists() && f.isFile())
-                    {
-                        try{
-                            FileInputStream fis = new FileInputStream(f);
-                            ObjectInputStream ois = new ObjectInputStream(fis);
-                            pessoas = (ArrayList<Pessoa>)ois.readObject();
-                            ois.close();
-
-                        }
-                        catch(FileNotFoundException ex){
-                            System.out.println("Erro a abrir ficheiro.");
-                        }
-                        catch(IOException ex){
-                            System.out.println("Erro a ler ficheiro. Ainda não existia");
-                        }
-                        catch(ClassNotFoundException ex){
-                            System.out.println("Erro a converter objeto.");
-                        }
-                    }
-                    f = new File("eleicoes.obj");
-                    if(f.exists() && f.isFile())
-                    {
-                        try{
-                            FileInputStream fis = new FileInputStream(f);
-                            ObjectInputStream ois = new ObjectInputStream(fis);
-                            eleições = (ArrayList<Eleição>)ois.readObject();
-                            ois.close();
-
-                        }
-                        catch(FileNotFoundException ex){
-                            System.out.println("Erro a abrir ficheiro.");
-                        }
-                        catch(IOException ex){
-                            System.out.println("Erro a ler ficheiro. Ainda não existia");
-                        }
-                        catch(ClassNotFoundException ex){
-                            System.out.println("Erro a converter objeto.");
-                        }
-                    }
-                    System.out.println("RMI Backup Server ready.");
-                    VerificaBackupServer v1 = new VerificaBackupServer();
-
-                    while (true) {
-                        if(v1.getSouP() == 1)
-                            auxServer--;
-                    }
-                }
-                catch(java.rmi.server.ExportException e2) {
-                    System.out.println("Erro");
-                }
-                catch(Exception e1)
-                {
-                    e.printStackTrace();
-                }
+            catch(java.rmi.server.ExportException e2) {
+                System.out.println("Erro");
+            }
+            catch(Exception e1)
+            {
                 e.printStackTrace();
-
             }
+            e.printStackTrace();
+
         }
     }
+}
