@@ -188,6 +188,7 @@ public class MesaVoto extends Thread {
         String newAddress2 = MULTICAST_ADDRESS_TERMINALS.substring(0, MULTICAST_ADDRESS_TERMINALS.length()-1);
         newAddress2 = newAddress2 + last2;
 
+
         MulticastSocket socketAtualiza = null;  // create socket without binding it (only for sending)
         socketAtualiza = new MulticastSocket(PORT);
         InetAddress groupAtualiza = InetAddress.getByName(newAddress2);
@@ -195,6 +196,7 @@ public class MesaVoto extends Thread {
 
         // Thread que vai receber pings dos terminais e enviar ao servidor o estado dos mesmos
         new AtualizaMesa(departamento, serverRMI, socketAtualiza);
+        new verificaMesa(departamento, newAddress2, serverRMI);
 
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -277,13 +279,20 @@ public class MesaVoto extends Thread {
                 if (serverRMI.obterValor() == 1) {
                     try {
                         serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                        serverRMI.olaMesaVoto(departamento);
+                        if(serverRMI.olaMesaVoto(departamento)==1){
+                            System.out.println("Já existe uma mesa de voto no "+departamento);
+                            return;
+                        }
                         Correr(serverRMI, socketFindTerminal);
 
                     } catch (RemoteException | NotBoundException ex) {
                         try {
                             RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
-                            serverRMI1.olaMesaVoto(departamento);
+                            if(serverRMI1.olaMesaVoto(departamento)==1)
+                            {
+                                System.out.println("Já existe uma mesa de voto no "+departamento);
+                                return;
+                            }
                             Correr(serverRMI1, socketFindTerminal);
                         } catch (RemoteException | NotBoundException ex1) {
                             System.out.println("Servidor não está online");
@@ -298,14 +307,22 @@ public class MesaVoto extends Thread {
                 if (serverRMI.obterValor() == 0) {
                     try {
                         //serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                        serverRMI.olaMesaVoto(departamento);
+                        if(serverRMI.olaMesaVoto(departamento)==1) {
+                            System.out.println("Já existe uma mesa de voto no " + departamento);
+                            return;
+                        }
                         Correr(serverRMI, socketFindTerminal);
 
                     } catch (RemoteException ex) {
                         System.out.println("Servidor não está online");
                         try {
                             RMIServerInterface serverRMI1 = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                            serverRMI1.olaMesaVoto(departamento);
+                            if(serverRMI1.olaMesaVoto(departamento)==1)
+                            {
+                                System.out.println("Já existe uma mesa de voto no "+departamento);
+                                return;
+                            }
+
                             Correr(serverRMI1, socketFindTerminal);
 
                         } catch (RemoteException | NotBoundException ex1) {
@@ -321,7 +338,10 @@ public class MesaVoto extends Thread {
                 System.out.println("Servidor não está online");
                 try {
                     RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                    serverRMI.olaMesaVoto(departamento);
+                    if(serverRMI.olaMesaVoto(departamento)==1){
+                        System.out.println("Já existe uma mesa de voto no "+departamento);
+                        return;
+                    }
                     Correr(serverRMI, socketFindTerminal);
                 } catch (RemoteException | NotBoundException ex1) {
                     System.out.println("Servidor não está online");
@@ -329,7 +349,7 @@ public class MesaVoto extends Thread {
                     e.printStackTrace();
                 } finally {
                     System.out.println("A fechar socket Mesa de voto");
-                    socketFindTerminal.close();
+                    //socketFindTerminal.close();
                 }
             }
         }
@@ -688,6 +708,64 @@ class AtualizaMesa extends Thread {
                 terminais.add(terminal);
             }
 
+        } catch (IOException e) {
+            this.run();
+        }
+
+    }
+}
+class verificaMesa extends Thread{
+    private String ATUALIZA_ADDRESS;
+    private int PORT = 4321;
+    private RMIServerInterface serverRMI;
+    private String departamento;
+
+    public verificaMesa(String departamento, String address, RMIServerInterface serverRMI) {
+        this.ATUALIZA_ADDRESS = address;
+        this.serverRMI = serverRMI;
+        this.departamento = departamento;
+        this.start();
+    }
+
+    /**
+     * Método que vai receber um packet por UDP da mesa de voto
+     *
+     * @param socket
+     *
+     * @return mensagem recebida
+     */
+    public String recebeCliente(MulticastSocket socket) throws IOException {
+        // Corre até receber uma mensagem do servidor, onde dá return
+        while(true){
+            byte[] buffer = new byte[256];
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            socket.receive(packet);
+            String message = new String(packet.getData(), 0, packet.getLength());
+
+            // Se a mensagem não começar por @
+            if(message.charAt(0) != '$') {
+                return message;
+            }
+        }
+    }
+
+    public String filterMessage(MulticastSocket socket, String expression) throws IOException {
+        String message = null;
+        while (message == null) {
+            message = recebeCliente(socket);
+            if (!message.contains(expression)) {
+                message = null;
+            }
+        }
+
+        return message;
+    }
+
+    public void run() {
+        try {
+            while(true) {
+                serverRMI.verificaOnServer(departamento);
+            }
         } catch (IOException e) {
             this.run();
         }
