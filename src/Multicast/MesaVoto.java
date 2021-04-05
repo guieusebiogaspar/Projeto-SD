@@ -413,34 +413,38 @@ class HandleSession extends Thread {
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         LocalDateTime now = LocalDateTime.now();
-
-        try{
-            serverRMI.adicionaVoto(eleição, lista, cc, departamento, dtf.format(now));
-        }
-        catch(ConnectException c)
+        while(true)
         {
             try{
-                RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(serverPort).lookup("Server");
-                server.adicionaVoto(eleição, lista, cc, departamento, dtf.format(now));
-            } catch (NotBoundException e) {
-                e.printStackTrace();
+                if (serverRMI.adicionaVoto(eleição, lista, cc, departamento, dtf.format(now)) == 1)
+                    return;
+            }
+            catch(ConnectException c)
+            {
+                try{
+                    RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(serverPort).lookup("Server");
+                    if(server.adicionaVoto(eleição, lista, cc, departamento, dtf.format(now))==1)
+                        return;
+                } catch (NotBoundException e) {
+                    e.printStackTrace();
+                }
             }
         }
-
-        //System.out.println("\nVoto enviado na eleição " + eleição.getTitulo() + " na lista " + lista);
-
     }
 
     public void run() {
         MulticastSocket socketSession = null;
+        System.getProperties().put("java.security.policy", "policy.all");
+        System.setSecurityManager(new RMISecurityManager());
         while(true)
         {
             try {
-                if(serverRMI.obterValor() == 1)
+                RMIServerInterface servidor = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
+                if(servidor.obterValor() == 1)
                 {
                     try{
-                        serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                        CorrerHandle(serverRMI, socketSession, 7001);
+                        servidor = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+                        CorrerHandle(servidor, socketSession, 7001);
                     }
                     catch(RemoteException | NotBoundException ex)
                     {
@@ -450,7 +454,7 @@ class HandleSession extends Thread {
                         }
                         catch(RemoteException | NotBoundException ex1)
                         {
-                            System.out.println("Servidor não está online");
+                            System.out.println("Servidor não está onlineA");
                         }
                         catch(IOException | InterruptedException e)
                         {
@@ -461,10 +465,10 @@ class HandleSession extends Thread {
                         e.printStackTrace();
                     }
                 }
-                if(serverRMI.obterValor() == 0)
+                if(servidor.obterValor() == 0)
                 {
                     try{
-                        CorrerHandle(serverRMI, socketSession, 7002);
+                        CorrerHandle(servidor, socketSession, 7002);
                     }
                     catch(RemoteException ex)
                     {
@@ -474,7 +478,7 @@ class HandleSession extends Thread {
                         }
                         catch(RemoteException | NotBoundException ex1)
                         {
-                            System.out.println("Servidor não está online");
+                            System.out.println("Servidor não está onlineB");
                         }
                         catch(IOException | InterruptedException e)
                         {
@@ -486,15 +490,15 @@ class HandleSession extends Thread {
                         e.printStackTrace();
                     }
                 }
-            }catch(RemoteException ex)
+            }catch(RemoteException | NotBoundException ex)
             {
-                System.out.println("Servidor não está online");
+                System.out.println("Servidor não está onlineC");
                 try{
-                    RMIServerInterface serverRMI = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
-                    CorrerHandle(serverRMI, socketSession, 7001);
+                    RMIServerInterface serverRMI2 = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
+                    CorrerHandle(serverRMI2, socketSession, 7001);
                 }
                 catch(RemoteException | NotBoundException ex1){
-                    System.out.println("Servidor não está online");
+                    System.out.println("Servidor não está onlineD");
                 }
                 catch(IOException | InterruptedException e)
                 {

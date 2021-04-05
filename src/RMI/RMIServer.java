@@ -381,7 +381,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return filtradas;
     }
 
-    public void adicionaVoto(Eleição eleição, String lista, int cc, String departamento, String momento) throws RemoteException {
+    public int adicionaVoto(Eleição eleição, String lista, int cc, String departamento, String momento) throws RemoteException {
+
         for(int i = 0; i < eleições.size(); i++) {
             if(eleições.get(i).getTitulo().equals(eleição.getTitulo()) && eleições.get(i).getAtiva()) { // Ao encontrar a eleição com o titulo correspondente
                 for(int j = 0; j < eleições.get(i).getListas().size(); j++) { // Vai percorrer as listas da eleição
@@ -396,6 +397,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                                 votou.put(eleição.getTitulo(), depTime);
                                 pessoas.get(k).setVotou(votou);
                                 pessoas.get(k).setAVotar(false);
+                                System.out.println("estou a false" + pessoas.get(k).getNome());
                             }
                         }
 
@@ -405,10 +407,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome());
                         writeBD("eleicoes.obj");
                         writeBD("pessoas.obj");
+                        return 1;
                     }
                 }
             }
         }
+        return 0;
 
     }
 
