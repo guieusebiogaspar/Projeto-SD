@@ -142,6 +142,15 @@ public class ContaTempo extends Thread{
                                                 break;
                                         }
                                     }
+                                    else{
+                                        if(el.getAtiva())
+                                        {
+                                            el.setAtiva(false);
+                                            el.setTerminada(true);
+                                            if(writeBD(" terminada", eleicoes, el) == 1)
+                                                break;
+                                        }
+                                    }
                                 }
                             }
 

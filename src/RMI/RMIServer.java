@@ -1,22 +1,19 @@
 package RMI;
 
-import Multicast.MesaVoto;
-
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.*;
-import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static java.lang.Thread.getDefaultUncaughtExceptionHandler;
 import static java.lang.Thread.sleep;
 
 
 public class RMIServer extends UnicastRemoteObject implements RMIServerInterface, Serializable{
     static AdminConsoleInterface admin;
+    private int souEU;
     private static ArrayList<Pessoa> pessoas = new ArrayList<>();
     private static ArrayList<Eleição> eleições = new ArrayList<>();
     private static ArrayList<String> mesas = new ArrayList<>();
@@ -29,6 +26,15 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public static int getAuxServer(){
         return auxServer;
     }
+
+    public int getSouEU() throws RemoteException{
+        return souEU;
+    }
+
+    public ArrayList<String> getMesas() throws RemoteException {
+        return mesas;
+    }
+
     public int obterValor() throws RemoteException
     {
         int valor = getAuxServer();
@@ -45,9 +51,14 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         admin.adeusServidor();
     }
 
-    public void olaMesaVoto(String mesa) throws RemoteException {
+    public int olaMesaVoto(String mesa) throws RemoteException {
         System.out.println("Mesa de voto " + mesa + " entrou no server");
+        if(mesas.contains(mesa)) {
+            //System.out.println("Já existe uma mesa de voto no " + mesa);
+            return 1;
+        }
         mesas.add(mesa);
+        return 0;
     }
 
     public void registar(Pessoa pessoa) throws RemoteException {
@@ -462,7 +473,15 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public void printOnServer(String departamento, int terminais) throws RemoteException {
         if(admin != null) admin.printOnAdmin(departamento, terminais);
     }
+    public void verificaOnServer(String departamento) throws RemoteException
+    {
+        if(mesas.contains(departamento)) {
+            //System.out.println("Departamento "+departamento);
+            mesas.clear();
+        }
+        mesas.add(departamento);
 
+    }
     public void writeBD(String name) throws RemoteException {
         File f = new File(name);
         try{
@@ -556,6 +575,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         System.out.println("RMI Server ready.");
 
         VerificaServer v =new VerificaServer();
+
         //new ContaTempo();
         System.out.println("Passei");
         while (true) {
