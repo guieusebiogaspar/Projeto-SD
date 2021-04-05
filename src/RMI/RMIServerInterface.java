@@ -18,6 +18,7 @@ public interface RMIServerInterface extends Remote {
     void criarEleição(Eleição eleição) throws RemoteException;
     Eleição getEleição(String titulo) throws RemoteException;
     boolean verificaCC(int cc) throws RemoteException;
+    boolean verificaEleicao(String nome) throws RemoteException;
     ArrayList<Pessoa> getPessoas() throws RemoteException;
     Pessoa verificaEleitor(int cc) throws RemoteException;
     boolean loginUser(String username, String password, int cc) throws RemoteException;
@@ -25,7 +26,10 @@ public interface RMIServerInterface extends Remote {
     void atualizaDataInicio(Eleição eleição, DataEleição newInicio) throws RemoteException;
     void atualizaDataFim(Eleição eleição, DataEleição newFim) throws RemoteException;
     void addGrupo(Eleição eleição, String grupo) throws RemoteException;
+    void addTipos(Eleição eleição, ArrayList<String> tipos) throws RemoteException;
     int rmvGrupo(Eleição eleição, String grupo) throws RemoteException;
+    int rmvMesa(Eleição eleição, String mesa) throws RemoteException;
+    void addMesa(Eleição eleição, String mesa) throws RemoteException;
     void writeBD(String name) throws RemoteException;
     void atualizaTitulo(Eleição eleição, String newTitle) throws RemoteException;
     void readBD(String name) throws RemoteException;

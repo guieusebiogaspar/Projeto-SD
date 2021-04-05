@@ -125,6 +125,18 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         writeBD("eleicoes.obj");
     }
 
+    public void addMesa(Eleição eleição, String mesa) throws RemoteException
+    {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                el.getMesasVoto().add(mesa);
+            }
+        }
+        writeBD("eleicoes.obj");
+    }
+
     public int rmvGrupo(Eleição eleição, String grupo) throws RemoteException
     {
         for(Eleição el : eleições)
@@ -145,6 +157,28 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
         return 0;
     }
+
+    public int rmvMesa(Eleição eleição, String mesa) throws RemoteException
+    {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                for(String s : el.getMesasVoto())
+                {
+                    if(s.equals(mesa))
+                    {
+                        int i = el.getMesasVoto().indexOf(s);
+                        el.getMesasVoto().remove((i));
+                        writeBD("eleicoes.obj");
+                        return 1;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
     public void addLista(Eleição eleição, String lista) throws RemoteException
     {
         for(Eleição el : eleições)
@@ -157,6 +191,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
         writeBD("eleicoes.obj");
     }
+
     public int rmvLista(Eleição eleição, String lista) throws RemoteException
     {
         for(Eleição el : eleições)
@@ -178,6 +213,18 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             }
         }
         return 0;
+    }
+
+    public void addTipos(Eleição eleição, ArrayList<String> tipos) throws RemoteException
+    {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                el.setQuemPodeVotar(tipos);
+            }
+        }
+        writeBD("eleicoes.obj");
     }
     /**
      * Método que vai verificar se o cc introduzido já existe na base de dados
@@ -203,6 +250,15 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             }
         }
         return null;
+    }
+
+    public boolean verificaEleicao(String nome) throws RemoteException {
+        for(int i = 0; i < eleições.size(); i++) {
+            if(eleições.get(i).getTitulo().equals(nome)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void pessoaAVotar(int cc, boolean estado) throws RemoteException {

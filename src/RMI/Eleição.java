@@ -99,8 +99,16 @@ public class Eleição implements Serializable {
         return mesasVoto;
     }
 
+    public void setMesasVoto() {
+        this.mesasVoto = mesasVoto;
+    }
+
     public ArrayList<String> getQuemPodeVotar() {
         return quemPodeVotar;
+    }
+
+    public void setQuemPodeVotar(ArrayList<String> quemPodeVotar) {
+        this.quemPodeVotar = quemPodeVotar;
     }
 
     public ArrayList<Integer> getJaVotaram() {
