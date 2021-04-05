@@ -39,6 +39,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
     public void adeusServidor() throws RemoteException{
         System.out.println("Servidor diz adeus ao admin");
     }
+
     public void readCommand(RMIServerInterface server, String command) throws IOException {
         switch (command) {
             case "1":
