@@ -4,6 +4,7 @@ import org.w3c.dom.ls.LSOutput;
 
 import java.io.*;
 import java.rmi.*;
+import java.rmi.registry.Registry;
 import java.rmi.server.*;
 import java.rmi.registry.LocateRegistry;
 import java.text.DecimalFormat;
@@ -250,7 +251,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
             if(el.getListas().get(i).getMembros().size() > 0) System.out.println("\tMembros: ");
             for (int j = 0; j < el.getListas().get(i).getMembros().size(); j++) {
-                System.out.println("\t- " + el.getListas().get(i).getMembros().get(i).getNome());
+                System.out.println("\t- " + el.getListas().get(i).getMembros().get(j).getNome());
             }
         }
 
@@ -1080,6 +1081,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         //System.getProperties().put("java.security.policy", "policy.all");
         //System.setSecurityManager(new RMISecurityManager());
 
+
+
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
         while(true)
@@ -1093,7 +1096,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     try{
                         //server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
                         server = (RMIServerInterface) LocateRegistry.getRegistry(localAddress,7002).lookup("Server");
-                        server.olaAdmin(adminConsole);
+                        //server.olaAdmin(adminConsole, localAddress);
                         System.out.println("Admin informou server que está ligado");
                         new ContaTempo();
                         while (true) {
@@ -1108,7 +1111,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                         try{
                             //RMIServerInterface server1 = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
                             RMIServerInterface server1 = (RMIServerInterface) LocateRegistry.getRegistry(localAddress, 7001).lookup("Server");
-                            server.olaAdmin(adminConsole);
+                            //server.olaAdmin(adminConsole, localAddress);
                             System.out.println("Admin informou server que está ligado");
                             new ContaTempo();
                             while (true) {
@@ -1132,7 +1135,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 if(server.obterValor() == 0)
                 {
                     try{
-                        server.olaAdmin(adminConsole);
+                        server.olaAdmin(adminConsole, localAddress);
                         System.out.println("Admin informou server que está ligado");
                         new ContaTempo();
                         while (true) {
@@ -1147,8 +1150,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                         try{
                             //RMIServerInterface server1 = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
                             RMIServerInterface server1 = (RMIServerInterface) LocateRegistry.getRegistry(localAddress,7002).lookup("Server");
-                            System.out.println("alo3");
-                            server.olaAdmin(adminConsole);
+                            //server.olaAdmin(adminConsole, localAddress);
                             System.out.println("Admin informou server que está ligado");
                             new ContaTempo();
                             while (true) {
@@ -1169,13 +1171,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     }
                 }
             } catch (RemoteException | NotBoundException ex) {
-                System.out.println("sera");
                 System.out.println("Servidor não está online");
                 try{
                     //RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(7002).lookup("Server");
                     RMIServerInterface server = (RMIServerInterface) LocateRegistry.getRegistry(localAddress,7002).lookup("Server");
-                    System.out.println("alo4");
-                    server.olaAdmin(adminConsole);
+                    //server.olaAdmin(adminConsole, localAddress);
                     System.out.println("Admin informou server que está ligado");
                     new ContaTempo();
                     while (true) {
@@ -1201,7 +1201,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             System.out.println("java AdminCOnsole localaddress");
             System.exit(0);
         }
+
         AdminConsole adminConsole = new AdminConsole();
+        System.setProperty("java.rmi.server.hostname", args[0]);
+        Registry r = LocateRegistry.createRegistry(1255);
+        r.rebind("Admin", adminConsole);
         adminConsole.init(adminConsole, args[0]);
     }
 }
