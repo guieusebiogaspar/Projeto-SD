@@ -46,10 +46,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      * @param adm
      *
      */
-    public void olaAdmin(AdminConsoleInterface adm) throws RemoteException {
+    public void olaAdmin(AdminConsoleInterface adm, String localAddress) throws RemoteException, NotBoundException {
         System.out.println("Admin entrou no server");
-        admin = adm;
-        //admin.olaServidor();
+        admin = (AdminConsoleInterface) LocateRegistry.getRegistry(localAddress, 1255).lookup("Admin");
+        admin.olaServidor();
     }
 
     /**
@@ -59,7 +59,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      */
     public void adeusAdmin() throws RemoteException {
         System.out.println("Admin saiu do server");
-        //admin.adeusServidor();
+        admin.adeusServidor();
     }
 
     /**
@@ -454,7 +454,9 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      *  @return eleitor
      */
     public Pessoa verificaEleitor(int cc) throws RemoteException {
+        pessoas = getPessoas();
         for(int i = 0; i < pessoas.size(); i++) {
+            //System.out.println(pessoas.get(i).getCc());
             if(pessoas.get(i).getCc() == cc && !pessoas.get(i).getAVotar()) {
                 return pessoas.get(i);
             }
