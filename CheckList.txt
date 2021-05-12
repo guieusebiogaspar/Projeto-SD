@@ -1,3 +1,0 @@
-
-Links auxiliares:
-https://coderanch.com/t/644107/java/Java-RMI-application-machines-ConnectException
