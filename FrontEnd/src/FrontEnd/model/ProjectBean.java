@@ -1,17 +1,20 @@
 package FrontEnd.model;
 
+import RMI.Pessoa;
 import RMI.RMIServerInterface;
 
 import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.util.ArrayList;
 
 
 public class ProjectBean {
     private RMIServerInterface server;
     private String username; // username and password supplied by the user
     private String password;
+    private String cc;
 
     public ProjectBean() {
         try {
@@ -29,6 +32,10 @@ public class ProjectBean {
         this.password = password;
     }
 
+    public void setCc(String cc) {
+        this.cc = cc;
+    }
+
     public String getUserMatchesPassword() throws IOException {
         if(server.loginUserFrontEnd(username, password).equals("admin")) {
             return "admin";
@@ -40,4 +47,14 @@ public class ProjectBean {
             return "nada";
         }
     }
+
+    public ArrayList<Pessoa> getPessoas() throws RemoteException {
+        return server.getPessoas();
+    }
+
+    public Pessoa getPessoa(String cc) throws RemoteException {
+        return server.getPessoa(cc);
+    }
+
+
 }

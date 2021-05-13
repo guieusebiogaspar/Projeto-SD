@@ -12,9 +12,9 @@
 
 	<s:form action="login" method="post">
 		<s:text name="Username" /><br/>
-		<s:textfield name="username" /><br/>
+		<s:textfield name="username" required="required"/><br/>
 		<s:text name="Password" /><br/>
-		<s:textfield name="password" /><br/>
+		<s:textfield name="password" required="required"/><br/>
 		<s:submit type = "button"><s:text name="Login"/></s:submit>
 	</s:form>
 

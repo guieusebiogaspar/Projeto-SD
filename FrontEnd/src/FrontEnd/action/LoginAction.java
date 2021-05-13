@@ -47,6 +47,11 @@ public class LoginAction extends ActionSupport implements SessionAware {
 	public void setPassword(String password) {
 		this.password = password; // what about this input? 
 	}
+
+	public String logout() {
+		session.clear();
+		return SUCCESS;
+	}
 	
 	public ProjectBean getProjectBean() {
 		if(!session.containsKey("projectBean"))
@@ -63,8 +68,4 @@ public class LoginAction extends ActionSupport implements SessionAware {
 		this.session = session;
 	}
 
-	public String logout() {
-		session.clear();
-		return SUCCESS;
-	}
 }
