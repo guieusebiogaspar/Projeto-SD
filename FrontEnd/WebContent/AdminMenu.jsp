@@ -16,6 +16,6 @@
   <a href="<s:url action="detalhespessoas" />">Detalhes de pessoas</a><br/>
   <a href="<s:url action="detalheseleicoes" />">Detalhes de eleições</a><br/>
   <a href="<s:url action="estadomesas" />">Estado das mesas de voto ON/OFF</a><br/>
-  <a href="<s:url action="sair" />">Sair</a><br/>
+  <a href="<s:url action="logout" />">Sair</a><br/>
 </body>
 </html>
