@@ -47,6 +47,15 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
             <result>/AdminMenu.jsp</result>
         </action>
 
+        <action name="registar">
+            <result>/Registar.jsp</result>
+        </action>
+
+        <action name="registarPessoa" class="FrontEnd.action.RegistarAction" method="execute">
+            <result name="success">/Registar.jsp</result>
+            <result name="login">/Registar</result>
+        </action>
+
         <action name="detalhespessoas">
             <result>/DetalhesPessoas.jsp</result>
         </action>
