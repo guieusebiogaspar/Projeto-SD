@@ -559,6 +559,61 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     /**
+     * Método que devolve ArrayList de eleições ativas
+     *
+     *  @return eleições
+     */
+    public ArrayList<Eleição> getAtivas() throws  RemoteException
+    {
+        ArrayList<Eleição> els = getEleições();
+        ArrayList<Eleição> ativas = new ArrayList<>();
+        for(int i = 0; i < els.size(); i++) {
+            if(els.get(i).getAtiva()) {
+                ativas.add(els.get(i));
+            }
+        }
+
+        return ativas;
+    }
+
+    /**
+     * Método que devolve ArrayList de eleições termiandas
+     *
+     *  @return eleições
+     */
+    public ArrayList<Eleição> getTerminadas() throws  RemoteException
+    {
+        ArrayList<Eleição> els = getEleições();
+        ArrayList<Eleição> terminadas = new ArrayList<>();
+        for(int i = 0; i < els.size(); i++) {
+            if(!els.get(i).getAtiva() && els.get(i).getTerminada()) {
+                terminadas.add(els.get(i));
+            }
+        }
+
+        return terminadas;
+    }
+
+    /**
+     * Método que devolve ArrayList de eleições por começar
+     *
+     *  @return eleições
+     */
+    public ArrayList<Eleição> getPorComecar() throws  RemoteException
+    {
+        ArrayList<Eleição> els = getEleições();
+        ArrayList<Eleição> porComecar = new ArrayList<>();
+        for(int i = 0; i < els.size(); i++) {
+            if(!els.get(i).getAtiva() && !els.get(i).getTerminada()) {
+                porComecar.add(els.get(i));
+            }
+        }
+
+        return porComecar;
+    }
+
+
+    /**
      * Método que vai receber o cc de uma pessoa.
      * Se a pessoa existir na BD devolve o objeto da mesma, se não existir devolve null.
      *

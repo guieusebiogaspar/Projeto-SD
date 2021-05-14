@@ -1,5 +1,6 @@
 package FrontEnd.model;
 
+import RMI.Eleição;
 import RMI.Pessoa;
 import RMI.RMIServerInterface;
 
@@ -15,6 +16,7 @@ public class ProjectBean {
     private String username; // username and password supplied by the user
     private String password;
     private String cc;
+    private String eleicao;
 
     public ProjectBean() {
         try {
@@ -36,6 +38,10 @@ public class ProjectBean {
         this.cc = cc;
     }
 
+    public void setEleicao(String eleicao) {
+        this.eleicao = eleicao;
+    }
+
     public String getUserMatchesPassword() throws IOException {
         if(server.loginUserFrontEnd(username, password).equals("admin")) {
             return "admin";
@@ -54,6 +60,26 @@ public class ProjectBean {
 
     public Pessoa getPessoa(String cc) throws RemoteException {
         return server.getPessoa(cc);
+    }
+
+    public ArrayList<Eleição> getEleicoes() throws RemoteException {
+        return server.getEleições();
+    }
+
+    public ArrayList<Eleição> getAtivas() throws RemoteException {
+        return server.getAtivas();
+    }
+
+    public ArrayList<Eleição> getTerminadas() throws RemoteException {
+        return server.getTerminadas();
+    }
+
+    public ArrayList<Eleição> getPorComecar() throws RemoteException {
+        return server.getPorComecar();
+    }
+
+    public Eleição getEleição(String eleicao) throws RemoteException {
+        return server.getEleição(eleicao);
     }
 
 

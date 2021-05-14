@@ -5,6 +5,9 @@ import java.util.ArrayList;
 
 public interface RMIServerInterface extends Remote {
 
+    ArrayList<Eleição> getPorComecar() throws  RemoteException;
+    ArrayList<Eleição> getTerminadas() throws  RemoteException;
+    ArrayList<Eleição> getAtivas() throws  RemoteException;
     String loginUserFrontEnd(String username, String password) throws RemoteException;
     void olaAdmin(AdminConsoleInterface adm, String localaddress) throws RemoteException, NotBoundException;
     void adeusAdmin() throws RemoteException;
