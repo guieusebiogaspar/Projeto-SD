@@ -15,7 +15,7 @@ public class DetalhesPessoasAction extends ActionSupport implements SessionAware
 
     @Override
     public String execute() throws IOException {
-        if(this.cc != null && !this.cc.equals("")) {
+        if(this.cc != null) {
             this.getProjectBean().setCc(this.cc);
             Pessoa p = this.getProjectBean().getPessoa(this.cc);
 

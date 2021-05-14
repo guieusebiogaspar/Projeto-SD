@@ -56,6 +56,17 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
             <result name="error">/DetalhesPessoas-error.jsp</result>
         </action>
 
+        <action name="detalheseleicoes">
+            <result>/DetalhesEleicoes.jsp</result>
+        </action>
+
+        <action name="detalheseleicao" class="FrontEnd.action.DetalhesEleicoesAction" method="execute">
+            <result name="success">/DetalhesEleicoes.jsp</result>
+            <result name="error">/DetalhesEleicoes-error.jsp</result>
+        </action>
+
+
+
 
 
 
