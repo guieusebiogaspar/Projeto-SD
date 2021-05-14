@@ -3,6 +3,7 @@ package RMI;
 import Multicast.MesaVoto;
 
 import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.util.*;
 
 public class Eleição implements Serializable {
@@ -122,5 +123,6 @@ public class Eleição implements Serializable {
     public String getQuemPodeVotar() {
         return quemPodeVotar;
     }
+
 
 }

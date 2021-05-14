@@ -1,3 +1,3 @@
-<jsp:include page="DetalhesPessoas.jsp"></jsp:include>
+<jsp:include page="DetalhesEleicoes.jsp"></jsp:include>
 <hr>
-ERRO: A pessoa com esse cartao de cidadao nao existe na nossa Base de Dados!
+ERRO: Essa eleição nao existe na nossa Base de Dados!

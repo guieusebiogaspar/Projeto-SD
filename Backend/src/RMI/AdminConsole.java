@@ -280,9 +280,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     votos += 1;
                 }
             }
-
         }
-
         return votos;
     }
 
@@ -301,7 +299,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         if(eleicoes.size() > 0) {
             for(Eleição el: eleicoes)
             {
-                if(!el.getAtiva())
+                if(!el.getAtiva() && el.getTerminada())
                     System.out.println(el.getTitulo());
 
             }
