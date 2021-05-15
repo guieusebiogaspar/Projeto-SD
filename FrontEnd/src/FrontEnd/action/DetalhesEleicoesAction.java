@@ -17,23 +17,27 @@ public class DetalhesEleicoesAction extends ActionSupport implements SessionAwar
 
     @Override
     public String execute() throws IOException {
-        if(this.eleicao != null) {
-            this.getProjectBean().setEleicao(this.eleicao);
-            Eleição el = this.getProjectBean().getEleição(this.eleicao);
+        if(session.get("loggedin").equals("admin") == true){
+            if(this.eleicao != null) {
+                this.getProjectBean().setEleicao(this.eleicao);
+                Eleição el = this.getProjectBean().getEleição();
 
-            if(el != null) {
-                session.put("searchEleicao", el);
-                return SUCCESS;
+                if(el != null) {
+                    session.put("searchEleicao", el);
+                    return SUCCESS;
+                }
+                else
+                {
+                    session.remove("searchEleicao");
+                    return ERROR;
+                }
             }
-            else
-            {
-                session.remove("searchEleicao");
-                return ERROR;
-            }
+
+            session.remove("searchEleicao");
+            return INPUT;
+        } else {
+            return LOGIN;
         }
-
-        session.remove("searchEleicao");
-        return INPUT;
     }
 
     public void setEleicao(String eleicao) {
@@ -42,11 +46,11 @@ public class DetalhesEleicoesAction extends ActionSupport implements SessionAwar
 
     public ProjectBean getProjectBean() {
         if(!session.containsKey("projectBean"))
-            this.setHeyBean(new ProjectBean());
+            this.setProjectBean(new ProjectBean());
         return (ProjectBean) session.get("projectBean");
     }
 
-    public void setHeyBean(ProjectBean projectBean) {
+    public void setProjectBean(ProjectBean projectBean) {
         this.session.put("projectBean", projectBean);
     }
 

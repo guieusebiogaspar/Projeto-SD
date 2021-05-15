@@ -58,7 +58,7 @@ public class ProjectBean {
         return server.getPessoas();
     }
 
-    public Pessoa getPessoa(String cc) throws RemoteException {
+    public Pessoa getPessoa() throws RemoteException {
         return server.getPessoa(cc);
     }
 
@@ -78,7 +78,7 @@ public class ProjectBean {
         return server.getPorComecar();
     }
 
-    public Eleição getEleição(String eleicao) throws RemoteException {
+    public Eleição getEleição() throws RemoteException {
         return server.getEleição(eleicao);
     }
 

@@ -1,6 +1,3 @@
-/**
- * Raul Barbosa 2014-11-07
- */
 package FrontEnd.action;
 
 import FrontEnd.model.ProjectBean;
@@ -22,16 +19,13 @@ public class LoginAction extends ActionSupport implements SessionAware {
 			this.getProjectBean().setUsername(this.username);
 			this.getProjectBean().setPassword(this.password);
 			session.put("username", username);
-			session.put("password", username);
 
 			// Verifica os dados inseridos no rmi server
 			if (this.getProjectBean().getUserMatchesPassword().equals("admin")) {
-				session.put("loggedin", true); // this marks the user as logged in
-				session.put("admin", true);
+				session.put("loggedin", "admin"); // this marks the user as logged in
 				return "successadmin";
 			} else if (this.getProjectBean().getUserMatchesPassword().equals("eleitor")) {
-				session.put("loggedin", true); // this marks the user as logged in
-				session.put("admin", false);
+				session.put("loggedin", "eleitor"); // this marks the user as logged in
 				return "successeleitor";
 			} else {
 				return LOGIN;
@@ -55,11 +49,11 @@ public class LoginAction extends ActionSupport implements SessionAware {
 	
 	public ProjectBean getProjectBean() {
 		if(!session.containsKey("projectBean"))
-			this.setHeyBean(new ProjectBean());
+			this.setProjectBean(new ProjectBean());
 		return (ProjectBean) session.get("projectBean");
 	}
 
-	public void setHeyBean(ProjectBean projectBean) {
+	public void setProjectBean(ProjectBean projectBean) {
 		this.session.put("projectBean", projectBean);
 	}
 

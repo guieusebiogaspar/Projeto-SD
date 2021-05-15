@@ -43,8 +43,17 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
             <result name="success">/index.jsp</result>
         </action>
 
-        <action name="voltar">
+        <action name="voltar" class="FrontEnd.action.VoltarAction" method="execute">
             <result>/AdminMenu.jsp</result>
+        </action>
+
+        <action name="registar">
+            <result>/Registar.jsp</result>
+        </action>
+
+        <action name="registarPessoa" class="FrontEnd.action.RegistarPessoaAction" method="execute">
+            <result name="success">/Registar.jsp</result>
+            <result name="login">/Registar.jsp</result>
         </action>
 
         <action name="detalhespessoas">
