@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 public interface RMIServerInterface extends Remote {
 
+    String contaVotos(String mesa, String eleição) throws RemoteException;
+    boolean verificaUsername(String username) throws RemoteException;
     ArrayList<Eleição> getPorComecar() throws  RemoteException;
     ArrayList<Eleição> getTerminadas() throws  RemoteException;
     ArrayList<Eleição> getAtivas() throws  RemoteException;
