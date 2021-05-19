@@ -20,5 +20,6 @@
 
 	<p>Caso não tenha conta, entre em contacto nos seguintes e-mails:</p>
 	<p>uc2018278327@student.uc.pt</p>
+	<p>mail do gaspar@student.uc.pt</p>
 </body>
 </html>

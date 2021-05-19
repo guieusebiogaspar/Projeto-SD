@@ -13,13 +13,12 @@ public class VoltarAction extends ActionSupport implements SessionAware {
 
     @Override
     public String execute() throws IOException {
-        String username = session.get("username").toString();
-        String tipo = session.get("loggedin").toString();
-        session.remove("searchEleicao");
-        session.remove("searchPessoa");
-        session.put("loggedin", tipo); // this marks the user as logged in
-        session.put("username", username);
-        return SUCCESS;
+        if(session.get("loggedin").equals("admin") == true) {
+            session.remove("searchEleicao");
+            session.remove("searchPessoa");
+            return SUCCESS;
+        }
+        return LOGIN;
     }
 
 

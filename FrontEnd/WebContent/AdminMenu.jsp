@@ -8,14 +8,21 @@
     <title>eVoting</title>
 </head>
 <body>
-  <h1>Consola de administração</h1>
-  <p>Bem-vindo ${session.username}</p>
-  <a href="<s:url action="registar" />">Registar pessoas</a><br/>
-  <a href="<s:url action="criareleicao" />">Criar eleição</a><br/>
-  <a href="<s:url action="editareleicao" />">Editar eleição</a><br/>
-  <a href="<s:url action="detalhespessoas" />">Detalhes de pessoas</a><br/>
-  <a href="<s:url action="detalheseleicoes" />">Detalhes de eleições</a><br/>
-  <a href="<s:url action="estadomesas" />">Estado das mesas de voto ON/OFF</a><br/>
-  <a href="<s:url action="logout" />">Sair</a><br/>
+  <c:choose>
+    <c:when test="${session.loggedin.equals('admin')}">
+      <h1>Consola de administração</h1>
+      <p>Bem-vindo ${session.username}</p>
+      <a href="<s:url action="registar" />">Registar pessoas</a><br/>
+      <a href="<s:url action="criar" />">Criar eleição</a><br/>
+      <a href="<s:url action="editar" />">Editar eleição</a><br/>
+      <a href="<s:url action="detalhespessoas" />">Detalhes de pessoas</a><br/>
+      <a href="<s:url action="detalheseleicoes" />">Detalhes de eleições</a><br/>
+      <a href="<s:url action="estadomesas" />">Estado das mesas de voto ON/OFF</a><br/>
+      <a href="<s:url action="logout" />">Sair</a><br/>
+    </c:when>
+    <c:otherwise>
+      <jsp:include page="index.jsp"></jsp:include>
+    </c:otherwise>
+  </c:choose>
 </body>
 </html>

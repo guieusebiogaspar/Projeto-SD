@@ -44,7 +44,8 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
         </action>
 
         <action name="voltar" class="FrontEnd.action.VoltarAction" method="execute">
-            <result>/AdminMenu.jsp</result>
+            <result name="success">/AdminMenu.jsp</result>
+            <result name="login">/index.jsp</result>
         </action>
 
         <action name="registar">
@@ -52,8 +53,29 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
         </action>
 
         <action name="registarPessoa" class="FrontEnd.action.RegistarPessoaAction" method="execute">
-            <result name="success">/Registar.jsp</result>
-            <result name="login">/Registar.jsp</result>
+            <result name="success">/AdminMenu.jsp</result>
+            <result name="error">/Registar-error.jsp</result>
+            <result name="login">/index.jsp</result>
+        </action>
+
+        <action name="criar">
+            <result>/CriarEl.jsp</result>
+        </action>
+
+        <action name="criarEleicao" class="FrontEnd.action.CriarElAction" method="execute">
+            <result name="success">/AdminMenu.jsp</result>
+            <result name="error">/CriarEl-error.jsp</result>
+            <result name="login">/index.jsp</result>
+        </action>
+
+        <action name="editar">
+            <result>/MenuEditarEleicao.jsp</result>
+        </action>
+
+        <action name="editarEleicao" class="FrontEnd.action.EditarElAction" method="execute">
+            <result name="success">/AdminMenu.jsp</result>
+            <result name="error">/CriarEl-error.jsp</result>
+            <result name="login">/index.jsp</result>
         </action>
 
         <action name="detalhespessoas">
@@ -63,6 +85,7 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
         <action name="detalhespessoa" class="FrontEnd.action.DetalhesPessoasAction" method="execute">
             <result name="success">/DetalhesPessoas.jsp</result>
             <result name="error">/DetalhesPessoas-error.jsp</result>
+            <result name="login">/index.jsp</result>
         </action>
 
         <action name="detalheseleicoes">
@@ -72,12 +95,14 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
         <action name="detalheseleicao" class="FrontEnd.action.DetalhesEleicoesAction" method="execute">
             <result name="success">/DetalhesEleicoes.jsp</result>
             <result name="error">/DetalhesEleicoes-error.jsp</result>
+            <result name="login">/index.jsp</result>
         </action>
 
-
-
-
-
+        <action name="detalheseleicaoeditar" class="FrontEnd.action.DetalhesEleicoesAction" method="execute">
+            <result name="success">/MenuEditarEleicao.jsp</result>
+            <result name="error">/MenuEditarEleicao-error.jsp</result>
+            <result name="login">/index.jsp</result>
+        </action>
 
 
     </package>

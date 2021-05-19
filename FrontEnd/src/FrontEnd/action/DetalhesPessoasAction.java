@@ -15,23 +15,27 @@ public class DetalhesPessoasAction extends ActionSupport implements SessionAware
 
     @Override
     public String execute() throws IOException {
-        if(this.cc != null) {
-            this.getProjectBean().setCc(this.cc);
-            Pessoa p = this.getProjectBean().getPessoa();
+        if(session.get("loggedin").equals("admin") == true) {
+            if(this.cc != null) {
+                this.getProjectBean().setCc(this.cc);
+                Pessoa p = this.getProjectBean().getPessoa();
 
-            if(p != null) {
-                session.put("searchPessoa", p);
-                return SUCCESS;
+                if(p != null) {
+                    session.put("searchPessoa", p);
+                    return SUCCESS;
+                }
+                else
+                {
+                    session.remove("searchPessoa");
+                    return ERROR;
+                }
             }
-            else
-            {
-                session.remove("searchPessoa");
-                return ERROR;
-            }
+
+            session.remove("searchPessoa");
+            return INPUT;
+        } else {
+            return LOGIN;
         }
-
-        session.remove("searchPessoa");
-        return INPUT;
     }
 
     public void setCc(String cc) {

@@ -1,4 +1,3 @@
 Prioridade 1 - Urgente 5 - cagativo
 
-5 - só permitir criar pessoas com usernames e cc diferentes
-4 - Mensagem de sucesso após registar e criar uma pessoa
+

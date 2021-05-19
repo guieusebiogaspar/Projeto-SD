@@ -35,11 +35,11 @@ public class LoginAction extends ActionSupport implements SessionAware {
 	}
 	
 	public void setUsername(String username) {
-		this.username = username; // will you sanitize this input? maybe use a prepared statement?
+		this.username = username;
 	}
 
 	public void setPassword(String password) {
-		this.password = password; // what about this input? 
+		this.password = password;
 	}
 
 	public String logout() {

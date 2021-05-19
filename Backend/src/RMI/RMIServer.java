@@ -447,6 +447,23 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     /**
+     * Método que vai verificar se o username introduzido já existe na base de dados
+     *
+     * @param username
+     *
+     *  @return true se o username não existe e false se o cc ja existe
+     */
+    public boolean verificaUsername(String username) throws RemoteException {
+
+        for(int i = 0; i < pessoas.size(); i++) {
+            if(pessoas.get(i).getUsername().equals(username)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Método que vai verificar se o cc introduzido já existe na base de dados e se sim devolve essa pessoa
      *
      * @param cc
@@ -478,6 +495,28 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             }
         }
         return false;
+    }
+
+    /**
+     * Método que vai contar quantos votos existiram numa determinada mesa de voto
+     *
+     * @param mesa - mesa de voto
+     * @param eleição - eleição
+     *
+     * @return nº de votos da mesa
+     */
+    public String contaVotos(String mesa, String eleição) throws RemoteException {
+        int votos = 0;
+        ArrayList<Pessoa> pessoas = getPessoas();
+        for(int i = 0; i < pessoas.size(); i++) {
+            HashMap<String, String> votou = pessoas.get(i).getVotou();
+            if(votou.containsKey(eleição)) {
+                if(votou.get(eleição).contains(mesa)) {
+                    votos += 1;
+                }
+            }
+        }
+        return Integer.toString(votos);
     }
 
     /**

@@ -9,32 +9,39 @@
   <title>eVoting</title>
 </head>
 <body>
-    <h1>Registar pessoa</h1>
+  <c:choose>
+    <c:when test="${session.loggedin.equals('admin')}">
+      <h1>Registar pessoa</h1>
 
-    <h3>Introduza os dados da pessoa que pretende registar</h3>
+      <h3>Introduza os dados da pessoa que pretende registar</h3>
 
-    <s:form action="registarpessoa" method="post">
-      <s:text name="Tipo (Estudante, Docente, Funcionário): " />
-      <s:textfield name="tipo" required="required"/><br/>
-      <s:text name="Nome: " />
-      <s:textfield name="nome" required="required"/><br/>
-      <s:text name="Username: " />
-      <s:textfield name="username" required="required"/><br/>
-      <s:text name="Password: " />
-      <s:textfield name="password" required="required"/><br/>
-      <s:text name="Phone: " />
-      <s:textfield name="phone" required="required"/><br/>
-      <s:text name="Morada: " />
-      <s:textfield name="morada" required="required"/><br/>
-      <s:text name="Cartão de cidadão: " />
-      <s:textfield name="cc" required="required"/><br/>
-      <s:text name="Validade do cartão de cidadão (MM/AA): " />
-      <s:textfield name="validade" required="required"/><br/>
-      <s:text name="Departamento a que pertence: " />
-      <s:textfield name="grupo" required="required"/><br/>
-      <s:submit type = "button"><s:text name="Ver"/></s:submit>
-      <button><a href="<s:url action="voltar"/>">Voltar</a></button>
-    </s:form>
+      <s:form action="registarPessoa" method="post">
+        <s:text name="Tipo: " />
+        <s:select list="{'Estudante','Funcionário','Docente'}" name="tipo"></s:select><br/>
+        <s:text name="Nome: " />
+        <s:textfield name="nome" required="required"/><br/>
+        <s:text name="Username: " />
+        <s:textfield name="usernameRegisto" required="required"/><br/>
+        <s:text name="Password: " />
+        <s:textfield name="passwordRegisto" required="required"/><br/>
+        <s:text name="Phone: " />
+        <s:textfield type="number" name="phone" required="required"/><br/>
+        <s:text name="Morada: " />
+        <s:textfield name="morada" required="required"/><br/>
+        <s:text name="Cartão de cidadão: " />
+        <s:textfield type="number" name="ccRegisto" required="required"/><br/>
+        <s:text name="Validade do cartão de cidadão (MM/AA): " />
+        <s:textfield name="validade" required="required"/><br/>
+        <s:text name="Departamento a que pertence: " />
+        <s:textfield name="grupo" required="required"/><br/>
+        <s:submit type = "button"><s:text name="Registar"/></s:submit>
+        <button><a href="<s:url action="voltar"/>">Voltar</a></button>
+      </s:form>
+    </c:when>
+    <c:otherwise>
+      <jsp:include page="index.jsp"></jsp:include>
+    </c:otherwise>
+  </c:choose>
 
 </body>
 </html>
