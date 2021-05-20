@@ -26,6 +26,7 @@ public class ProjectBean {
     public ProjectBean() {
         try {
             server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
+            System.out.println("chegui aqui");
             listas = new ArrayList<>();
             mesas = new ArrayList<>();
             grupos = new ArrayList<>();
@@ -133,10 +134,12 @@ public class ProjectBean {
     }
 
     public void setUsername(String username) {
+        System.out.println("ta feito");
         this.username = username;
     }
 
     public void setPassword(String password) {
+        System.out.println("aposto que isto e da merda do edge");
         this.password = password;
     }
 
@@ -208,7 +211,7 @@ public class ProjectBean {
 
     public void setGrupoVotar(String grupoVotar) { this.grupoVotar = grupoVotar; }
 
-    public String getUserMatchesPassword() throws IOException {
+    public String getUserMatchesPassword() throws IOException{
         if(server.loginUserFrontEnd(username, password).equals("admin")) {
             return "admin";
         } else if(server.loginUserFrontEnd(username, password).equals("eleitor")){

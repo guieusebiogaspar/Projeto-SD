@@ -28,7 +28,7 @@ public class CriarElAction extends ActionSupport implements SessionAware{
                     return ERROR;
                 }
 
-                this.getProjectBean().setDataInicio(this.diaInicio, this.mesInicio, this.anoInicio, this.horaInicio, this.horaFim);
+                this.getProjectBean().setDataInicio(this.diaInicio, this.mesInicio, this.anoInicio, this.horaInicio, this.minutoInicio);
                 this.getProjectBean().setDataFim(this.diaFim, this.mesFim, this.anoFim, this.horaFim, this.minutoFim);
                 this.getProjectBean().setTitulo(this.titulo);
                 this.getProjectBean().setDescricao(this.descricao);

@@ -32,11 +32,8 @@ public class EditarElAction extends ActionSupport implements SessionAware{
             }
 
             if(this.descricao != null && !this.descricao.equals("")) {
-                System.out.println("cheguei aqui " + this.descricao);
                 this.getProjectBean().setDescricao(this.descricao);
-                System.out.println("brahhh");
                 this.getProjectBean().atualizaDescricao(el.getTitulo());
-                System.out.println("porraa");
             }
 
             if(this.adicionaDep != null && !this.adicionaDep.equals("")) {
