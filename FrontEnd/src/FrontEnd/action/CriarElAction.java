@@ -24,7 +24,7 @@ public class CriarElAction extends ActionSupport implements SessionAware{
                     && this.mesa != null && this.opcao != null && this.grupoVotar != null)
             {
 
-                if(this.getProjectBean().verificaEleicao(this.titulo)) {
+                if(this.getProjectBean().verificaEleicao()) {
                     return ERROR;
                 }
 

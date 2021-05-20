@@ -46,14 +46,6 @@
                     <c:out value="${value} "/>
                 </c:forEach>
                 <br/>
-                <c:out value="Listas: " /><br/>
-                <c:out value="--- "></c:out>
-                <c:forEach items="${session.searchEleicao.listas}" var="value">
-                    <c:when test="${!(value.nome.equals('Nulo') || value.nome.equals('Branco'))}">
-                        <c:out value="${value.nome} "/>
-                    </c:when>
-                </c:forEach>
-                <br/>
                 <c:out value="Mesas de voto: " /><br/>
                 <c:out value="--- "></c:out>
                 <c:forEach items="${session.searchEleicao.mesasVoto}" var="value">
@@ -99,7 +91,6 @@
                     <s:textfield name="removeMesa" /><br/>
                     <button><a href="<s:url action="editarlis"/>">Editar listas</a></button><br/>
                     <s:submit type = "button"><s:text name="Editar eleição"/></s:submit>
-                    <button><a href="<s:url action="voltar"/>">Voltar</a></button>
                 </s:form>
             </c:when>
         </c:choose>

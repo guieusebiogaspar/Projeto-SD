@@ -44,9 +44,7 @@ public class EditarElAction extends ActionSupport implements SessionAware{
 
             if(this.removeDep != null && !this.removeDep.equals("")) {
                 this.getProjectBean().setGrupoVotar(this.removeDep);
-                System.out.println("aqui cheguei");
                 this.getProjectBean().removeDepartamentoEleicao(el.getTitulo());
-                System.out.println("aqui nao");
             }
 
             if(this.adicionaMesa != null && !this.adicionaMesa.equals("")) {
@@ -62,17 +60,13 @@ public class EditarElAction extends ActionSupport implements SessionAware{
 
             if(this.titulo != null && !this.titulo.equals("")) {
                 this.getProjectBean().setTitulo(this.titulo);
-                if (this.getProjectBean().verificaEleicao(this.titulo)) {
+                if (this.getProjectBean().verificaEleicao()) {
                     return ERROR;
                 }
                 this.getProjectBean().atualizaTitulo(el.getTitulo());
             }
 
-            /*
-            if(this.adicionaLista != null && !this.adicionaLista.equals("")) {
-                this.getProjectBean().setLista(this.adicionaDep);
-                this.getProjectBean().adicionaGrupo();
-            }*/
+
 
             session.remove("searchEleicao");
             return SUCCESS;

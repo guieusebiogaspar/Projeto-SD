@@ -9,8 +9,16 @@
     <title>eVoting</title>
 </head>
 <body>
+<jsp:useBean id="p" class="FrontEnd.model.ProjectBean" />
 <c:choose>
     <c:when test="${session.loggedin.equals('admin')}">
+        <s:form action="addRmvLista" method="post">
+            <s:text name="Adicionar lista: "/>
+            <s:textfield name="adicionaLista" /><br/>
+            <s:text name="Remover lista: "/>
+            <s:textfield name="removeLista" /><br/>
+            <s:submit type = "button"><s:text name="Editar listas"/></s:submit>
+        </s:form>
         <h1>Listas da eleição ${session.searchEleicao.titulo}</h1>
         <c:choose>
             <c:when test="${session.searchEleicao.listas.size() > 0}">
@@ -18,93 +26,48 @@
                     <c:out value="${value.nome}" /><br>
                 </c:forEach>
 
-                <s:form action="editarLista" method="post">
-                    <s:text name="Adicionar lista: "/>
-                    <s:textfield name="adicionaLista" /><br/>
-                    <s:text name="Remover lista: "/>
-                    <s:textfield name="removeLista" /><br/>
-                    <s:submit type = "button"><s:text name="Editar lista"/></s:submit>
-                </s:form>
-                <s:form action="detalheseleicaoeditar" method="post">
-                    <s:text name="Eleição" /><br/>
-                    <s:textfield name="eleicao" required="required"/><br/>
+
+                <h3>Introduza o título da lista que pretende editar</h3>
+
+                <s:form action="detalheslista" method="post">
+                    <s:text name="Lista" /><br/>
+                    <s:textfield name="lista" required="required"/><br/>
                     <s:submit type = "button"><s:text name="Ver"/></s:submit>
                     <button><a href="<s:url action="voltar"/>">Voltar</a></button>
                 </s:form>
             </c:when>
             <c:otherwise>
-                <h3>Não existem eleições por começar</h3>
+                <h3>Não existem listas nesta eleicao</h3>
                 <button><a href="<s:url action="voltar"/>">Voltar</a></button>
             </c:otherwise>
         </c:choose>
 
         <c:choose>
-            <c:when test="${session.searchEleicao != null && !session.searchEleicao.terminada && !session.searchEleicao.ativa}">
-                <h3>Detalhes da eleição</h3>
-                <c:out value="Título: ${session.searchEleicao.titulo}" /><br/>
-                <c:out value="Descrição: ${session.searchEleicao.descrição}" /><br/>
-                <c:out value="Data de início: ${session.searchEleicao.inicio.toString()}" /><br/>
-                <c:out value="Data fim: ${session.searchEleicao.fim.toString()}" /><br/>
-                <c:out value="Departamentos: " /><br/>
-                <c:out value="--- "></c:out>
-                <c:forEach items="${session.searchEleicao.grupos}" var="value">
-                    <c:out value="${value} "/>
+            <c:when test="${session.lista != null}">
+                <h3>Detalhes da lista</h3>
+                <c:out value="Nome: ${session.lista.nome}" /><br/>
+                <c:out value="Membros: " /><br/>
+                <c:forEach items="${session.lista.membros}" var="value">
+                    <c:out value="${value.nome} - ${value.cc}; "/><br/>
                 </c:forEach>
                 <br/>
-                <c:out value="Listas: " /><br/>
-                <c:out value="--- "></c:out>
-                <c:forEach items="${session.searchEleicao.listas}" var="value">
-                    <c:when test="${!(value.nome.equals('Nulo') || value.nome.equals('Branco'))}">
-                        <c:out value="${value.nome} "/>
-                    </c:when>
-                </c:forEach>
                 <br/>
-                <c:out value="Mesas de voto: " /><br/>
-                <c:out value="--- "></c:out>
-                <c:forEach items="${session.searchEleicao.mesasVoto}" var="value">
-                    <c:out value="${value} "/>
+
+                <c:out value="Pessoas que não pertencem à lista e podem pertencer: " /><br/>
+                <c:forEach items="${p.pessoasValidas(session.searchEleicao)}" var="value">
+                    <c:out value="${value.nome} - ${value.cc}; "/><br/>
                 </c:forEach>
 
-                <h3>Introduza os dados da eleição que pretende editar</h3>
+                <h3>Introduza os dados da lista que pretende editar</h3>
 
-                <s:form action="editarEleicao" method="post">
-                    <s:text name="Título: " />
-                    <s:textfield name="titulo"/><br/>
-                    <s:text name="Descrição: " />
-                    <s:textfield name="descricao"/><br/>
-                    <s:text name="Data de início: " /><br/>
-                    <s:text name="Dia: " />
-                    <s:textfield type="number" name="diaInicio" />
-                    <s:text name="Mês: " />
-                    <s:textfield type="number" name="mesInicio" />
-                    <s:text name="Ano: " />
-                    <s:textfield type="number" name="anoInicio" />
-                    <s:text name="Hora: " />
-                    <s:textfield type="number" name="horaInicio" />
-                    <s:text name="Minuto: " />
-                    <s:textfield type="number" name="minutoInicio" /><br/>
-                    <s:text name="Data de fim: " /><br/>
-                    <s:text name="Dia: " />
-                    <s:textfield type="number" name="diaFim" />
-                    <s:text name="Mês: " />
-                    <s:textfield type="number" name="mesFim" />
-                    <s:text name="Ano: " />
-                    <s:textfield type="number" name="anoFim" />
-                    <s:text name="Hora: " />
-                    <s:textfield type="number" name="horaFim" />
-                    <s:text name="Minuto: " />
-                    <s:textfield type="number" name="minutoFim" /><br/>
-                    <s:text name="Adicionar departamento: "/>
-                    <s:textfield name="adicionaDep" /><br/>
-                    <s:text name="Remover departamento: "/>
-                    <s:textfield name="removeDep" /><br/>
-                    <s:text name="Adicionar mesa: "/>
-                    <s:textfield name="adicionaMesa" /><br/>
-                    <s:text name="Remover mesa: "/>
-                    <s:textfield name="removeMesa" /><br/>
-                    <button><a href="<s:url action="editarlis"/>">Editar listas</a></button>
-                    <s:submit type = "button"><s:text name="Editar"/></s:submit>
-                    <button><a href="<s:url action="voltar"/>">Voltar</a></button>
+                <s:form action="editarlista" method="post">
+                    <s:text name="Nome: " />
+                    <s:textfield name="nomeLista"/><br/>
+                    <s:text name="Adicionar pessoa (cc) : "/>
+                    <s:textfield name="adicionaPess" /><br/>
+                    <s:text name="Remover pessoa (cc): "/>
+                    <s:textfield name="removePess" /><br/>
+                    <s:submit type = "button"><s:text name="Editar lista"/></s:submit>
                 </s:form>
             </c:when>
         </c:choose>
