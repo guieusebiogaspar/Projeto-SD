@@ -40,6 +40,32 @@ public class DetalhesEleicoesAction extends ActionSupport implements SessionAwar
         }
     }
 
+    public String listasVotar() throws IOException {
+        if(session.get("loggedin").equals("eleitor") == true){
+            if(this.eleicao != null) {
+                this.getProjectBean().setEleicao(this.eleicao);
+                Eleição el = this.getProjectBean().getEleição();
+                ArrayList<Eleição> eleições = this.getProjectBean().getAtivasVoto();
+
+                // Se a eleição escolhida pertence as eleições que o user pode votar
+                if(el != null && eleições.contains(el)) {
+                    session.put("searchEleicao", el);
+                    return SUCCESS;
+                }
+                else
+                {
+                    session.remove("searchEleicao");
+                    return ERROR;
+                }
+            }
+
+            session.remove("searchEleicao");
+            return INPUT;
+        } else {
+            return LOGIN;
+        }
+    }
+
     public void setEleicao(String eleicao) {
         this.eleicao = eleicao;
     }

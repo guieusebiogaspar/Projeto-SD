@@ -752,6 +752,47 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     /**
+     * Método que vai enviar ao browser as eleições em que o eleitor identificado está autorizado a votar
+     *
+     * @param username - username do eleitor
+     *
+     * @return eleições que o eleitor pode votar
+     */
+    public ArrayList<Eleição> filterEleiçõesWEB(String username) throws RemoteException {
+
+        ArrayList<Eleição> filtradas = new ArrayList<>();
+        String tipo = null; // De que tipo é o Eleitor
+        Pessoa eleitor = null;
+        for (int i = 0; i < pessoas.size(); i++) {
+            if(pessoas.get(i).getUsername().equals(username)) {
+                tipo = pessoas.get(i).getTipo();
+                eleitor = pessoas.get(i);
+                break;
+            }
+        }
+
+        ArrayList<Eleição> eleicoes = getEleições();
+
+        if(tipo != null) {
+            for (int i = 0; i < eleicoes.size(); i++) {
+                // Se a eleição tiver a mesa de voto WEB
+                // Se a pessoa pertencer ao tipo de pessoas que pode votar (Estudantes, Docentes ou Funcionários)
+                // Se a pessoa ainda não votou
+                // Se a eleição estiver ativa
+                if(eleicoes.get(i).getMesasVoto().contains("WEB") &&
+                        eleicoes.get(i).getQuemPodeVotar().equals(tipo) &&
+                        !eleicoes.get(i).getJaVotaram().contains(eleitor.getCc()) &&
+                        eleicoes.get(i).getAtiva())
+                {
+                    filtradas.add(eleicoes.get(i));
+                }
+            }
+        }
+
+        return filtradas;
+    }
+
+    /**
      * Método que adiciona um voto a uma lista da eleição
      *
      * @param eleição
@@ -798,6 +839,56 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
 
         return 0;
+
+    }
+
+    /**
+     * Método que adiciona um voto a uma lista da eleição via web
+     *
+     * @param eleição
+     * @param lista
+     * @param username
+     * @param momento
+     *
+     * @return devolve 1 se correu tudo bem
+     */
+    public boolean adicionaVotoWEB(Eleição eleição, String lista, String username, String momento) throws RemoteException {
+        Pessoa p = null;
+        if(eleições != null){
+            for(int i = 0; i < eleições.size(); i++) {
+                if(eleições.get(i).getTitulo().equals(eleição.getTitulo()) && eleições.get(i).getAtiva()) { // Ao encontrar a eleição com o titulo correspondente
+                    for(int j = 0; j < eleições.get(i).getListas().size(); j++) { // Vai percorrer as listas da eleição
+                        if(eleições.get(i).getListas().get(j).getNome().equals(lista)) { // Se encontrar uma lista com o nome igual introduzido
+                            int votos = eleições.get(i).getListas().get(j).getNumVotos(); // vai buscar o nr de votos dessa lista
+                            eleições.get(i).getListas().get(j).setNumVotos(votos+1); // Adiciona o novo voto
+
+                            for(int k = 0; k < pessoas.size(); k++) {
+                                if(pessoas.get(k).getUsername().equals(username)) {
+                                    p = pessoas.get(k);
+                                    // Atualiza na pessoa que votou em x eleição e em y mesa de voto
+                                    // Diz que a pessoa não está a votar
+                                    HashMap<String, String> votou = pessoas.get(k).getVotou();
+                                    String depTime = "WEB - " + momento;
+                                    votou.put(eleição.getTitulo(), depTime);
+                                    pessoas.get(k).setVotou(votou);
+                                }
+                            }
+
+                            // Adiciona a pessoa ao arrayList das pessoas que ja votaram naquela dada eleição
+                            ArrayList<Integer> jaVotaram = eleições.get(i).getJaVotaram();
+                            jaVotaram.add(p.getCc());
+                            eleições.get(i).setJaVotaram(jaVotaram);
+                            System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome());
+                            writeBD("eleicoes.obj");
+                            writeBD("pessoas.obj");
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
 
     }
 

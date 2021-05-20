@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 
@@ -240,6 +242,13 @@ public class ProjectBean {
         }
     }
 
+    public boolean adicionaVoto(Eleição el) throws RemoteException {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        LocalDateTime now = LocalDateTime.now();
+
+        return server.adicionaVotoWEB(el, lista, username, dtf.format(now));
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -354,6 +363,10 @@ public class ProjectBean {
 
     public ArrayList<Eleição> getAtivas() throws RemoteException {
         return server.getAtivas();
+    }
+
+    public ArrayList<Eleição> getAtivasVoto() throws RemoteException {
+        return server.filterEleiçõesWEB(username);
     }
 
     public ArrayList<Eleição> getTerminadas() throws RemoteException {
