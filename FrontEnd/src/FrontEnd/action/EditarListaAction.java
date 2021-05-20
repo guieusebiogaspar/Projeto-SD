@@ -2,6 +2,7 @@ package FrontEnd.action;
 
 import FrontEnd.model.ProjectBean;
 import RMI.Eleição;
+import RMI.Lista;
 import com.opensymphony.xwork2.ActionSupport;
 import org.apache.struts2.interceptor.SessionAware;
 
@@ -18,30 +19,33 @@ public class EditarListaAction extends ActionSupport implements SessionAware{
     public String execute() throws IOException {
         if (session.get("loggedin").equals("admin")) {
             Eleição el = (Eleição) session.get("searchEleicao");
-
+            Lista l = (Lista) session.get("lista");
             if(this.nomeLista != null && !this.nomeLista.equals("")) {
                 this.getProjectBean().setNomeLista(this.nomeLista);
 
                 if(this.getProjectBean().verificaLista(el, nomeLista)) {
                     return ERROR;
                 } else {
-                    this.getProjectBean().mudaNomeLista(el, session.get("lista").toString());
+                    this.getProjectBean().mudaNomeLista(el, l.getNome());
                 }
             }
 
             if(this.adicionaPess != null && !this.adicionaPess.equals("")) {
                 this.getProjectBean().setPessoaLista(this.adicionaPess);
 
-                this.getProjectBean().adicionaPessoaLista(el, session.get("lista").toString());
+                this.getProjectBean().adicionaPessoaLista(el, l.getNome());
             }
 
             if(this.removePess != null && !this.removePess.equals("")) {
                 this.getProjectBean().setPessoaLista(this.removePess);
 
-                this.getProjectBean().removePessoaLista(el, session.get("lista").toString());
+                this.getProjectBean().removePessoaLista(el, l.getNome());
             }
 
             session.remove("lista");
+            this.getProjectBean().setEleicao(el.getTitulo());
+            el = this.getProjectBean().getEleição();
+            session.put("searchEleicao", el);
             return SUCCESS;
         }
         return LOGIN;
@@ -67,6 +71,9 @@ public class EditarListaAction extends ActionSupport implements SessionAware{
                 this.getProjectBean().removeListaEleicao(el.getTitulo());
             }
 
+            this.getProjectBean().setEleicao(el.getTitulo());
+            el = this.getProjectBean().getEleição();
+            session.put("searchEleicao", el);
             return SUCCESS;
         }
 

@@ -73,6 +73,10 @@ public class ProjectBean {
         }
     }
 
+    public Lista getListaEleicao(Eleição eleicao, String lista) throws RemoteException {
+        return server.getListaEleicao(eleicao, lista);
+    }
+
     public boolean mudaNomeLista(Eleição eleicao, String lista) throws RemoteException {
         if(server.verificaLista(eleicao, lista)) {
             server.mudaNomeLista(eleicao, lista, nomeLista);

@@ -348,6 +348,31 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     /**
+     * Método devolve a lista pedida
+     *
+     * @param eleição
+     * @param nome
+     */
+    public Lista getListaEleicao(Eleição eleição, String nome) throws RemoteException
+    {
+        for(Eleição el : eleições)
+        {
+            if(el.getTitulo().equals(eleição.getTitulo()))
+            {
+                for(Lista l: el.getListas())
+                {
+                    if(l.getNome().equals(nome))
+                    {
+                        return l;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Método muda o nome de uma lista
      *
      * @param eleição
