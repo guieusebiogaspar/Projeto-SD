@@ -65,6 +65,7 @@ public class ContaTempo extends Thread{
                 }
             }
             for(Eleição el: eleicoes) {
+
                 LocalDate ld = LocalDate.now();
                 SimpleDateFormat sdfo = new SimpleDateFormat("yyyy-MM-dd");
                 String dataInicio = new String(el.getInicio().getAno() + "-" + el.getInicio().getMes() + "-" + el.getInicio().getDia());
@@ -75,6 +76,17 @@ public class ContaTempo extends Thread{
                     Date fim = sdfo.parse(dataFim);
                     Date atual = sdfo.parse(atualDate);
                     //System.out.println(i);
+                    if(atual.after(fim))
+                    {
+                        if(!el.getTerminada())
+                        {
+                            el.setAtiva(false);
+                            el.setTerminada(true);
+                            if(writeBD(" terminada", eleicoes, el) == 1)
+                                break;
+                        }
+
+                    }
                     if(atual.after(i))
                     {
                         if(atual.before(fim))

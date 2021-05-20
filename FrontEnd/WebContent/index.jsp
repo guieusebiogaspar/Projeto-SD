@@ -8,7 +8,7 @@
 	<title>eVoting</title>
 </head>
 <body>
-	<h1>Bem-vindo ao eVotimg!</h1>
+	<h1>Bem-vindo ao eVoting!</h1>
 
 	<s:form action="login" method="post">
 		<s:text name="Username" /><br/>
