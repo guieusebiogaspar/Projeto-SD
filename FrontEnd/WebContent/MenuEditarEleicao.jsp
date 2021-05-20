@@ -46,14 +46,6 @@
                     <c:out value="${value} "/>
                 </c:forEach>
                 <br/>
-                <c:out value="Listas: " /><br/>
-                <c:out value="--- "></c:out>
-                <c:forEach items="${session.searchEleicao.listas}" var="value">
-                    <c:when test="${!(value.nome.equals('Nulo') || value.nome.equals('Branco'))}">
-                        <c:out value="${value.nome} "/>
-                    </c:when>
-                </c:forEach>
-                <br/>
                 <c:out value="Mesas de voto: " /><br/>
                 <c:out value="--- "></c:out>
                 <c:forEach items="${session.searchEleicao.mesasVoto}" var="value">
@@ -93,18 +85,12 @@
                     <s:textfield name="adicionaDep" /><br/>
                     <s:text name="Remover departamento: "/>
                     <s:textfield name="removeDep" /><br/>
-                    <%--<s:textfield type="number" name="minutoFim" /><br/>
-                    <s:text name="Adicionar lista: "/>
-                    <s:textfield name="adicionaLista" /><br/>
-                    <s:text name="Remover lista: "/>
-                    <s:textfield name="removeLista" /><br/>
-                    --%>
                     <s:text name="Adicionar mesa: "/>
                     <s:textfield name="adicionaMesa" /><br/>
                     <s:text name="Remover mesa: "/>
                     <s:textfield name="removeMesa" /><br/>
-                    <s:submit type = "button"><s:text name="Editar"/></s:submit>
-                    <button><a href="<s:url action="voltar"/>">Voltar</a></button>
+                    <button><a href="<s:url action="editarlis"/>">Editar listas</a></button><br/>
+                    <s:submit type = "button"><s:text name="Editar eleição"/></s:submit>
                 </s:form>
             </c:when>
         </c:choose>

@@ -19,6 +19,7 @@ public class ProjectBean {
     private Integer phone, ccRegisto;
     private DataEleição dataInicio, dataFim;
     private String titulo, descricao, opcao, mesa, grupoVotar;
+    private String lista, nomeLista, pessoaLista;
     private ArrayList<Lista> listas;
     private ArrayList<String> mesas;
     private ArrayList<String> grupos;
@@ -56,11 +57,103 @@ public class ProjectBean {
         }
     }
 
-    public boolean verificaEleicao(String nome) throws RemoteException {
-        if(server.verificaEleicao(nome)) {
+    public boolean verificaEleicao() throws RemoteException {
+        if(server.verificaEleicao(titulo)) {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public boolean verificaLista(Eleição eleicao, String lista) throws RemoteException {
+        if(server.verificaLista(eleicao, lista)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean mudaNomeLista(Eleição eleicao, String lista) throws RemoteException {
+        if(server.verificaLista(eleicao, lista)) {
+            server.mudaNomeLista(eleicao, lista, nomeLista);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public ArrayList<Pessoa> pessoasValidas(Eleição el) throws RemoteException {
+        ArrayList<Pessoa> pessoas = server.getPessoas();
+        ArrayList<Pessoa> pessoasValidas = new ArrayList<>();
+
+        for(int i = 0; i < pessoas.size(); i++) {
+            if(pessoas.get(i).getTipo().equals(el.getQuemPodeVotar())) {
+                pessoasValidas.add(pessoas.get(i));
+            }
+        }
+
+        return pessoasValidas;
+    }
+
+    public ArrayList<Pessoa> pessoasValidasLista(Eleição el, String lista) throws RemoteException {
+        ArrayList<Pessoa> pessoasValidas = null;
+        for(int i = 0; i < el.getListas().size(); i++) {
+            if(el.getListas().get(i).getNome().equals(lista)) {
+                pessoasValidas = el.getListas().get(i).getMembros();
+                break;
+            }
+        }
+
+        return pessoasValidas;
+    }
+
+    public void adicionaPessoaLista(Eleição el, String lista) throws RemoteException {
+        int cartaoo;
+        try{
+            cartaoo = Integer.parseInt(pessoaLista);
+        } catch (Exception ex){
+            return;
+        }
+
+        boolean verifica = server.verificaCC(cartaoo);
+
+        int entrou = 0;
+        Pessoa p = null;
+        for (int i = 0; i < pessoasValidas(el).size(); i++) {
+            if (pessoasValidas(el).get(i).getCc() == cartaoo) {
+                entrou = 1;
+                p = pessoasValidas(el).get(i);
+                break;
+            }
+        }
+
+        if (verifica && entrou == 1) {
+            server.adicionaPessoaLista(el, lista, p);
+        }
+    }
+
+    public void removePessoaLista(Eleição el, String lista) throws RemoteException {
+        int cartaoo;
+        try{
+            cartaoo = Integer.parseInt(pessoaLista);
+        } catch (Exception ex){
+            return;
+        }
+
+        boolean verifica = server.verificaCC(cartaoo);
+
+        ArrayList<Pessoa> pessoasValidas = pessoasValidasLista(el, lista);
+        int entrou = 0;
+        Pessoa p = null;
+        for(int i = 0; i < pessoasValidas.size(); i++) {
+            if(pessoasValidas.get(i).getCc() == cartaoo) {
+                entrou = 1;
+                p = pessoasValidas.get(i);
+                break;
+            }
+        }
+        if(verifica && entrou == 1) {
+            server.removePessoaLista(el, lista, p);
         }
     }
 
@@ -79,6 +172,17 @@ public class ProjectBean {
         grupos.add(grupoVotar);
     }
 
+    public void adicionaListaEleicao(String elei) throws RemoteException {
+        Eleição el = server.getEleição(elei);
+
+        server.addLista(el, lista);
+    }
+
+    public void removeListaEleicao(String elei) throws RemoteException {
+        Eleição el = server.getEleição(elei);
+
+        server.rmvLista(el, lista);
+    }
 
     public void adicionaMesaEleicao(String elei) throws RemoteException {
         Eleição el = server.getEleição(elei);
@@ -207,6 +311,18 @@ public class ProjectBean {
     public void setMesa(String mesa) { this.mesa = mesa; }
 
     public void setGrupoVotar(String grupoVotar) { this.grupoVotar = grupoVotar; }
+
+    public void setLista(String lista) {
+        this.lista = lista;
+    }
+
+    public void setNomeLista(String nomeLista) {
+        this.nomeLista = nomeLista;
+    }
+
+    public void setPessoaLista(String pessoaLista) {
+        this.pessoaLista = pessoaLista;
+    }
 
     public String getUserMatchesPassword() throws IOException {
         if(server.loginUserFrontEnd(username, password).equals("admin")) {
