@@ -34,9 +34,9 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
 
         <!-- 'login' action calls 'execute' in 'LoginAction' -->
         <action name="login" class="FrontEnd.action.LoginAction" method="execute">
-          <result name="successadmin">/AdminMenu.jsp</result>
-          <result name="successeleitor">/index.jsp</result>
-          <result name="login">/login-error.jsp</result>
+            <result name="successadmin">/AdminMenu.jsp</result>
+            <result name="successeleitor">/index.jsp</result>
+            <result name="login">/login-error.jsp</result>
         </action>
 
         <action name="logout" class="FrontEnd.action.LoginAction" method="logout">

@@ -74,6 +74,8 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
 
         <action name="editarEleicao" class="FrontEnd.action.EditarElAction" method="execute">
             <result name="success">/MenuEditarEleicao.jsp</result>
+<<<<<<< HEAD
+=======
             <result name="error">/CriarEl-error.jsp</result>
             <result name="login">/index.jsp</result>
         </action>
@@ -96,8 +98,13 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
 
         <action name="detalheslista" class="FrontEnd.action.DetalhesListaAction" method="execute">
             <result name="success">/EditarListas.jsp</result>
+>>>>>>> 1935c2b91c348f9a18ef7e5ac863e3bb6faf1420
             <result name="error">/CriarEl-error.jsp</result>
             <result name="login">/index.jsp</result>
+        </action>
+
+        <action name="editarlis">
+            <result>/EditarListas.jsp</result>
         </action>
 
         <action name="detalhespessoas">
