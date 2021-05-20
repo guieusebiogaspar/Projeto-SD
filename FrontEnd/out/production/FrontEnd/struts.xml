@@ -73,7 +73,23 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
         </action>
 
         <action name="editarEleicao" class="FrontEnd.action.EditarElAction" method="execute">
-            <result name="success">/AdminMenu.jsp</result>
+            <result name="success">/MenuEditarEleicao.jsp</result>
+            <result name="error">/CriarEl-error.jsp</result>
+            <result name="login">/index.jsp</result>
+        </action>
+
+        <action name="editarlis">
+            <result>/EditarListas.jsp</result>
+        </action>
+
+        <action name="addRmvLista" class="FrontEnd.action.EditarListaAction" method="addRmv">
+            <result name="success">/EditarListas.jsp</result>
+            <result name="error">/CriarEl-error.jsp</result>
+            <result name="login">/index.jsp</result>
+        </action>
+
+        <action name="editarlista" class="FrontEnd.action.EditarListaAction" method="execute">
+            <result name="success">/EditarListas.jsp</result>
             <result name="error">/CriarEl-error.jsp</result>
             <result name="login">/index.jsp</result>
         </action>
