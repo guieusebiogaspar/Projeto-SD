@@ -381,6 +381,10 @@ public class ProjectBean {
         return server.getEleição(eleicao);
     }
 
+    public int getTotalVotos() {
+        return 1;
+    }
+
     public String contaVotos(String mesa, String el) throws RemoteException {
         return server.contaVotos(mesa,el);
     }
