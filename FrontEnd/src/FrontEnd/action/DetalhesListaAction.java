@@ -2,6 +2,7 @@ package FrontEnd.action;
 
 import FrontEnd.model.ProjectBean;
 import RMI.Eleição;
+import RMI.Lista;
 import com.opensymphony.xwork2.ActionSupport;
 import org.apache.struts2.interceptor.SessionAware;
 
@@ -21,9 +22,15 @@ public class DetalhesListaAction extends ActionSupport implements SessionAware {
                 this.getProjectBean().setEleicao(el.getTitulo());
 
 
-                if(el != null && !this.getProjectBean().verificaLista(el, lista)) {
-                    session.put("lista", lista);
-                    return SUCCESS;
+                if(el != null && this.getProjectBean().verificaLista(el, lista)) {
+                    Lista l = this.getProjectBean().getListaEleicao(el, lista);
+                    if(l != null){
+                        session.put("lista", l);
+                        return SUCCESS;
+                    } else {
+                        session.remove("lista");
+                        return ERROR;
+                    }
                 }
                 else
                 {

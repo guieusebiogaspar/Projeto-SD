@@ -27,7 +27,7 @@
                 </c:forEach>
 
 
-                <h3>Introduza o título da eleição que pretende editar</h3>
+                <h3>Introduza o título da lista que pretende editar</h3>
 
                 <s:form action="detalheslista" method="post">
                     <s:text name="Lista" /><br/>
@@ -48,14 +48,14 @@
                 <c:out value="Nome: ${session.lista.nome}" /><br/>
                 <c:out value="Membros: " /><br/>
                 <c:forEach items="${session.lista.membros}" var="value">
-                    <c:out value="${value.nome} - ${value.cc}; "/>
+                    <c:out value="${value.nome} - ${value.cc}; "/><br/>
                 </c:forEach>
                 <br/>
                 <br/>
 
-                <c:out value="Pessoas que não pertencem à lista: " /><br/>
+                <c:out value="Pessoas que não pertencem à lista e podem pertencer: " /><br/>
                 <c:forEach items="${p.pessoasValidas(session.searchEleicao)}" var="value">
-                    <c:out value="${value.nome} - ${value.cc}; "/>
+                    <c:out value="${value.nome} - ${value.cc}; "/><br/>
                 </c:forEach>
 
                 <h3>Introduza os dados da lista que pretende editar</h3>
@@ -63,9 +63,9 @@
                 <s:form action="editarlista" method="post">
                     <s:text name="Nome: " />
                     <s:textfield name="nomeLista"/><br/>
-                    <s:text name="Adicionar pessoa : "/>
+                    <s:text name="Adicionar pessoa (cc) : "/>
                     <s:textfield name="adicionaPess" /><br/>
-                    <s:text name="Remover pessoa: "/>
+                    <s:text name="Remover pessoa (cc): "/>
                     <s:textfield name="removePess" /><br/>
                     <s:submit type = "button"><s:text name="Editar lista"/></s:submit>
                 </s:form>

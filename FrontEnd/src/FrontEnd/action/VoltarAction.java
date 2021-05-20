@@ -16,6 +16,7 @@ public class VoltarAction extends ActionSupport implements SessionAware {
         if(session.get("loggedin").equals("admin") == true) {
             session.remove("searchEleicao");
             session.remove("searchPessoa");
+            session.remove("lista");
             return SUCCESS;
         }
         return LOGIN;
