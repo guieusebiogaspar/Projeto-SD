@@ -133,7 +133,7 @@ public class ContaTempo extends Thread{
                                         }
                                         else
                                         {
-                                            if(el.getAtiva())
+                                            if(el.getAtiva() || !el.getTerminada())
                                             {
                                                 el.setAtiva(false);
                                                 el.setTerminada(true);

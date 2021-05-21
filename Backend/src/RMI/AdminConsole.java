@@ -284,6 +284,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         return votos;
     }
 
+
     /**
      * Método qye mostra os detalhes das eleições terminadas
      *
@@ -1096,7 +1097,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                         server = (RMIServerInterface) LocateRegistry.getRegistry(localAddress,7002).lookup("Server");
                         //server.olaAdmin(adminConsole, localAddress);
                         System.out.println("Admin informou server que está ligado");
-                        new ContaTempo();
+                        //new ContaTempo();
                         while (true) {
                             menu();
                             System.out.print("> ");
@@ -1111,7 +1112,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                             RMIServerInterface server1 = (RMIServerInterface) LocateRegistry.getRegistry(localAddress, 7001).lookup("Server");
                             //server.olaAdmin(adminConsole, localAddress);
                             System.out.println("Admin informou server que está ligado");
-                            new ContaTempo();
+                            //new ContaTempo();
                             while (true) {
                                 menu();
                                 System.out.print("> ");

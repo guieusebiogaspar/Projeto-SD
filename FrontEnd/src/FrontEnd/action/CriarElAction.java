@@ -23,8 +23,9 @@ public class CriarElAction extends ActionSupport implements SessionAware{
                     && this.horaFim != null && this.minutoFim != null && this.titulo != null && this.descricao != null
                     && this.mesa != null && this.opcao != null && this.grupoVotar != null)
             {
-
+                this.getProjectBean().setTitulo(titulo);
                 if(this.getProjectBean().verificaEleicao()) {
+                    System.out.println("aqui");
                     return ERROR;
                 }
 
@@ -43,6 +44,7 @@ public class CriarElAction extends ActionSupport implements SessionAware{
                 session.remove("searchEleicao");
                 return SUCCESS;
             } else {
+                System.out.println("sera");
                 return ERROR;
             }
         }

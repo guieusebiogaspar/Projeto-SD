@@ -7,6 +7,7 @@ import com.opensymphony.xwork2.ActionSupport;
 import org.apache.struts2.interceptor.SessionAware;
 
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -24,6 +25,9 @@ public class DetalhesEleicoesAction extends ActionSupport implements SessionAwar
 
                 if(el != null) {
                     session.put("searchEleicao", el);
+                    if(el.getTerminada()){
+                        session.put("vencedora", this.getProjectBean().getVencedora());
+                    }
                     return SUCCESS;
                 }
                 else
@@ -41,14 +45,17 @@ public class DetalhesEleicoesAction extends ActionSupport implements SessionAwar
     }
 
     public String listasVotar() throws IOException {
-        if(session.get("loggedin").equals("eleitor") == true){
+        if(session.get("loggedin").equals("eleitor")){
             if(this.eleicao != null) {
                 this.getProjectBean().setEleicao(this.eleicao);
                 Eleição el = this.getProjectBean().getEleição();
-                ArrayList<Eleição> eleições = this.getProjectBean().getAtivasVoto();
-
+                System.out.println(el.getTitulo());
+                ArrayList<String> eleiçõesNome = new ArrayList<>();
+                for(int i = 0; i < this.getProjectBean().getAtivasVoto().size(); i++) {
+                    eleiçõesNome.add(this.getProjectBean().getAtivasVoto().get(i).getTitulo());
+                }
                 // Se a eleição escolhida pertence as eleições que o user pode votar
-                if(el != null && eleições.contains(el)) {
+                if(el != null && eleiçõesNome.contains(el.getTitulo())) {
                     session.put("searchEleicao", el);
                     return SUCCESS;
                 }

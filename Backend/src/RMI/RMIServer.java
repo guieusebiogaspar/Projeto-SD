@@ -545,6 +545,51 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     /**
+     * Método que devolve a lista vencedora da eleição
+     *
+     * @param el - eleição
+     *
+     * @return string com a informação dos resultados
+     */
+    public String getVencedora(Eleição el) throws RemoteException {
+        if(el.getListas().size() == 0) {
+            return "Não havia listas na eleição";
+        }
+        int max = 0;
+        ArrayList<String> vencedora = new ArrayList<>();
+        for(int i = 0; i < el.getListas().size(); i++) {
+            if(el.getListas().get(i).getNumVotos() > max) { // se os votos for maior que o max limpa o arraylist e adiciona a lista
+                if (!(el.getListas().get(i).getNome().equals("Nulo") || el.getListas().get(i).getNome().equals("Branco"))) {
+                    max = el.getListas().get(i).getNumVotos();
+                    vencedora.clear();
+                    vencedora.add(el.getListas().get(i).getNome());
+                }
+            }
+            else if (el.getListas().get(i).getNumVotos() == max) {
+                if (!(el.getListas().get(i).getNome().equals("Nulo") || el.getListas().get(i).getNome().equals("Branco")))
+                    vencedora.add(el.getListas().get(i).getNome());
+            }
+        }
+
+
+        String resultado = "";
+        if(vencedora.size() > 1) {
+            resultado += "Houve um empate nas listas: ";
+            for(int i = 0; i < vencedora.size(); i++) {
+                if(i != (vencedora.size() - 1)) {
+                    resultado += vencedora.get(i) + ", ";
+                } else {
+                    resultado += vencedora.get(i) + ".";
+                }
+            }
+        } else {
+            resultado = "A lista vencedora foi a lista " + vencedora.get(0);
+        }
+
+        return resultado;
+    }
+
+    /**
      * Método que atualiza se a pessoa está ou não num terminal de voto
      *
      * @param cc
@@ -771,6 +816,9 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             }
         }
 
+        System.out.println("Tipo - " + tipo);
+        System.out.println("Eleitor - " + eleitor.getUsername());
+
         ArrayList<Eleição> eleicoes = getEleições();
 
         if(tipo != null) {
@@ -779,10 +827,17 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 // Se a pessoa pertencer ao tipo de pessoas que pode votar (Estudantes, Docentes ou Funcionários)
                 // Se a pessoa ainda não votou
                 // Se a eleição estiver ativa
+                /*System.out.println(eleições.get(i).getTitulo());
+                System.out.println("Mesas de voto - " + eleicoes.get(i).getMesasVoto().get(0));
+                System.out.println("quem vota - " + eleicoes.get(i).getQuemPodeVotar());
+                if(eleicoes.get(i).getAtiva()) {
+                    System.out.println("estou ativa");
+                }*/
+
                 if(eleicoes.get(i).getMesasVoto().contains("WEB") &&
-                        eleicoes.get(i).getQuemPodeVotar().equals(tipo) &&
-                        !eleicoes.get(i).getJaVotaram().contains(eleitor.getCc()) &&
-                        eleicoes.get(i).getAtiva())
+                    eleicoes.get(i).getQuemPodeVotar().equals(tipo) &&
+                    !eleicoes.get(i).getJaVotaram().contains(eleitor.getCc()) &&
+                    eleicoes.get(i).getAtiva())
                 {
                     filtradas.add(eleicoes.get(i));
                 }
@@ -1019,6 +1074,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
         System.out.println("RMI Server ready.");
 
+        new ContaTempo();
         VerificaServer v =new VerificaServer();
         while (true) {
             if(v.getSouB() == 1)
@@ -1088,6 +1144,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                     }
                 }
                 System.out.println("RMI Backup Server ready.");
+                new ContaTempo();
                 VerificaBackupServer v1 = new VerificaBackupServer();
 
                 while (true) {

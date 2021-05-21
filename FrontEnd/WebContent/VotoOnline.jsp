@@ -5,6 +5,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+  <link rel="stylesheet" type="text/css" href="facil.css">
   <title>eVoting</title>
 </head>
 <body>
@@ -12,16 +13,16 @@
     <c:when test="${session.loggedin.equals('eleitor')}">
       <h1>Terminal voto</h1>
       <p>Bem-vindo ${session.username}</p>
-      <p>Em que eleição pretende votar?</p>
       <c:choose>
-        <c:when test="${projectBean.eleicoes.size() > 0}">
-          <h2>Ativas</h2>
+        <c:when test="${projectBean.ativasVoto.size() > 0}">
+          <p>Em que eleição pretende votar?</p>
           <c:forEach items="${projectBean.ativasVoto}" var="value">
             <c:out value="${value.titulo}" /><br>
           </c:forEach>
 
+          <br/>
           <s:form action="mostraListas" method="post">
-            <s:text name="Eleição" /><br/>
+            <s:text name="Eleição: " />
             <s:textfield name="eleicao" required="required"/><br/>
             <s:submit type = "button"><s:text name="Ver listas candidatas"/></s:submit>
             <button><a href="<s:url action="logout"/>">Sair</a></button>

@@ -17,7 +17,7 @@
 
       <s:form action="registarPessoa" method="post">
         <s:text name="Tipo: " />
-        <s:select list="{'Estudante','Funcionário','Docente'}" name="tipo"></s:select><br/>
+        <s:select list="{'Estudante','Funcionário','Docente'}" name="tipo" default="Estudante"></s:select><br/>
         <s:text name="Nome: " />
         <s:textfield name="nome" required="required"/><br/>
         <s:text name="Username: " />

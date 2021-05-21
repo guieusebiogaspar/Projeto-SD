@@ -43,11 +43,11 @@
             <s:text name="Minuto: " />
             <s:textfield type="number" name="minutoFim" required="required"/><br/>
             <s:text name="Departamento que pode votar nesta eleição: "/>
-            <s:select list="{'DEI','DEEC','DEM','DEC','DF','DQ','DM'}" name="grupoVotar"></s:select><br/>
+            <s:select list="{'DEI','DEEC','DEM','DEC','DF','DQ','DM'}" name="grupoVotar" default="DEI"></s:select><br/>
             <s:text name="Local da mesa de voto desta eleição: "/>
-            <s:select list="{'DEI','DEEC','DEM','DEC','DF','DQ','DM'}" name="mesa"></s:select><br/>
+            <s:select list="{'WEB','DEI','DEEC','DEM','DEC','DF','DQ','DM'}" name="mesa" default="WEB"></s:select><br/>
             <s:text name="Grupo de pessoas que pode votar: " />
-            <s:select list="{'Estudante','Funcionário','Docente'}" name="opcao"></s:select><br/>
+            <s:select list="{'Estudante','Funcionário','Docente'}" name="opcao" default="Estudante"></s:select><br/>
             <s:submit type = "button"><s:text name="Criar"/></s:submit>
             <button><a href="<s:url action="voltar"/>">Voltar</a></button>
         </s:form>

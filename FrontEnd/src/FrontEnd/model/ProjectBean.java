@@ -6,9 +6,11 @@ import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Formatter;
 
 
 public class ProjectBean {
@@ -381,12 +383,32 @@ public class ProjectBean {
         return server.getEleição(eleicao);
     }
 
-    public int getTotalVotos() {
-        return 1;
+    public int getTotalVotos() throws RemoteException {
+        Eleição el = getEleição();
+        int totalVotos = 0;
+        for(int i = 0; i < el.getListas().size(); i++) {
+            totalVotos += el.getListas().get(i).getNumVotos();
+        }
+        return totalVotos;
     }
+
+    public String percentagemVotos(int nVotos, Eleição el) throws RemoteException {
+        this.eleicao = el.getTitulo();
+        int vtotais= getTotalVotos();
+        DecimalFormat df2 = new DecimalFormat("#.##");
+        double vot = ((((double) nVotos) * 100.0) / vtotais);
+        String result = df2.format(vot);
+        return result;
+    }
+
 
     public String contaVotos(String mesa, String el) throws RemoteException {
         return server.contaVotos(mesa,el);
+    }
+
+    public String getVencedora() throws RemoteException {
+        Eleição el = getEleição();
+        return server.getVencedora(el);
     }
 
 

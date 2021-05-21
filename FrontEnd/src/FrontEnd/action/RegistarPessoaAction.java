@@ -21,6 +21,7 @@ public class RegistarPessoaAction extends ActionSupport implements SessionAware 
                 && this.morada != null && this.validade != null && this.grupo != null && this.phone != null && this.ccRegisto != null)
             {
                 if(this.getProjectBean().verificaCc(this.ccRegisto) || this.getProjectBean().verificaUsername(this.usernameRegisto)) {
+                    System.out.println("foi aqui");
                     return ERROR;
                 }
 
