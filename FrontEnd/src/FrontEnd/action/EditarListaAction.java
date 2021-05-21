@@ -20,6 +20,7 @@ public class EditarListaAction extends ActionSupport implements SessionAware{
         if (session.get("loggedin").equals("admin")) {
             Eleição el = (Eleição) session.get("searchEleicao");
             Lista l = (Lista) session.get("lista");
+            // atualiza dados da lista introduzidos
             if(this.nomeLista != null && !this.nomeLista.equals("")) {
                 this.getProjectBean().setNomeLista(this.nomeLista);
 
@@ -51,6 +52,11 @@ public class EditarListaAction extends ActionSupport implements SessionAware{
         return LOGIN;
     }
 
+    /**
+     * adiciona ou remove listas
+     * @return
+     * @throws IOException
+     */
     public String addRmv() throws IOException{
         if (session.get("loggedin").equals("admin")) {
             Eleição el = (Eleição) session.get("searchEleicao");

@@ -20,6 +20,7 @@ public class DetalhesPessoasAction extends ActionSupport implements SessionAware
                 this.getProjectBean().setCc(this.cc);
                 Pessoa p = this.getProjectBean().getPessoa();
 
+                // coloca na session a pessoa introduzida pelo user
                 if(p != null) {
                     session.put("searchPessoa", p);
                     return SUCCESS;

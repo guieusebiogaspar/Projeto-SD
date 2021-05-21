@@ -2,7 +2,6 @@ package FrontEnd.action;
 
 import FrontEnd.model.ProjectBean;
 import RMI.Eleição;
-import RMI.Lista;
 import com.opensymphony.xwork2.ActionSupport;
 import org.apache.struts2.interceptor.SessionAware;
 
@@ -22,6 +21,7 @@ public class votarListaAction extends ActionSupport implements SessionAware {
                 Eleição el = (Eleição) session.get("searchEleicao");
                 this.getProjectBean().setLista(this.lista);
 
+                // Voto numa lista
                 if(el != null && this.getProjectBean().verificaLista(el, lista)) {
                     if(this.getProjectBean().adicionaVoto(el)) {
                         session.remove("lista");

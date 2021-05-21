@@ -1,8 +1,6 @@
 package FrontEnd.action;
 
 import FrontEnd.model.ProjectBean;
-import RMI.Lista;
-import RMI.Pessoa;
 import com.opensymphony.xwork2.ActionSupport;
 import org.apache.struts2.interceptor.SessionAware;
 
@@ -23,8 +21,9 @@ public class CriarElAction extends ActionSupport implements SessionAware{
                     && this.horaFim != null && this.minutoFim != null && this.titulo != null && this.descricao != null
                     && this.mesa != null && this.opcao != null && this.grupoVotar != null)
             {
-
+                this.getProjectBean().setTitulo(titulo);
                 if(this.getProjectBean().verificaEleicao()) {
+                    System.out.println("aqui");
                     return ERROR;
                 }
 
@@ -38,11 +37,13 @@ public class CriarElAction extends ActionSupport implements SessionAware{
                 this.getProjectBean().setGrupoVotar(this.grupoVotar);
                 this.getProjectBean().adicionaGrupo();
 
+                // cria uma eleição
                 this.getProjectBean().criarEleicao();
 
                 session.remove("searchEleicao");
                 return SUCCESS;
             } else {
+                System.out.println("sera");
                 return ERROR;
             }
         }
