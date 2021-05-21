@@ -21,7 +21,7 @@ public class DetalhesListaAction extends ActionSupport implements SessionAware {
                 Eleição el = (Eleição) session.get("searchEleicao");
                 this.getProjectBean().setEleicao(el.getTitulo());
 
-
+                // coloca na session a lista introduzida pelo user
                 if(el != null && this.getProjectBean().verificaLista(el, lista)) {
                     Lista l = this.getProjectBean().getListaEleicao(el, lista);
                     if(l != null){

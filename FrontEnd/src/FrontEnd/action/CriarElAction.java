@@ -1,8 +1,6 @@
 package FrontEnd.action;
 
 import FrontEnd.model.ProjectBean;
-import RMI.Lista;
-import RMI.Pessoa;
 import com.opensymphony.xwork2.ActionSupport;
 import org.apache.struts2.interceptor.SessionAware;
 
@@ -39,6 +37,7 @@ public class CriarElAction extends ActionSupport implements SessionAware{
                 this.getProjectBean().setGrupoVotar(this.grupoVotar);
                 this.getProjectBean().adicionaGrupo();
 
+                // cria uma eleição
                 this.getProjectBean().criarEleicao();
 
                 session.remove("searchEleicao");

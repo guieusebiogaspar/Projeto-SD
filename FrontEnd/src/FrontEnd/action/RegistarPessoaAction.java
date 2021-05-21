@@ -1,7 +1,6 @@
 package FrontEnd.action;
 
 import FrontEnd.model.ProjectBean;
-import RMI.Pessoa;
 import com.opensymphony.xwork2.ActionSupport;
 import org.apache.struts2.interceptor.SessionAware;
 
@@ -21,10 +20,10 @@ public class RegistarPessoaAction extends ActionSupport implements SessionAware 
                 && this.morada != null && this.validade != null && this.grupo != null && this.phone != null && this.ccRegisto != null)
             {
                 if(this.getProjectBean().verificaCc(this.ccRegisto) || this.getProjectBean().verificaUsername(this.usernameRegisto)) {
-                    System.out.println("foi aqui");
                     return ERROR;
                 }
 
+                // regista uma pessoa
                 this.getProjectBean().setTipo(this.tipo);
                 this.getProjectBean().setNome(this.nome);
                 this.getProjectBean().setUsernameRegisto(this.usernameRegisto);

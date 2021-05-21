@@ -42,6 +42,10 @@ public class LoginAction extends ActionSupport implements SessionAware {
 		this.password = password;
 	}
 
+	/**
+	 * logout
+	 * @return
+	 */
 	public String logout() {
 		session.clear();
 		return SUCCESS;

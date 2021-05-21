@@ -10,7 +10,6 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Formatter;
 
 
 public class ProjectBean {
@@ -28,6 +27,9 @@ public class ProjectBean {
     private ArrayList<String> mesas;
     private ArrayList<String> grupos;
 
+    /**
+     * Contrutor do projectBEan. Vai ligar-se ao server RMI.
+     */
     public ProjectBean() {
         try {
             server = (RMIServerInterface) LocateRegistry.getRegistry(7001).lookup("Server");
@@ -39,12 +41,23 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * Regista pessoa
+     *
+     * @throws RemoteException
+     */
     public void registarPessoa() throws RemoteException {
         Pessoa pessoa = new Pessoa(tipo, nome, usernameRegisto, passwordRegisto, phone, morada, ccRegisto, validade, grupo);
 
         server.registar(pessoa);
     }
 
+    /**
+     * Verifica se o cartão de cidadão já existe na database
+     * @param cartao
+     * @return
+     * @throws RemoteException
+     */
     public boolean verificaCc(Integer cartao) throws RemoteException {
         if(server.verificaCC(cartao)) {
             return true;
@@ -53,6 +66,12 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * Verifica se o username já existe na database
+     * @param user
+     * @return
+     * @throws RemoteException
+     */
     public boolean verificaUsername(String user) throws RemoteException {
         if(server.verificaUsername(user)) {
             return true;
@@ -61,6 +80,11 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * Verifica se a eleição já existe na database
+     * @return
+     * @throws RemoteException
+     */
     public boolean verificaEleicao() throws RemoteException {
         if(server.verificaEleicao(titulo)) {
             return true;
@@ -69,6 +93,13 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * Verifica se a lista já existe na eleição
+     * @param eleicao
+     * @param lista
+     * @return
+     * @throws RemoteException
+     */
     public boolean verificaLista(Eleição eleicao, String lista) throws RemoteException {
         if(server.verificaLista(eleicao, lista)) {
             return true;
@@ -81,6 +112,13 @@ public class ProjectBean {
         return server.getListaEleicao(eleicao, lista);
     }
 
+    /**
+     * Alter nome da lista
+     * @param eleicao
+     * @param lista
+     * @return
+     * @throws RemoteException
+     */
     public boolean mudaNomeLista(Eleição eleicao, String lista) throws RemoteException {
         if(server.verificaLista(eleicao, lista)) {
             server.mudaNomeLista(eleicao, lista, nomeLista);
@@ -90,6 +128,12 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * Ve que pessoas podem ser adicionadas a lista
+     * @param el
+     * @return
+     * @throws RemoteException
+     */
     public ArrayList<Pessoa> pessoasValidas(Eleição el) throws RemoteException {
         ArrayList<Pessoa> pessoas = server.getPessoas();
         ArrayList<Pessoa> pessoasValidas = new ArrayList<>();
@@ -103,6 +147,13 @@ public class ProjectBean {
         return pessoasValidas;
     }
 
+    /**
+     * Membros de uma lista
+     * @param el
+     * @param lista
+     * @return
+     * @throws RemoteException
+     */
     public ArrayList<Pessoa> pessoasValidasLista(Eleição el, String lista) throws RemoteException {
         ArrayList<Pessoa> pessoasValidas = null;
         for(int i = 0; i < el.getListas().size(); i++) {
@@ -115,6 +166,12 @@ public class ProjectBean {
         return pessoasValidas;
     }
 
+    /**
+     * adiciona uma pessoa a uma lista
+     * @param el
+     * @param lista
+     * @throws RemoteException
+     */
     public void adicionaPessoaLista(Eleição el, String lista) throws RemoteException {
         int cartaoo;
         try{
@@ -140,6 +197,12 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * remove uma pessoa de uma lista
+     * @param el
+     * @param lista
+     * @throws RemoteException
+     */
     public void removePessoaLista(Eleição el, String lista) throws RemoteException {
         int cartaoo;
         try{
@@ -165,6 +228,10 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * cria uma eleição
+     * @throws RemoteException
+     */
     public void criarEleicao() throws RemoteException {
 
         Eleição eleição = new Eleição(dataInicio, dataFim, titulo, descricao, grupos, listas, mesas, opcao);
@@ -172,26 +239,47 @@ public class ProjectBean {
         server.criarEleição(eleição);
     }
 
+    /**
+     * adiciona uma mesa de voto a eleição
+     */
     public void adicionaMesa() {
         mesas.add(mesa);
     }
 
+    /**
+     * adiciona um departamento que pode votar a eleição
+     */
     public void adicionaGrupo() {
         grupos.add(grupoVotar);
     }
 
+    /**
+     * adiciona uma lista a eleição
+     * @param elei
+     * @throws RemoteException
+     */
     public void adicionaListaEleicao(String elei) throws RemoteException {
         Eleição el = server.getEleição(elei);
 
         server.addLista(el, lista);
     }
 
+    /**
+     * remove uma lista da eleição
+     * @param elei
+     * @throws RemoteException
+     */
     public void removeListaEleicao(String elei) throws RemoteException {
         Eleição el = server.getEleição(elei);
 
         server.rmvLista(el, lista);
     }
 
+    /**
+     * adiciona uma mesa de voto a eleição
+     * @param elei
+     * @throws RemoteException
+     */
     public void adicionaMesaEleicao(String elei) throws RemoteException {
         Eleição el = server.getEleição(elei);
         if(mesa != null){
@@ -199,11 +287,21 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * remove uma mesa de voto da eleição
+     * @param elei
+     * @throws RemoteException
+     */
     public void removeMesaEleicao(String elei) throws RemoteException {
         Eleição el = server.getEleição(elei);
         server.rmvMesa(el, mesa);
     }
 
+    /**
+     * adiciona um departamento elegivel a votar a eleição
+     * @param elei
+     * @throws RemoteException
+     */
     public void adicionaDepartamentoEleicao(String elei) throws RemoteException {
         Eleição el = server.getEleição(elei);
         if(grupoVotar != null) {
@@ -211,11 +309,21 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * remove um departamento da eleição
+     * @param elei
+     * @throws RemoteException
+     */
     public void removeDepartamentoEleicao(String elei) throws RemoteException {
         Eleição el = server.getEleição(elei);
         server.rmvGrupo(el, grupoVotar);
     }
 
+    /**
+     * atualiza o titulo da eleição
+     * @param elei
+     * @throws RemoteException
+     */
     public void atualizaTitulo(String elei) throws RemoteException {
         Eleição el = server.getEleição(elei);
         if(titulo != null) {
@@ -223,6 +331,11 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * atualiza a descrição da eleição
+     * @param elei
+     * @throws RemoteException
+     */
     public void atualizaDescricao(String elei) throws RemoteException {
         Eleição el = server.getEleição(elei);
         if(descricao != null){
@@ -230,6 +343,11 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * atualiza a data de inicio da eleição
+     * @param elei
+     * @throws RemoteException
+     */
     public void atualizaDataInicio(String elei) throws RemoteException {
         Eleição el = server.getEleição(elei);
         if(dataInicio != null){
@@ -237,6 +355,11 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * atualiza a data de fum da eleição
+     * @param elei
+     * @throws RemoteException
+     */
     public void atualizaDataFim(String elei) throws RemoteException {
         Eleição el = server.getEleição(elei);
         if(dataFim != null){
@@ -244,6 +367,12 @@ public class ProjectBean {
         }
     }
 
+    /**
+     * adiciona voto a uma lista
+     * @param el
+     * @return
+     * @throws RemoteException
+     */
     public boolean adicionaVoto(Eleição el) throws RemoteException {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         LocalDateTime now = LocalDateTime.now();
@@ -339,6 +468,11 @@ public class ProjectBean {
         this.pessoaLista = pessoaLista;
     }
 
+    /**
+     * verifica que tipo de user fez login e se os dados do login estao corretos
+     * @return
+     * @throws IOException
+     */
     public String getUserMatchesPassword() throws IOException {
         if(server.loginUserFrontEnd(username, password).equals("admin")) {
             return "admin";
@@ -392,6 +526,13 @@ public class ProjectBean {
         return totalVotos;
     }
 
+    /**
+     * percentagem de votos de uma lista
+     * @param nVotos
+     * @param el
+     * @return
+     * @throws RemoteException
+     */
     public String percentagemVotos(int nVotos, Eleição el) throws RemoteException {
         this.eleicao = el.getTitulo();
         int vtotais= getTotalVotos();
@@ -401,7 +542,13 @@ public class ProjectBean {
         return result;
     }
 
-
+    /**
+     * conta votos de uma determinada mesa de voto
+     * @param mesa
+     * @param el
+     * @return
+     * @throws RemoteException
+     */
     public String contaVotos(String mesa, String el) throws RemoteException {
         return server.contaVotos(mesa,el);
     }

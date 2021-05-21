@@ -2,12 +2,10 @@ package FrontEnd.action;
 
 import FrontEnd.model.ProjectBean;
 import RMI.Eleição;
-import RMI.Pessoa;
 import com.opensymphony.xwork2.ActionSupport;
 import org.apache.struts2.interceptor.SessionAware;
 
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -22,7 +20,8 @@ public class DetalhesEleicoesAction extends ActionSupport implements SessionAwar
             if(this.eleicao != null) {
                 this.getProjectBean().setEleicao(this.eleicao);
                 Eleição el = this.getProjectBean().getEleição();
-
+                // coloca na session a eleição introduzida pelo user
+                // caso ja tenha terminado coloca na session a lista vencedora
                 if(el != null) {
                     session.put("searchEleicao", el);
                     if(el.getTerminada()){

@@ -2,8 +2,6 @@ package FrontEnd.action;
 
 import FrontEnd.model.ProjectBean;
 import RMI.Eleição;
-import RMI.Lista;
-import RMI.Pessoa;
 import com.opensymphony.xwork2.ActionSupport;
 import org.apache.struts2.interceptor.SessionAware;
 
@@ -21,6 +19,8 @@ public class EditarElAction extends ActionSupport implements SessionAware{
     public String execute() throws IOException {
         if (session.get("loggedin").equals("admin") == true) {
             Eleição el = (Eleição) session.get("searchEleicao");
+
+            // atualiza os dados introduzidos da eleição
 
             if(this.diaInicio != null && this.mesInicio != null && this.anoInicio != null && this.horaInicio != null && this.minutoInicio != null) {
                 this.getProjectBean().setDataInicio(this.diaInicio, this.mesInicio, this.anoInicio, this.horaInicio, this.minutoInicio);
@@ -58,6 +58,7 @@ public class EditarElAction extends ActionSupport implements SessionAware{
                 this.getProjectBean().removeMesaEleicao(el.getTitulo());
             }
 
+            // Verifica se não existe nenhuma eleição com o mesmo titulo
             if(this.titulo != null && !this.titulo.equals("")) {
                 this.getProjectBean().setTitulo(this.titulo);
                 if (this.getProjectBean().verificaEleicao()) {
