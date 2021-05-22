@@ -17,6 +17,7 @@
       <a href="<s:url action="editar" />">Editar eleição</a><br/>
       <a href="<s:url action="detalhespessoas" />">Detalhes de pessoas</a><br/>
       <a href="<s:url action="detalheseleicoes" />">Detalhes de eleições</a><br/>
+      <a href="<s:url action="usersonline" />">Users online</a><br/>
       <a href="<s:url action="estadomesas" />">Estado das mesas de voto ON/OFF</a><br/>
       <a href="<s:url action="logout" />">Sair</a><br/>
     </c:when>

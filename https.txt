@@ -1,0 +1,7 @@
+cmd:
+	cd %JAVA_HOME%/bin
+	keytool -genkey -alias tomcat -keyalg RSA
+
+keystore password: password1
+
+https://www.youtube.com/watch?v=RaEG_DOpNPc

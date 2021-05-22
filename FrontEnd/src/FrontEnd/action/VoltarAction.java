@@ -14,7 +14,7 @@ public class VoltarAction extends ActionSupport implements SessionAware {
     @Override
     public String execute() throws IOException {
         // limpa a session
-        if(session.get("loggedin").equals("admin") == true) {
+        if(session.get("loggedin").equals("admin")) {
             session.remove("searchEleicao");
             session.remove("searchPessoa");
             session.remove("lista");

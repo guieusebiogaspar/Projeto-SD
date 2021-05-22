@@ -11,6 +11,7 @@ import java.util.HashMap;
 
 public class RMIServer extends UnicastRemoteObject implements RMIServerInterface, Serializable{
     static AdminConsoleInterface admin;
+    static WebSocketInterface ws;
     private static ArrayList<Pessoa> pessoas = new ArrayList<>();
     private static ArrayList<Eleição> eleições = new ArrayList<>();
     private static ArrayList<String> mesas = new ArrayList<>();
@@ -20,6 +21,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public RMIServer() throws RemoteException {
         super();
     }
+
 
     /**
      * Método que devolve o auxServer
@@ -37,6 +39,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     {
         int valor = getAuxServer();
         return valor;
+    }
+
+    public void subscribe(WebSocketInterface ws) throws RemoteException {
+        this.ws = ws;
     }
 
     /**
@@ -624,8 +630,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public String loginUserFrontEnd(String username, String password) throws RemoteException {
         ArrayList<String> admins = new ArrayList<>();
         admins.add("gui");
+        admins.add("didi");
         for(int i = 0; i < pessoas.size(); i++) {
             if(pessoas.get(i).getUsername().equals(username) && pessoas.get(i).getPassword().equals(password)) {
+                //ws.sendMessage();
                 if(admins.contains(username)) {
                     return "admin";
                 } else {
@@ -933,6 +941,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                             ArrayList<Integer> jaVotaram = eleições.get(i).getJaVotaram();
                             jaVotaram.add(p.getCc());
                             eleições.get(i).setJaVotaram(jaVotaram);
+                            ws.sendMessage("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome() + " - " + p.getNome());
                             System.out.println("Voto registado na eleição " + eleição.getTitulo() + " na lista " + eleição.getListas().get(j).getNome());
                             writeBD("eleicoes.obj");
                             writeBD("pessoas.obj");

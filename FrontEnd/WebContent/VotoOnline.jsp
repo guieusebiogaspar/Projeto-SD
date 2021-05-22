@@ -7,6 +7,52 @@
 <head>
   <link rel="stylesheet" type="text/css" href="facil.css">
   <title>eVoting</title>
+  <script type="text/javascript">
+
+    var websocket = null;
+
+    window.onload = function() { // URI = ws://10.16.0.165:8080/WebSocket/ws
+      connect('wss://' + window.location.host + '/eVoting/ws');
+    }
+
+    function connect(host) { // connect to the host websocket
+      if ('WebSocket' in window)
+        websocket = new WebSocket(host);
+      else if ('MozWebSocket' in window)
+        websocket = new MozWebSocket(host);
+      else {
+        writeToHistory('Get a real browser which supports WebSocket.');
+        return;
+      }
+
+      websocket.onopen    = onOpen; // set the 4 event listeners below
+      websocket.onclose   = onClose;
+      websocket.onmessage = onMessage;
+      websocket.onerror   = onError;
+    }
+
+    function onOpen(event) {
+      let username = "<%=session.getAttribute("username")%>";
+      doSend("logado " + username)
+    }
+
+    function onClose(event) {
+      writeToHistory('WebSocket closed (code ' + event.code + ').');
+    }
+
+    function onMessage(message) { // print the received message
+      console.log("aqui recebi");
+    }
+
+    function onError(event) {
+      writeToHistory('WebSocket error.');
+    }
+
+    function doSend(message) {
+        websocket.send(message); // send the message to the server
+    }
+
+  </script>
 </head>
 <body>
   <c:choose>
