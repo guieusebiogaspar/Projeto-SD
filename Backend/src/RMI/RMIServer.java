@@ -637,12 +637,17 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 if(admins.contains(username)) {
                     return "admin";
                 } else {
+                    ws.sendMessage(username + " entrou na sessao");
                     return "eleitor";
                 }
             }
         }
 
         return "nada";
+    }
+
+    public void avisaLogout(String username) throws RemoteException {
+        ws.sendMessage(username + " saiu da sessao");
     }
 
     /**

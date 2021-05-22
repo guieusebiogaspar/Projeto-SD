@@ -38,8 +38,15 @@
       writeToHistory('WebSocket closed (code ' + event.code + ').');
     }
 
+    window.onbeforeunload = function() {
+      websocket.onclose = function () {}; // disable onclose handler first
+      websocket.close();
+    };
+
     function onMessage(message) { // print the received message
-        writeToHistory(message.data);
+        if(!message.data.includes("Voto")) {
+          writeToHistory(message.data);
+        }
     }
 
     function onError(event) {

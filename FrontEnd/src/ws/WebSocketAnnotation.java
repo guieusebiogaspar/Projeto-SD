@@ -10,7 +10,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.websocket.server.ServerEndpoint;
 import javax.websocket.OnOpen;
@@ -21,7 +20,6 @@ import javax.websocket.Session;
 
 @ServerEndpoint(value = "/ws")
 public class WebSocketAnnotation extends UnicastRemoteObject implements WebSocketInterface {
-    private static final AtomicInteger sequence = new AtomicInteger(1);
     private Session session;
     private RMIServerInterface server;
 
