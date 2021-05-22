@@ -7,6 +7,60 @@
 <head>
     <link rel="stylesheet" type="text/css" href="facil.css">
     <title>eVoting</title>
+    <script type="text/javascript">
+
+        var websocket = null;
+
+        window.onload = function() { // URI = ws://10.16.0.165:8080/WebSocket/ws
+            connect('wss://' + window.location.host + '/eVoting/ws');
+        }
+
+        function connect(host) { // connect to the host websocket
+            if ('WebSocket' in window)
+                websocket = new WebSocket(host);
+            else if ('MozWebSocket' in window)
+                websocket = new MozWebSocket(host);
+            else {
+                writeToHistory('Get a real browser which supports WebSocket.');
+                return;
+            }
+
+            websocket.onopen    = onOpen; // set the 4 event listeners below
+            websocket.onclose   = onClose;
+            websocket.onmessage = onMessage;
+            websocket.onerror   = onError;
+        }
+
+        function onOpen(event) {
+            //writeToHistory('Connected to ' + window.location.host + '.');
+        }
+
+        function onClose(event) {
+            writeToHistory('WebSocket closed (code ' + event.code + ').');
+        }
+
+        function onMessage(message) { // print the received message
+            writeToHistory(message.data);
+        }
+
+        function onError(event) {
+            writeToHistory('WebSocket error.');
+        }
+
+        function doSend(message) {
+            websocket.send(message); // send the message to the server
+        }
+
+        function writeToHistory(text) {
+            var history = document.getElementById('history');
+            var line = document.createElement('p');
+            line.style.wordWrap = 'break-word';
+            line.innerHTML = text;
+            history.appendChild(line);
+            history.scrollTop = history.scrollHeight;
+        }
+
+    </script>
 </head>
 <body>
 <jsp:useBean id="p" class="FrontEnd.model.ProjectBean" />
@@ -114,6 +168,10 @@
                 </c:forEach>
             </c:when>
         </c:choose>
+        <div>
+            <h1>Votos em direto</h1>
+            <div id="container"><div id="history"></div></div>
+        </div>
     </c:when>
     <c:otherwise>
         <jsp:include page="index.jsp"></jsp:include>

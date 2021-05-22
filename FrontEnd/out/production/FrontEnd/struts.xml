@@ -138,6 +138,10 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
             <result name="error">/Votar-error.jsp</result>
             <result name="login">/index.jsp</result>
         </action>
+
+        <action name="usersonline">
+            <result>UsersOnline.jsp</result>
+        </action>
     </package>
 
 </struts>
