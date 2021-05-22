@@ -485,6 +485,10 @@ public class ProjectBean {
         }
     }
 
+    public void avisaLogout() throws RemoteException {
+        server.avisaLogout(username);
+    }
+
     public ArrayList<Pessoa> getPessoas() throws RemoteException {
         return server.getPessoas();
     }

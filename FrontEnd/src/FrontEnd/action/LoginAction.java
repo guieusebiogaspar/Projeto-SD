@@ -5,6 +5,7 @@ import com.opensymphony.xwork2.ActionSupport;
 import org.apache.struts2.interceptor.SessionAware;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.Map;
 
 public class LoginAction extends ActionSupport implements SessionAware {
@@ -46,7 +47,10 @@ public class LoginAction extends ActionSupport implements SessionAware {
 	 * logout
 	 * @return
 	 */
-	public String logout() {
+	public String logout() throws RemoteException {
+		if(session.get("loggedin").equals("eleitor")) {
+			this.getProjectBean().avisaLogout();
+		}
 		session.clear();
 		return SUCCESS;
 	}

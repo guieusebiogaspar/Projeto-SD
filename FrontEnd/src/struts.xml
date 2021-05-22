@@ -85,7 +85,7 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
 
         <action name="addRmvLista" class="FrontEnd.action.EditarListaAction" method="addRmv">
             <result name="success">/MenuEditarEleicao.jsp</result>
-            <result name="error">/EditarLista-error..jsp</result>
+            <result name="error">/EditarLista-error.jsp</result>
             <result name="login">/index.jsp</result>
         </action>
 

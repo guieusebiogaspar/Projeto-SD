@@ -32,8 +32,9 @@
     }
 
     function onOpen(event) {
-      let username = "<%=session.getAttribute("username")%>";
-      doSend("logado " + username)
+      /*
+      //let username = "<%=session.getAttribute("username")%>";
+      //doSend("logado " + username)*/
     }
 
     function onClose(event) {
@@ -51,6 +52,11 @@
     function doSend(message) {
         websocket.send(message); // send the message to the server
     }
+
+    window.onbeforeunload = function() {
+      websocket.onclose = function () {}; // disable onclose handler first
+      websocket.close();
+    };
 
   </script>
 </head>
